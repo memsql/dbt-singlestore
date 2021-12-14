@@ -1,0 +1,20 @@
+fixed:
+  type: singlestore
+prompts:
+  host:
+    hint: 'hostname for the instance'
+  port:
+    default: 3306
+    type: 'int'
+  user:
+    default: 'root'
+    hint: 'dev username'
+  password:
+    hint: 'dev password'
+    hide_input: true
+  schema:
+    hint: 'default schema that dbt will build objects in'
+  threads:
+    hint: '1 or more'
+    type: 'int'
+    default: 1
