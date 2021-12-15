@@ -1,6 +1,6 @@
 
 {% macro singlestore__snapshot_string_as_time(timestamp) -%}
-    {%- set result = "str_to_date('" ~ timestamp ~ "', '%Y-%m-%d %T')" -%}
+    {%- set result = "str_to_date('" ~ timestamp ~ "', '%Y-%m-%d %h:%i:%s')" -%}
     {{ return(result) }}
 {%- endmacro %}
 
@@ -82,9 +82,9 @@
       %}
 
       {% set final_sql_insert = singlestore__snapshot_merge_sql_insert(
-            target = target_relation,
-            source = staging_table,
-            insert_cols = quoted_source_columns
+            target=target_relation,
+            source=staging_table,
+            insert_cols=quoted_source_columns
          )
       %}
 
