@@ -1,6 +1,6 @@
 
 {% macro singlestore__snapshot_string_as_time(timestamp) -%}
-    {%- set result = "str_to_date('" ~ timestamp ~ "', '%Y-%m-%d %h:%i:%s')" -%}
+    {%- set result = "'" ~ timestamp ~ "' :> datetime" -%}
     {{ return(result) }}
 {%- endmacro %}
 
@@ -12,7 +12,7 @@
   {%- set strategy_name = config.get('strategy') -%}
   {%- set unique_key = config.get('unique_key') %}
 
-  {% if not adapter.check_schema_exists(model.database, model.schema) %}
+  {% if not adapter.check_schema_exists(model.database, model.schema) -%}
     {% do create_schema(model.database, model.schema) %}
   {% endif %}
 
@@ -35,8 +35,8 @@
 
   {% if not target_relation_exists %}
 
-      {% set build_sql = build_snapshot_table(strategy, model['compiled_sql']) %}
-      {% set final_sql = create_table_as(False, target_relation, build_sql) %}
+      {% set build_sql = build_snapshot_table(strategy, model['compiled_sql']) -%}
+      {% set final_sql = create_table_as(False, target_relation, build_sql) -%}
 
       {% call statement('main') %}
           {{ final_sql }}
@@ -57,7 +57,7 @@
                                    | rejectattr('name', 'equalto', 'DBT_CHANGE_TYPE')
                                    | rejectattr('name', 'equalto', 'dbt_unique_key')
                                    | rejectattr('name', 'equalto', 'DBT_UNIQUE_KEY')
-                                   | list %}
+                                   | list -%}
 
       {% do create_columns(target_relation, missing_columns) %}
 
@@ -66,9 +66,9 @@
                                    | rejectattr('name', 'equalto', 'DBT_CHANGE_TYPE')
                                    | rejectattr('name', 'equalto', 'dbt_unique_key')
                                    | rejectattr('name', 'equalto', 'DBT_UNIQUE_KEY')
-                                   | list %}
+                                   | list -%}
 
-      {% set quoted_source_columns = [] %}
+      {% set quoted_source_columns = [] -%}
       {% for column in source_columns %}
         {% do quoted_source_columns.append(adapter.quote(column.name)) %}
       {% endfor %}
@@ -79,14 +79,13 @@
             source = staging_table,
             insert_cols = quoted_source_columns
          )
-      %}
-
+      -%}
       {% set final_sql_insert = singlestore__snapshot_merge_sql_insert(
             target=target_relation,
             source=staging_table,
             insert_cols=quoted_source_columns
          )
-      %}
+      -%}
 
       {% call statement('main') %}
           {{ final_sql_update }}

@@ -1,5 +1,4 @@
 {% macro s2_snapshot_staging_table_deletes(strategy, source_sql, target_relation) -%}
-
     with snapshot_query as (
         {{ source_sql }}
     ),
@@ -30,7 +29,6 @@
 
 
 {% macro s2_snapshot_staging_table_updates(strategy, source_sql, target_relation) %}
-
     with snapshot_query as (
         {{ source_sql }}
     ),
