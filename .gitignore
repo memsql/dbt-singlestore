@@ -1,7 +1,6 @@
 .vscode
 .idea
 .env
-venv
 build
 *__pycache__*
 *egg-info*

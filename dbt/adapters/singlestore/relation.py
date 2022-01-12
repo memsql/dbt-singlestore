@@ -25,10 +25,8 @@ class SingleStoreRelation(BaseRelation):
     quote_character: str = '`'
 
     def __post_init__(self):
-        # TODO: investigate
-        return
         if self.database != self.schema and self.database:
-            raise RuntimeException("Cannot set database in SingleStore!")
+            raise RuntimeException("Cannot set database in SingleStoreRelation!")
 
     def render(self):
         if self.include_policy.database and self.include_policy.schema:
