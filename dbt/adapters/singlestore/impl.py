@@ -68,13 +68,9 @@ class SingleStoreAdapter(SQLAdapter):
                 kwargs=kwargs
             )
         except RuntimeException as e:
-            errmsg = getattr(e, 'msg', '')
-            if f"Database '{schema_relation}' not found" in errmsg:
-                return []
-            else:
-                description = "Error while retrieving information about"
-                logger.debug(f"{description} {schema_relation}: {e.msg}")
-                return []
+            description = "Error while retrieving information about"
+            logger.debug(f"{description} {schema_relation}: {e.msg}")
+            return []
 
         relations = []
         for row in results:

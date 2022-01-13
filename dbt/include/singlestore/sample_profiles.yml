@@ -1,11 +1,10 @@
-
 default:
   outputs:
     dev:
       type: singlestore
-      # Add sample credentials here, like:
-      # host: <host>
-      # port: <port_num>
-      # username: <user>
-      # password: <pass>
+      host: <database_host>
+      port: <database_port>  # default 3306
+      username: <database_user>  # default root
+      password: <database_user_password>
+      schema: <database_name>
   target: dev
