@@ -5,10 +5,11 @@
 target:
   type: singlestore
   host: "{{ env_var('S2_HOST', 'localhost') }}"
-  port: "{{ env_var('S2_PASSWORD', 3306) }}"
+  port: "{{ env_var('S2_PORT', 3306) | int }}"
   username: "{{ env_var('S2_USER', 'root') }}"
   password: "{{ env_var('S2_PASSWORD', 'p') }}"
   schema: dbt_test
+  threads: 4
 
 sequences:
   test_dbt_empty: empty
