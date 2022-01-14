@@ -1,4 +1,4 @@
-ee# dbt-singlestore
+# dbt-singlestore
 
 [dbt](https://www.getdbt.com/) adapter for [SingleStore](https://www.singlestore.com/).
 
