@@ -1,9 +1,4 @@
 
-{% macro singlestore__snapshot_string_as_time(timestamp) -%}
-    {%- set result = "'" ~ timestamp ~ "' :> datetime" -%}
-    {{ return(result) }}
-{%- endmacro %}
-
 {% materialization snapshot, adapter='singlestore' %}
   {%- set config = model['config'] -%}
 
@@ -46,7 +41,7 @@
 
       {{ adapter.valid_snapshot_target(target_relation) }}
 
-      {% set staging_table = build_snapshot_staging_table(strategy, sql, target_relation) %}
+      {% set staging_table = singlestore__build_snapshot_staging_table(strategy, sql, target_relation) %}
 
       -- this may no-op if the database does not require column expansion
       {% do adapter.expand_target_column_types(from_relation=staging_table,
@@ -112,101 +107,3 @@
   {{ return({'relations': [target_relation]}) }}
 
 {% endmaterialization %}
-
-{% macro snapshot_check_all_get_existing_columns(node, target_exists) -%}
-    {%- set query_columns = get_columns_in_query(node['compiled_sql']) -%}
-    {%- if not target_exists -%}
-        {# no table yet -> return whatever the query does #}
-        {{ return([false, query_columns]) }}
-    {%- endif -%}
-    {# handle any schema changes #}
-    {%- set target_table = node.get('alias', node.get('name')) -%}
-    {%- set target_relation = adapter.get_relation(database=None, schema=node.schema, identifier=target_table) -%}
-    {%- set existing_cols = get_columns_in_query('select * from ' ~ target_relation) -%}
-    {%- set ns = namespace() -%} {# handle for-loop scoping with a namespace #}
-    {%- set ns.column_added = false -%}
-
-    {%- set intersection = [] -%}
-    {%- for col in query_columns -%}
-        {%- if col in existing_cols -%}
-            {%- do intersection.append(col) -%}
-        {%- else -%}
-            {% set ns.column_added = true %}
-        {%- endif -%}
-    {%- endfor -%}
-    {{ return([ns.column_added, intersection]) }}
-{%- endmacro %}
-
-{% macro snapshot_staging_table(strategy, source_sql, target_relation) -%}
-
-    select
-        'insert' as dbt_change_type,
-        source_data.*
-
-    from (
-
-        select
-            *,
-            {{ strategy.unique_key }} as dbt_unique_key,
-            {{ strategy.updated_at }} as dbt_updated_at,
-            {{ strategy.updated_at }} as dbt_valid_from,
-            nullif({{ strategy.updated_at }}, {{ strategy.updated_at }}) as dbt_valid_to,
-            {{ strategy.scd_id }} as dbt_scd_id
-
-        from (
-            {{ source_sql }}
-        ) as snapshot_query
-
-    ) as source_data
-    left outer join (
-
-        select *,
-            {{ strategy.unique_key }} as dbt_unique_key
-
-        from {{ target_relation }}
-
-    ) as snapshotted_data on snapshotted_data.dbt_unique_key = source_data.dbt_unique_key
-    where snapshotted_data.dbt_unique_key is null
-       or (
-            snapshotted_data.dbt_unique_key is not null
-        and snapshotted_data.dbt_valid_to is null
-        and (
-            {{ strategy.row_changed }}
-        )
-    )
-
-    union all
-
-    select
-        'update' as dbt_change_type,
-        source_data.*,
-        snapshotted_data.dbt_scd_id
-
-    from (
-
-        select
-            *,
-            {{ strategy.unique_key }} as dbt_unique_key,
-            {{ strategy.updated_at }} as dbt_updated_at,
-            {{ strategy.updated_at }} as dbt_valid_from,
-            {{ strategy.updated_at }} as dbt_valid_to
-
-        from (
-            {{ source_sql }}
-        ) as snapshot_query
-
-    ) as source_data
-    join (
-
-        select *,
-            {{ strategy.unique_key }} as dbt_unique_key
-
-        from {{ target_relation }}
-
-    ) as snapshotted_data on snapshotted_data.dbt_unique_key = source_data.dbt_unique_key
-    where snapshotted_data.dbt_valid_to is null
-    and (
-        {{ strategy.row_changed }}
-    )
-
-{%- endmacro %}

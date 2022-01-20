@@ -77,7 +77,7 @@
 {% endmacro %}
 
 
-{% macro replace_view_definition(from_relation, to_relation) -%}
+{% macro singlestore__replace_view_definition(from_relation, to_relation) -%}
     {% set query = 'show create view {}'.format(from_relation) -%}
     {% set result = run_query(query) -%}
     {% set create_query = result[0][1] -%}
@@ -88,7 +88,7 @@
 {% endmacro %}
 
 
-{% macro real_relation_type(relation) -%}
+{% macro singlestore__real_relation_type(relation) -%}
     {% set query = 'show full tables like \'{}\''.format(relation.identifier) -%}
     {% set result = run_query(query) -%}
     {% if result|length -%}
@@ -111,8 +111,8 @@
       1. Drop the existing to_relation
       2. Rename from_relation to to_relation
     #}
-    {% set from_type = real_relation_type(from_relation).strip() -%}
-    {% set to_type = real_relation_type(to_relation).strip() -%}
+    {% set from_type = singlestore__real_relation_type(from_relation).strip() -%}
+    {% set to_type = singlestore__real_relation_type(to_relation).strip() -%}
     {% if to_type -%}
         {% call statement('drop_relation') %}
             drop {{ to_type }} if exists {{ to_relation.identifier }}
@@ -122,7 +122,7 @@
         {% if from_type == 'table' %}
             alter table {{ from_relation }} rename to {{ to_relation }}
         {% elif from_type == 'view' %}
-            {{ replace_view_definition(from_relation, to_relation) }}
+            {{ singlestore__replace_view_definition(from_relation, to_relation) }}
         {% else %}
             {%- do exceptions.raise_compiler_error('Unknown relation type for {}: {}'.format(from_relation.identifier), from_type) -%}
         {% endif %}
