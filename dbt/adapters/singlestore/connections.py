@@ -20,13 +20,14 @@ class SingleStoreCredentials(Credentials):
     # Add credentials members here, like:
     host: str = 'localhost'
     port: Optional[int] = 3306
-    username: Optional[str] = 'root'
+    user: Optional[str] = 'root'
     password: Optional[str] = ''
     database: Optional[str] = None
     schema: Optional[str] = ''
 
     ALIASES = {
         'db': 'database',
+        'username': 'user'
     }
 
     @property
@@ -36,7 +37,7 @@ class SingleStoreCredentials(Credentials):
     def _connection_keys(self):
         # return an iterator of keys to pretty-print in 'dbt debug'.
         # Omit fields like 'password'!
-        return 'host', 'port', 'database', 'schema', 'username'
+        return 'host', 'port', 'user', 'database', 'schema'
 
 
 class SingleStoreConnectionManager(SQLConnectionManager):
@@ -58,7 +59,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
 
         try:
             handle = pymysql.connect(
-                user=credentials.username,
+                user=credentials.user,
                 password=credentials.password,
                 host=credentials.host,
                 port=credentials.port,

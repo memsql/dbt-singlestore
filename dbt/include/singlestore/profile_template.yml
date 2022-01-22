@@ -8,12 +8,14 @@ prompts:
     type: 'int'
   user:
     default: 'root'
-    hint: 'dev username'
+    hint: 'database username'
   password:
-    hint: 'dev password'
+    hint: 'database password'
     hide_input: true
+  database:
+    hint: 'database that dbt will connect to an build objects in'
   schema:
-    hint: 'default schema that dbt will build objects in'
+    hint: 'if specified, will be used to prefix table/view names'
   threads:
     hint: '1 or more'
     type: 'int'

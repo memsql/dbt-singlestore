@@ -12,8 +12,9 @@ setup(
     description=description,
     long_description=description,
     author="SingleStore Inc.",
-    author_email="e@singlestore.com",
-    url="singlestore.com",
+    author_email="support@singlestore.com",
+    url="https://github.com/memsql/dbt-singlestore",
+    license="Apache License 2.0",
     packages=find_namespace_packages(include=['dbt', 'dbt.*']),
     include_package_data=True,
     install_requires=[
