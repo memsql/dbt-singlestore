@@ -8,8 +8,9 @@
 
 
 {% macro singlestore__create_schema(relation) -%}
+    {# no-op #}
     {%- call statement('create_schema') -%}
-        create database if not exists {{ relation.without_identifier() }}
+        SELECT 'create_schema'
     {%- endcall -%}
 {% endmacro %}
 
@@ -30,7 +31,7 @@
     {%- set sql_header = config.get('sql_header', none) -%}
     {{ sql_header if sql_header is not none }}
     create {% if temporary: -%}rowstore temporary{%- endif %} table
-        {{ relation.include(database=False) }}
+        {{ relation.include(database=True) }}
     as
         {{ sql }}
 {% endmacro %}
@@ -38,7 +39,7 @@
 
 {% macro singlestore__get_columns_in_relation(relation) -%}
     {% call statement('get_columns_in_relation', fetch_result=True) %}
-        show columns from {{ relation.schema }}.{{ relation.identifier }}
+        show columns from {{ relation.include(database=True) }}
     {% endcall %}
 
     {% set table = load_result('get_columns_in_relation').table %}
@@ -47,32 +48,39 @@
 
 
 {% macro singlestore__list_relations_without_caching(schema_relation) %}
+    {% if schema_relation.database is not none -%}
+       {% set database = schema_relation.database -%}
+    {% else -%}
+       {% set query = 'select database()' -%}
+       {% set result = run_query(query) -%}
+       {% set database = result[0][0] -%}
+    {% endif -%}
     {% call statement('list_relations_without_caching', fetch_result=True) -%}
         select
-            null as "database",
-            table_name as name,
-            table_schema as "schema",
+            table_schema as "database",
+            table_name as "name",
+            '{{ target.schema }}' as "schema",
             case when table_type = 'BASE TABLE' then 'table'
                  when table_type = 'VIEW' then 'view'
                  else table_type
-            end as table_type
+            end as "table_type"
         from information_schema.tables
-        where table_schema = '{{ schema_relation.schema }}'
+        where table_schema = '{{ database }}'
     {% endcall %}
     {{ return(load_result('list_relations_without_caching').table) }}
 {% endmacro %}
 
 
 {% macro singlestore__drop_schema(relation) -%}
-    {%- call statement('drop_schema') -%}
-        drop database if exists {{ relation.schema }}
+    {%- call statement('drop_database') -%}
+        drop database if exists {{ relation.database }}
     {% endcall %}
 {% endmacro %}
 
 
 {% macro singlestore__drop_relation(relation) -%}
     {% call statement('drop_relation', auto_begin=False) -%}
-        drop {{ relation.type }} if exists {{ relation.schema }}.{{ relation.name }}
+        drop {{ relation.type }} if exists {{ relation.include(database=True) }}
     {%- endcall %}
 {% endmacro %}
 
@@ -115,7 +123,7 @@
     {% set to_type = singlestore__real_relation_type(to_relation).strip() -%}
     {% if to_type -%}
         {% call statement('drop_relation') %}
-            drop {{ to_type }} if exists {{ to_relation.identifier }}
+            drop {{ to_type }} if exists {{ to_relation.incude(database=True) }}
         {% endcall %}
     {% endif -%}
     {% call statement('rename_relation') %}
@@ -137,11 +145,6 @@
 
 {% macro singlestore__current_timestamp() -%}
     current_timestamp()
-{%- endmacro %}
-
-
-{% macro singlestore__generate_database_name(custom_database_name=none, node=none) -%}
-    {% do return(None) %}
 {%- endmacro %}
 
 

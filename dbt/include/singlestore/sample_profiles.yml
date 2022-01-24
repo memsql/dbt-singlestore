@@ -6,6 +6,6 @@ default:
       port: <database_port>  # default: 3306
       user: <database_user>  # default: root
       password: <database_user_password>
-      schema: <database_name>
+      database: <database_name>
       threads: <number of threads>  # default: 1
   target: dev

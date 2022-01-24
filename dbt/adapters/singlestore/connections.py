@@ -22,7 +22,7 @@ class SingleStoreCredentials(Credentials):
     port: Optional[int] = 3306
     user: Optional[str] = 'root'
     password: Optional[str] = ''
-    database: Optional[str] = None
+    database: str
     schema: Optional[str] = ''
 
     ALIASES = {
@@ -45,8 +45,9 @@ class SingleStoreConnectionManager(SQLConnectionManager):
 
     @classmethod
     def get_credentials(cls, credentials):
-        if not credentials.schema:
-            credentials.schema = credentials.database
+        if not credentials.database or not credentials.schema:
+            raise dbt.exceptions.Exception("database and schema must be specified in the project config")
+
         return credentials
 
     @classmethod
@@ -63,7 +64,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
                 password=credentials.password,
                 host=credentials.host,
                 port=credentials.port,
-                database=credentials.schema
+                database=credentials.database
             )
 
             connection.handle = handle
@@ -84,7 +85,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
     @classmethod
     def get_response(cls, cursor: Cursor) -> AdapterResponse:
         return AdapterResponse(
-            _message="{}".format(cursor.description),
+            _message="{}".format(f"OK. Rows affected: {cursor.rowcount}"),
             rows_affected=cursor.rowcount,
             code=DUMMY_RESPONSE_CODE
         )

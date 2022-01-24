@@ -6,15 +6,15 @@ from dbt.exceptions import RuntimeException
 
 @dataclass
 class SingleStoreQuotePolicy(Policy):
-    database: bool = False
-    schema: bool = True
+    database: bool = True
+    schema: bool = False
     identifier: bool = True
 
 
 @dataclass
 class SingleStoreIncludePolicy(Policy):
-    database: bool = False
-    schema: bool = True
+    database: bool = True
+    schema: bool = False
     identifier: bool = True
 
 
@@ -23,10 +23,6 @@ class SingleStoreRelation(BaseRelation):
     quote_policy: SingleStoreQuotePolicy = SingleStoreQuotePolicy()
     include_policy: SingleStoreIncludePolicy = SingleStoreIncludePolicy()
     quote_character: str = '`'
-
-    def __post_init__(self):
-        if self.database != self.schema and self.database:
-            raise RuntimeException("Cannot set database in SingleStoreRelation!")
 
     def render(self):
         if self.include_policy.database and self.include_policy.schema:

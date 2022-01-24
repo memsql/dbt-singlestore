@@ -1,19 +1,13 @@
 import agate
-
-from concurrent.futures import Future
-from typing import List, Iterable, Dict, Any, Optional
+from typing import List, Optional
 
 from dbt.adapters.singlestore import SingleStoreConnectionManager
 from dbt.adapters.singlestore.column import SingleStoreColumn
 from dbt.adapters.singlestore.relation import SingleStoreRelation
 
-from dbt.adapters.base import BaseRelation
-from dbt.adapters.base.impl import catch_as_completed
 from dbt.adapters.sql import SQLAdapter
-from dbt.clients.agate_helper import DEFAULT_TYPE_TESTER
-from dbt.exceptions import RuntimeException, raise_compiler_error
+from dbt.exceptions import RuntimeException
 from dbt.logger import GLOBAL_LOGGER as logger
-from dbt.utils import executor
 
 
 class SingleStoreAdapter(SQLAdapter):
@@ -23,7 +17,7 @@ class SingleStoreAdapter(SQLAdapter):
 
     @classmethod
     def date_function(cls):
-        return "NOW()"
+        return "now()"
 
     @classmethod
     def convert_datetime_type(
@@ -41,13 +35,14 @@ class SingleStoreAdapter(SQLAdapter):
     def get_columns_in_relation(self, relation: SingleStoreRelation
                                 ) -> List[SingleStoreColumn]:
         rows: List[agate.Row] = super().get_columns_in_relation(relation)
-        return self.parse_show_columns(relation, rows)
+        return self._parse_show_columns(relation, rows)
 
-    def parse_show_columns(
+    def _parse_show_columns(
             self,
             relation: SingleStoreRelation,
             raw_rows: List[agate.Row]) -> List[SingleStoreColumn]:
         return [SingleStoreColumn(
+            table_database=relation.database,
             table_schema=relation.schema,
             table_name=relation.name,
             table_type=relation.type,
@@ -79,9 +74,10 @@ class SingleStoreAdapter(SQLAdapter):
                     f'Invalid value from "singlestore__list_relations_without_caching({kwargs})", '
                     f'got {len(row)} values, expected 4'
                 )
-            _, name, _schema, relation_type = row
+            database, name, schema, relation_type = row
             relation = self.Relation.create(
-                schema=_schema,
+                database=database,
+                schema=schema,
                 identifier=name,
                 type=relation_type
             )
@@ -89,74 +85,8 @@ class SingleStoreAdapter(SQLAdapter):
 
         return relations
 
-    def _get_columns_for_catalog(
-        self, relation: SingleStoreRelation
-    ) -> Iterable[Dict[str, Any]]:
-        columns = self.get_columns_in_relation(relation)
-
-        for column in columns:
-            # convert SingleStoreColumns into catalog dicts
-            as_dict = column.to_dict()
-            as_dict['column_name'] = as_dict.pop('column', None)
-            as_dict['column_type'] = as_dict.pop('dtype')
-            as_dict['table_database'] = None
-            yield as_dict
-
-    def get_relation(
-        self, database: str, schema: str, identifier: str
-    ) -> Optional[BaseRelation]:
-        if not self.Relation.include_policy.database:
-            database = None
-
-        return super().get_relation(database, schema, identifier)
-
-    def get_catalog(self, manifest):
-        schema_map = self._get_catalog_schemas(manifest)
-        if len(schema_map) > 1:
-            raise_compiler_error(
-                f'Expected only one database in get_catalog, found '
-                f'{list(schema_map)}'
-            )
-
-        with executor(self.config) as tpe:
-            futures: List[Future[agate.Table]] = []
-            for info, schemas in schema_map.items():
-                for schema in schemas:
-                    futures.append(tpe.submit_connected(
-                        self, schema,
-                        self._get_one_catalog, info, [schema], manifest
-                    ))
-            catalogs, exceptions = catch_as_completed(futures)
-        return catalogs, exceptions
-
-    def _get_one_catalog(
-        self, information_schema, schemas, manifest,
-    ) -> agate.Table:
-        if len(schemas) != 1:
-            raise_compiler_error(
-                f'Expected only one schema in _get_one_catalog, found '
-                f'{schemas}'
-            )
-
-        database = information_schema.database
-        schema = list(schemas)[0]
-
-        columns: List[Dict[str, Any]] = []
-        for relation in self.list_relations(database, schema):
-            logger.debug("Getting table schema for relation {}", relation)
-            columns.extend(self._get_columns_for_catalog(relation))
-        return agate.Table.from_object(
-            columns, column_types=DEFAULT_TYPE_TESTER
-        )
-
     def check_schema_exists(self, database, schema):
-        results = self.execute_macro(
-            'list_schemas',
-            kwargs={'database': database}
-        )
-
-        exists = True if schema in [row[0] for row in results] else False
-        return exists
+        return True
 
     # Methods used in adapter tests
     def update_column_sql(

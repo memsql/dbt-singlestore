@@ -8,7 +8,8 @@ target:
   port: "{{ env_var('S2_PORT', 3306) | int }}"
   user: "{{ env_var('S2_USER', 'root') }}"
   password: "{{ env_var('S2_PASSWORD', 'p') }}"
-  schema: dbt_test
+  database: dbt_test
+  schema: dbt_schema
   threads: 4
 
 sequences:

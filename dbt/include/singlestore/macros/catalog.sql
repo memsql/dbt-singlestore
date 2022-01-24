@@ -1,5 +1,6 @@
 
 {% macro singlestore__get_catalog(information_schema, schemas) -%}
+    {% set database = information_schema.database %}
     {%- call statement('catalog', fetch_result=True) -%}
     select
         columns.table_database,
@@ -15,8 +16,8 @@
     from
     (
         select
-            null as "table_database",
-            table_schema as "table_schema",
+            table_schema as "table_database",
+            '{{ target.schema }}' as "table_schema",
             table_name as "table_name",
             case when table_type = 'BASE TABLE' then 'table'
                  when table_type = 'VIEW' then 'view'
@@ -30,8 +31,8 @@
     join
     (
         select
-            null as "table_database",
-            table_schema as "table_schema",
+            table_schema as "table_database",
+            '{{ target.schema }}' as "table_schema",
             table_name as "table_name",
             null as "table_comment",
 
@@ -42,13 +43,9 @@
 
         from information_schema.columns
     )
-    as columns using (table_schema, table_name)
-    where table_schema not in ('information_schema', 'memsql', 'cluster')
-    and (
-    {%- for schema in schemas -%}
-      upper(table_schema) = upper('{{ schema }}'){%- if not loop.last %} or {% endif -%}
-    {%- endfor -%}
-    )
+    as columns using (table_database, table_name)
+    where table_database = '{{ database }}'
+
     order by column_index
     {%- endcall -%}
 
