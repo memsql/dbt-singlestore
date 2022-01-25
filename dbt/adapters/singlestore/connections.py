@@ -3,7 +3,6 @@ import pymysql
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pymysql.cursors import Cursor
-from typing import Optional
 
 import dbt.exceptions
 from dbt.adapters.base import Credentials
@@ -19,11 +18,11 @@ DUMMY_RESPONSE_CODE = 0
 class SingleStoreCredentials(Credentials):
     # Add credentials members here, like:
     host: str = 'localhost'
-    port: Optional[int] = 3306
-    user: Optional[str] = 'root'
-    password: Optional[str] = ''
+    port: int = 3306
+    user: str = 'root'
+    password: str = ''
     database: str
-    schema: Optional[str] = ''
+    schema: str
 
     ALIASES = {
         'db': 'database',

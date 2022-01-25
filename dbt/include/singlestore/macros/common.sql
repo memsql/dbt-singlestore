@@ -123,7 +123,7 @@
     {% set to_type = singlestore__real_relation_type(to_relation).strip() -%}
     {% if to_type -%}
         {% call statement('drop_relation') %}
-            drop {{ to_type }} if exists {{ to_relation.incude(database=True) }}
+            drop {{ to_type }} if exists {{ to_relation.include(database=True) }}
         {% endcall %}
     {% endif -%}
     {% call statement('rename_relation') %}

@@ -15,7 +15,7 @@ prompts:
   database:
     hint: 'database that dbt will connect to an build objects in'
   schema:
-    hint: 'if specified, will be used to prefix table/view names'
+    hint: 'name used by dbt internal procedures. Can be used as a table name prefix'
   threads:
     hint: '1 or more'
     type: 'int'

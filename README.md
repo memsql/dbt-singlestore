@@ -2,21 +2,20 @@
 
 [dbt](https://www.getdbt.com/) adapter for [SingleStore](https://www.singlestore.com/).
 
-<!-- ## Installation
+## Installation
 
-dbt-singlestore is available on PyPI. To install the latest version via pip,
-run:
+dbt-singlestore is available on PyPI. To install the latest version via pip, run:
 
 ```
 pip install dbt-singlestore
-``` -->
+```
 
 ## Configuring your profile
 
 A sample profile can be found in
-[sample_profiles.yml](dbt/include/singlestore/sample_profiles.yml). It is almost a standard profile for SQL data sources in dbt.
-In SingleStore, like in MySQL, `database` and `schema` denote the same concept. Therefore, you only need to specify `schema` in your dbt profile. `database` is set to `NULL` internally.
- 
+[sample_profiles.yml](dbt/include/singlestore/sample_profiles.yml). It is a standard profile for SQL data sources in dbt.
+In SingleStore, like in MySQL, `database` and `schema` denote the same concept. In `dbt`, and also in a number of DBMS (e.g. Postgres) `schema` has a different meaning (a namespace within a database). Therefore, `schema` must be specified in dbt profile, but it won't affect database objects by default. However, it can be used as a prefix for table names, as outlined in [dbt docs for SingleStore profile](https://docs.getdbt.com/reference/warehouse-profiles/singlestore-profile).
+
 ## Supported Features
 
 Category          | Feature           | Supported? | Tested? 
@@ -31,8 +30,10 @@ Resources         | Seeds             | Yes        | Yes
 &nbsp;            | Testing - Generic | Yes        | Yes
 &nbsp;            | dbt Documentation | Yes        | Yes
 &nbsp;            | Snapshots         | Yes        | Yes
-Administration    | Hooks             |            | No 
-Models            | Custom schema     |            | No
+Administration    | Hooks             | Yes        | Yes
+Models            | Custom schema     | Limited*   | Yes
+
+* Custom schemas can be defined in a project models, but they can only serve as a modification to the prefix of the corresponding table names.  
 
 ## Testing and supported versions
 
@@ -43,7 +44,7 @@ Singlestre | dbt-core | pytest-dbt-adapter
 7.6.6      | 1.0.1    | 0.6.0
 7.5.12     | 1.0.1    | 0.6.0
 
-To use this adapter, SingleStore must be upgraded to at least to version 7.5.
+To use this adapter, SingleStore must be upgraded to the version 7.5 or newer.
 
 ## Contributors
 

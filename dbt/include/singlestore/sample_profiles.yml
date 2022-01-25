@@ -2,10 +2,11 @@ default:
   outputs:
     dev:
       type: singlestore
-      host: <database_host>
+      host: <database_host>  # default: localhost
       port: <database_port>  # default: 3306
       user: <database_user>  # default: root
-      password: <database_user_password>
-      database: <database_name>
+      password: <database_user_password>  # default: empty
+      database: <database_name>  # required
+      schema: <name_for_dbt_internal_processing>  # required
       threads: <number of threads>  # default: 1
   target: dev
