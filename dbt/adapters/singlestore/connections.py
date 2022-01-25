@@ -76,8 +76,13 @@ class SingleStoreConnectionManager(SQLConnectionManager):
 
             connection.handle = None
             connection.state = "fail"
+            err_msg = str(e)
+            err_msg += "\nFailed to connect to Singlestore server with the credentials specified in profile:" + \
+                f"\n  host={credentials.host}, port={credentials.port}, " + \
+                f"database={credentials.database}, user={credentials.user}, password=****." + \
+                "\nPlease check that your dbt profile contains valid credentials and SingleStore server is running"
 
-            raise dbt.exceptions.FailedToConnectException(str(e))
+            raise dbt.exceptions.FailedToConnectException(err_msg)
 
         return connection
 
