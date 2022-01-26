@@ -116,7 +116,7 @@
     {%- if strategy.invalidate_hard_deletes %}
         {% set select_deletes = singlestore__snapshot_staging_table_deletes(strategy, sql, target_relation) -%}
         {% call statement('insert_deletes_to_snapshot') %}
-            {{ singlestore__insert_select(tmp_relation, select) }}
+            {{ singlestore__insert_select(tmp_relation, select_deletes) }}
         {% endcall %}
     {%- endif %}
 

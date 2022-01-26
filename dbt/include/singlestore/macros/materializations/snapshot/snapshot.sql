@@ -7,9 +7,9 @@
   {%- set strategy_name = config.get('strategy') -%}
   {%- set unique_key = config.get('unique_key') %}
 
-  {% if not adapter.check_schema_exists(model.database, model.schema) -%}
-    {% do create_schema(model.database, model.schema) %}
-  {% endif %}
+  {% call statement('create_database') %}
+     create database if not exists {{ model.database }}
+  {% endcall %}
 
   {% set target_relation_exists, target_relation = get_or_create_relation(
           database=model.database,
