@@ -92,14 +92,14 @@
     {% if create_query is none or create_query is undefined -%}
         {%- do exceptions.raise_compiler_error('Could not get view definition for {}'.format(from_relation.identifier)) -%}
     {%- endif %}
-    {{ create_query|replace(from_relation.identifier, to_relation.identifier, 1) }}
+    {{ create_query|replace('`{}`'.format(from_relation.identifier), to_relation, 1) }}
 {% endmacro %}
 
 
 {% macro singlestore__real_relation_type(relation) -%}
-    {% set query = 'show full tables like \'{}\''.format(relation.identifier) -%}
+    {% set query = 'show full tables from {} like \'{}\''.format(relation.database, relation.identifier) -%}
     {% set result = run_query(query) -%}
-    {% if result|length -%}
+    {% if result | length -%}
         {% if result[0][1] == 'VIEW' -%}
             {{ 'view' }}
         {% elif result[0][1] == 'BASE TABLE' -%}
@@ -132,7 +132,9 @@
         {% elif from_type == 'view' %}
             {{ singlestore__replace_view_definition(from_relation, to_relation) }}
         {% else %}
-            {%- do exceptions.raise_compiler_error('Unknown relation type for {}: {}'.format(from_relation.identifier), from_type) -%}
+            {%- do exceptions.raise_compiler_error(
+                'singlestore__real_relation_type for {} returned "{}" - must be "view" or "table"'.format(
+                    from_relation.identifier, from_type)) -%}
         {% endif %}
     {% endcall %}
     {% call statement('drop_relation') %}
