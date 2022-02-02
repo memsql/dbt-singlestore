@@ -11,9 +11,9 @@ pip install dbt-core PyMySQL=1.0.2;
 ```
 
 ## Run tests
-1. Install test package
+1. Install test packages
     ```
-    pip install pytest-dbt-adapter
+    pip install pytest pytest-dbt-adapter
     ```
 2. Run SingleStore server instance locally or use Managed Service instance.
 3. Fill credentails in `test/singlestore.dbtspec` or in ENV variables referenced there.

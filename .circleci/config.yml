@@ -1,0 +1,38 @@
+version: 2.1
+
+jobs:
+  pytest:
+    machine:
+      image: ubuntu-2004:202104-01
+      docker_layer_caching: true
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y apt-transport-https
+            sudo apt-get update
+            sudo apt-get install -y mariadb-client-core-10.3 python3 python3-virtualenv
+            virtualenv .env3 -p /usr/bin/python3
+            source .env3/bin/activate
+            pip install .
+            pip install pytest pytest-dbt-adapter
+      - run:
+          name: Start SingleStore cluster
+          command: |
+            ./.circleci/setup-cluster.sh
+      - run:
+          name: Run integration tests
+          command: |
+            export S2_HOST=127.0.0.1
+            export S2_PORT=3306  # make sure this matches EXTERNAL_MASTER_PORT in setup-cluster.sh
+            export S2_USER=root
+            export S2_PASSWORD=$ROOT_PASSWORD  # project UI env-var reference
+            source .env3/bin/activate
+            pytest test/singlestore.dbtspec --no-drop-schema
+
+workflows:
+  test:
+    jobs:
+      - pytest
