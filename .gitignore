@@ -3,5 +3,6 @@
 .env
 build
 dist
+CLUSTER_ID
 *__pycache__*
 *egg-info*

@@ -2,9 +2,14 @@ version: 2.1
 
 jobs:
   pytest:
+    parameters:
+      cluster_type:
+        type: string
     machine:
       image: ubuntu-2004:202104-01
       docker_layer_caching: true
+    environment:
+      CLUSTER_TYPE: << parameters.cluster_type >>
     steps:
       - checkout
       - run:
@@ -19,20 +24,22 @@ jobs:
             pip install .
             pip install pytest pytest-dbt-adapter
       - run:
-          name: Start SingleStore cluster
+          name: Start SingleStore cluster and run integration tests
           command: |
-            ./.circleci/setup-cluster.sh
-      - run:
-          name: Run integration tests
-          command: |
-            export S2_HOST=127.0.0.1
-            export S2_PORT=3306  # make sure this matches EXTERNAL_MASTER_PORT in setup-cluster.sh
-            export S2_USER=root
-            export S2_PASSWORD=$ROOT_PASSWORD  # project UI env-var reference
-            source .env3/bin/activate
-            pytest test/singlestore.dbtspec --no-drop-schema
+            ./.circleci/run-tests.sh
 
 workflows:
   test:
     jobs:
-      - pytest
+      - pytest:
+          name: "Managed Service connection test"
+          matrix:
+            parameters:
+              cluster_type: 
+                - s2ms
+      - pytest:
+          name: "SingleStore 7.5 connection test"
+          matrix:
+            parameters:
+              cluster_type: 
+                - ciab
