@@ -63,7 +63,8 @@ class SingleStoreConnectionManager(SQLConnectionManager):
                 password=credentials.password,
                 host=credentials.host,
                 port=credentials.port,
-                database=credentials.database
+                database=credentials.database,
+                client_flag=pymysql.constants.CLIENT.MULTI_STATEMENTS
             )
 
             connection.handle = handle
