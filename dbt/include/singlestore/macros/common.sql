@@ -29,8 +29,18 @@
 
 {% macro singlestore__create_table_as(temporary, relation, sql) -%}
     {%- set sql_header = config.get('sql_header', none) -%}
+
     {{ sql_header if sql_header is not none }}
-    create {% if temporary: -%}rowstore temporary{%- endif %} table
+
+    {% if temporary -%}
+        {% set storage_type = 'rowstore temporary' -%}
+    {% elif config.get('storage_type') == 'rowstore' -%}
+        {% set storage_type = 'rowstore' -%}
+    {% else -%}
+        {% set storage_type = '' -%}
+    {% endif -%}
+
+    create {{ storage_type }} table
         {{ relation.include(database=True) }}
     as
         {{ sql }}
