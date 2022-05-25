@@ -102,6 +102,10 @@
       {% do post_snapshot(staging_table) %}
   {% endif %}
 
+  {% if not target_relation_exists %}
+    {% do create_indexes(target_relation) %}
+  {% endif %}
+
   {{ run_hooks(post_hooks, inside_transaction=False) }}
 
   {{ return({'relations': [target_relation]}) }}

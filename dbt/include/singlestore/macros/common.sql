@@ -29,6 +29,42 @@
 
 {% macro singlestore__create_table_as(temporary, relation, sql) -%}
     {%- set sql_header = config.get('sql_header', none) -%}
+    {%- set primary_key = config.get('primary_key', none) -%} {# PRIMARY KEY (primary_key) #}
+    {%- set sort_key = config.get('sort_key', none) -%} {# SORT KEY (sort_key) #}
+    {%- set shard_key = config.get('shard_key', none) -%} {# SHARD KEY (shard_key) #}
+    {%- set unique_table_key = config.get('unique_table_key', none) -%} {# UNIQUE KEY (primary_key) #}
+    {%- set charset = config.get('charset', none) -%} {# CHARACTER SET charset #}
+    {%- set collation = config.get('collation', none) -%} {# COLLATE collation #}
+
+    {%- set create_definition_list = [] %}
+    {% if primary_key is not none -%}
+        {% do create_definition_list.append('PRIMARY KEY ({})'.format(primary_key)) -%}
+    {% endif -%}
+    {% if sort_key is not none -%}
+        {% do create_definition_list.append('SORT KEY ({})'.format(sort_key)) -%}
+    {% endif -%}
+    {% if shard_key is not none -%}
+        {% do create_definition_list.append('SHARD KEY ({})'.format(shard_key)) -%}
+    {% elif unique_table_key is not none -%}
+        {% do create_definition_list.append('SHARD KEY ({})'.format(unique_table_key)) -%}
+    {% endif -%}
+    {% if unique_table_key is not none -%}
+        {% do create_definition_list.append('UNIQUE KEY ({})'.format(unique_table_key)) -%}
+    {% endif -%}
+
+    {% if create_definition_list | length -%}
+        {% set create_definition_str = '(' + create_definition_list|join(", ") + ')' -%}
+    {% else -%}
+        {% set create_definition_str = '' -%}
+    {% endif -%}
+
+    {%- set charset_definition_str = ' ' %}
+    {% if charset is not none -%}
+        {% set charset_definition_str = charset_definition_str + 'CHARACTER SET ' + charset + ' ' -%}
+    {% endif -%}
+    {% if collation is not none -%}
+        {% set charset_definition_str = charset_definition_str + 'COLLATE ' + collation + ' ' -%}
+    {% endif -%}
 
     {{ sql_header if sql_header is not none }}
 
@@ -41,7 +77,7 @@
     {% endif -%}
 
     create {{ storage_type }} table
-        {{ relation.include(database=True) }}
+        {{ relation.include(database=True) }} {{create_definition_str }} {{ charset_definition_str }}
     as
         {{ sql }}
 {% endmacro %}
@@ -167,4 +203,18 @@
     {{ sql_header if sql_header is not none }}
     create view {{ relation }} as
         {{ sql }}
+{%- endmacro %}
+
+
+{% macro singlestore__get_create_index_sql(relation, index_dict) -%}
+    {%- set index_config = adapter.parse_index(index_dict) -%}
+    {%- set comma_separated_columns = ", ".join(index_config.columns) -%}
+    {%- set index_name = index_config.render(relation) -%}
+
+    create {% if index_config.unique -%} unique {%- endif %}
+    index {{ index_name }}
+    on {{ relation }} ({{ comma_separated_columns }})
+    {% if index_config.type -%}
+        using {{ index_config.type }}
+    {%- endif %}
 {%- endmacro %}
