@@ -29,8 +29,9 @@
 
 {% macro singlestore__create_table_as(temporary, relation, sql) -%}
     {%- set sql_header = config.get('sql_header', none) -%}
+	{%- set storage_type = config.get('storage_type', 'columnstore') -%}
     {{ sql_header if sql_header is not none }}
-    create {% if temporary: -%}rowstore temporary{%- endif %} table
+    create {% if storage_type == 'rowstore': -%} rowstore {%- endif %} {% if temporary: -%} temporary{%- endif %} table
         {{ relation.include(database=True) }}
     as
         {{ sql }}
@@ -158,3 +159,45 @@
     create view {{ relation }} as
         {{ sql }}
 {%- endmacro %}
+
+{% macro singlestore__alter_column_type(relation, column_name, new_column_type) -%}
+  {#
+    1. Create a new column (w/ temp name and correct type)
+    2. Copy data over to it
+    3. Drop the existing column (cascade!)
+    4. Rename the new column to existing column
+  #}
+  {%- set tmp_column = column_name + "__dbt_alter" -%}
+
+  {% call statement('alter_column_type') %}
+    alter table {{ relation }} add column {{ adapter.quote(tmp_column) }} {{ new_column_type }};
+    update {{ relation }} set {{ adapter.quote(tmp_column) }} = {{ adapter.quote(column_name) }};
+    alter table {{ relation }} drop column {{ adapter.quote(column_name) }} cascade;
+    alter table {{ relation }} change {{ adapter.quote(tmp_column) }} {{ adapter.quote(column_name) }}
+  {% endcall %}
+
+{% endmacro %}
+
+{% macro singlestore__type_string() %}
+    char
+{% endmacro %}
+
+{% macro singlestore__datediff(first_date, second_date, datepart) %}
+
+    TIMESTAMPDIFF (
+        {{ datepart }},
+        {{ first_date }},
+        {{ second_date }}
+        )
+
+{% endmacro %}
+
+{% macro singlestore__dateadd(datepart, interval, from_date_or_timestamp) %}
+
+    TIMESTAMPADD (
+        {{ datepart }},
+        {{ interval }},
+        {{ from_date_or_timestamp }}
+        )
+
+{% endmacro %}
