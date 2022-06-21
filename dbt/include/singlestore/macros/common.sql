@@ -32,7 +32,7 @@
     {%- set primary_key = config.get('primary_key', none) -%} {# PRIMARY KEY (primary_key) #}
     {%- set sort_key = config.get('sort_key', none) -%} {# SORT KEY (sort_key) #}
     {%- set shard_key = config.get('shard_key', none) -%} {# SHARD KEY (shard_key) #}
-    {%- set unique_table_key = config.get('unique_table_key', none) -%} {# UNIQUE KEY (primary_key) #}
+    {%- set unique_table_key = config.get('unique_table_key', none) -%} {# UNIQUE KEY (unique_table_key) #}
     {%- set charset = config.get('charset', none) -%} {# CHARACTER SET charset #}
     {%- set collation = config.get('collation', none) -%} {# COLLATE collation #}
 
