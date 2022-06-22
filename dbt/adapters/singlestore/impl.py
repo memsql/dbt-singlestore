@@ -1,13 +1,50 @@
 import agate
-from typing import List, Optional
+from dataclasses import dataclass
+from datetime import datetime
+from typing import List, Optional, Any
 
 from dbt.adapters.singlestore import SingleStoreConnectionManager
 from dbt.adapters.singlestore.column import SingleStoreColumn
 from dbt.adapters.singlestore.relation import SingleStoreRelation
 
+from dbt.adapters.base.meta import available
 from dbt.adapters.sql import SQLAdapter
-from dbt.exceptions import RuntimeException
+from dbt.dataclass_schema import dbtClassMixin, ValidationError
+from dbt.exceptions import RuntimeException, raise_compiler_error
 from dbt.logger import GLOBAL_LOGGER as logger
+
+import dbt.utils
+
+
+@dataclass
+class SingleStoreIndexConfig(dbtClassMixin):
+    columns: List[str]
+    unique: bool = False
+    type: Optional[str] = None
+
+    def render(self, relation):
+        # We append the current timestamp to the index name because otherwise
+        # the index will only be created on every other run. See
+        # https://github.com/dbt-labs/dbt-core/issues/1945#issuecomment-576714925
+        # for an explanation.
+        now = datetime.utcnow().isoformat()
+        inputs = self.columns + [relation.render(), str(self.unique), str(self.type), now]
+        string = "_".join(inputs)
+        return dbt.utils.md5(string)
+
+    @classmethod
+    def parse(cls, raw_index) -> Optional["SingleStoreIndexConfig"]:
+        if raw_index is None:
+            return None
+        try:
+            cls.validate(raw_index)
+            return cls.from_dict(raw_index)
+        except ValidationError as exc:
+            msg = dbt.exceptions.validator_error_message(exc)
+            raise_compiler_error(f"Could not parse index config: {msg}")
+        except TypeError:
+            raise_compiler_error(f"Invalid index config:\n  Got: {raw_index}\n"
+                                 f"  Expected a dictionary with at minimum a \"columns\" key")
 
 
 class SingleStoreAdapter(SQLAdapter):
@@ -36,6 +73,10 @@ class SingleStoreAdapter(SQLAdapter):
                                 ) -> List[SingleStoreColumn]:
         rows: List[agate.Row] = super().get_columns_in_relation(relation)
         return self._parse_show_columns(relation, rows)
+
+    @available
+    def parse_index(self, raw_index: Any) -> Optional[SingleStoreIndexConfig]:
+        return SingleStoreIndexConfig.parse(raw_index)
 
     def _parse_show_columns(
             self,

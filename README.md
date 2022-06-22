@@ -39,12 +39,20 @@ Models            | Custom schema     | Limited*   | Yes
 
 Default dbt [test suite](test/singlestore.dbtspec) is used to check the adapter functionality. [Development](Development.md) overview has a section "Run tests" which contains instructions on running the tests. Currently, the tests have been successfully run for the following product versions:
 
-Singlestre | dbt-core | pytest-dbt-adapter
------------|----------|-------------------
-7.6.6      | 1.0.1    | 0.6.0
-7.5.12     | 1.0.1    | 0.6.0
+Singlestore | dbt-core | pytest-dbt-adapter
+------------|----------|-------------------
+7.8.3       | 1.1.1    | 0.6.0
+7.6.6       | 1.0.1    | 0.6.0
+7.5.12      | 1.0.1    | 0.6.0
 
 To use this adapter, SingleStore must be upgraded to the version 7.5 or newer.
+
+## Changelog
+
+### 1.1.1
+- [Fixed]((https://github.com/memsql/dbt-singlestore/issues/6)) failing materialization with `unique_key`.
+- [Fixed](https://github.com/memsql/dbt-singlestore/issues/7) changing a column's data type during incremental materialization.
+- [Added support](https://github.com/memsql/dbt-singlestore/issues/5) for `primary_key`, `sort_key`, `shard_key`, `unique_table_key`, `charset`, `collation`, `storage_type`, `indexes` options for creating SingleStore tables in `table` materialization.
 
 ## Contributors
 
