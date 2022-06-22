@@ -55,7 +55,7 @@
     {% if create_definition_list | length -%}
         {% set create_definition_str = '(' + create_definition_list|join(", ") + ')' -%}
     {% else -%}
-        {% set create_definition_str = '' -%}
+        {% set create_definition_str = '(SHARD KEY ())' -%}
     {% endif -%}
 
     {%- set charset_definition_str = ' ' %}
