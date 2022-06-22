@@ -29,27 +29,47 @@
 
 {% macro singlestore__create_table_as(temporary, relation, sql) -%}
     {%- set sql_header = config.get('sql_header', none) -%}
-    {%- set primary_key = config.get('primary_key', none) -%} {# PRIMARY KEY (primary_key) #}
-    {%- set sort_key = config.get('sort_key', none) -%} {# SORT KEY (sort_key) #}
-    {%- set shard_key = config.get('shard_key', none) -%} {# SHARD KEY (shard_key) #}
-    {%- set unique_table_key = config.get('unique_table_key', none) -%} {# UNIQUE KEY (unique_table_key) #}
+    {%- set primary_key = config.get('primary_key', []) -%} {# PRIMARY KEY (primary_key) #}
+    {%- set sort_key = config.get('sort_key', []) -%} {# SORT KEY (sort_key) #}
+    {%- set shard_key = config.get('shard_key', []) -%} {# SHARD KEY (shard_key) #}
+    {%- set unique_table_key = config.get('unique_table_key', []) -%} {# UNIQUE KEY (unique_table_key) #}
     {%- set charset = config.get('charset', none) -%} {# CHARACTER SET charset #}
     {%- set collation = config.get('collation', none) -%} {# COLLATE collation #}
 
     {%- set create_definition_list = [] %}
-    {% if primary_key is not none -%}
-        {% do create_definition_list.append('PRIMARY KEY ({})'.format(primary_key)) -%}
+    {% if primary_key | length -%}
+        {% set quoted = [] -%}
+            {%- for col in primary_key -%}
+                {%- do quoted.append(adapter.quote(col)) -%}
+            {%- endfor %}
+        {% do create_definition_list.append('PRIMARY KEY ({})'.format(", ".join(quoted))) -%}
     {% endif -%}
-    {% if sort_key is not none -%}
-        {% do create_definition_list.append('SORT KEY ({})'.format(sort_key)) -%}
+    {% if sort_key | length -%}
+        {% set quoted = [] -%}
+            {%- for col in sort_key -%}
+                {%- do quoted.append(adapter.quote(col)) -%}
+            {%- endfor %}
+        {% do create_definition_list.append('SORT KEY ({})'.format(", ".join(quoted))) -%}
     {% endif -%}
-    {% if shard_key is not none -%}
-        {% do create_definition_list.append('SHARD KEY ({})'.format(shard_key)) -%}
-    {% elif unique_table_key is not none -%}
-        {% do create_definition_list.append('SHARD KEY ({})'.format(unique_table_key)) -%}
+    {% if shard_key | length -%}
+        {% set quoted = [] -%}
+            {%- for col in shard_key -%}
+                {%- do quoted.append(adapter.quote(col)) -%}
+            {%- endfor %}
+        {% do create_definition_list.append('SHARD KEY ({})'.format(", ".join(quoted))) -%}
+    {% elif unique_table_key | length -%}
+        {% set quoted = [] -%}
+            {%- for col in unique_table_key -%}
+                {%- do quoted.append(adapter.quote(col)) -%}
+            {%- endfor %}
+        {% do create_definition_list.append('SHARD KEY ({})'.format(", ".join(quoted))) -%}
     {% endif -%}
-    {% if unique_table_key is not none -%}
-        {% do create_definition_list.append('UNIQUE KEY ({})'.format(unique_table_key)) -%}
+    {% if unique_table_key | length -%}
+        {% set quoted = [] -%}
+            {%- for col in unique_table_key -%}
+                {%- do quoted.append(adapter.quote(col)) -%}
+            {%- endfor %}
+        {% do create_definition_list.append('UNIQUE KEY ({})'.format(", ".join(quoted))) -%}
     {% endif -%}
 
     {% if create_definition_list | length -%}
@@ -208,7 +228,13 @@
 
 {% macro singlestore__get_create_index_sql(relation, index_dict) -%}
     {%- set index_config = adapter.parse_index(index_dict) -%}
-    {%- set comma_separated_columns = ", ".join(index_config.columns) -%}
+
+    {%- set quoted = [] -%}
+    {% for col in index_config.columns -%}
+        {% do quoted.append(adapter.quote(col)) -%}
+    {% endfor -%}
+    {%- set comma_separated_columns = ", ".join(quoted) -%}
+
     {%- set index_name = index_config.render(relation) -%}
 
     create {% if index_config.unique -%} unique {%- endif %}

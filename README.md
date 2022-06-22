@@ -49,7 +49,7 @@ To use this adapter, SingleStore must be upgraded to the version 7.5 or newer.
 
 ## Changelog
 
-### 1.1.1
+### 1.1.2
 - [Fixed]((https://github.com/memsql/dbt-singlestore/issues/6)) failing materialization with `unique_key`.
 - [Fixed](https://github.com/memsql/dbt-singlestore/issues/7) changing a column's data type during incremental materialization.
 - [Added support](https://github.com/memsql/dbt-singlestore/issues/5) for `primary_key`, `sort_key`, `shard_key`, `unique_table_key`, `charset`, `collation`, `storage_type`, `indexes` options for creating SingleStore tables in `table` materialization.
