@@ -4,7 +4,7 @@
 
 target:
   type: singlestore
-  host: "{{ env_var('S2_HOST', 'localhost') }}"
+  host: "{{ env_var('S2_HOST', '127.0.0.1') }}"
   port: "{{ env_var('S2_PORT', 3306) | int }}"
   user: "{{ env_var('S2_USER', 'root') }}"
   password: "{{ env_var('S2_PASSWORD', 'p') }}"
