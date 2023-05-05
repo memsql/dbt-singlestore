@@ -16,7 +16,7 @@ pip install dbt-core PyMySQL=1.0.2;
     pip install pytest pytest-dbt-adapter
     ```
 2. Run SingleStore server instance locally or use Managed Service instance.
-3. Fill credentails in `test/singlestore.dbtspec` or in ENV variables referenced there.
+3. Create a file named `test.env` and fill credentails in ENV variables referenced in `tests/conftest.py`.
 4. A database named `dbt_test` is used in tests. Snapshot tests expect it to be empty before running the tests. Therefore, prior to running the test suite, the following SQL must be executed:
     ```
     DROP DATABASE IF EXISTS dbt_test; CREATE DATABASE dbt_test;
@@ -24,10 +24,11 @@ pip install dbt-core PyMySQL=1.0.2;
 5. Run the tests:
     ```
     cd ~/github.com/dbt-singlestore;
-    pytest test/singlestore.dbtspec --no-drop-schema
+    pytest
     ```
     - append `--pdb` to debug
-    - append `-k test_dbt_base` to run a specific test
+    - append `-k <test_name>` to run a specific test
+    Example: `pytest -k TestSingularTestsMyAdapter --pdb`
 
 
 ## Initial repository setup

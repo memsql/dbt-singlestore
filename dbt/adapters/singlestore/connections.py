@@ -69,7 +69,8 @@ class SingleStoreConnectionManager(SQLConnectionManager):
             )
 
         retryable_exceptions = [
-            pymysql.OperationalError
+            pymysql.OperationalError,
+            pymysql.DatabaseError
         ]
 
         return cls.retry_connection(

@@ -22,7 +22,7 @@ jobs:
             virtualenv .env3 -p /usr/bin/python3
             source .env3/bin/activate
             pip install .
-            pip install pytest pytest-dbt-adapter
+            pip install -r dev_requirements.txt
       - run:
           name: Start SingleStore cluster and run integration tests
           command: |

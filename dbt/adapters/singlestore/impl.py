@@ -94,6 +94,11 @@ class SingleStoreAdapter(SQLAdapter):
             dtype=column.dtype,
         ) for idx, column in enumerate(raw_rows)]
 
+    def drop_schema(self, relation: SingleStoreRelation) -> None:
+        # in SingleStore, schema does not have a physical representation in the database
+        # so we don't execute DROP SCHEMA macro, only update the cache
+        self.cache.drop_schema(relation.database, relation.schema)
+
     def list_relations_without_caching(
         self, schema_relation: SingleStoreRelation
     ) -> List[SingleStoreRelation]:
