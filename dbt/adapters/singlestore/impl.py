@@ -30,7 +30,7 @@ class SingleStoreIndexConfig(dbtClassMixin):
         now = datetime.utcnow().isoformat()
         inputs = self.columns + [relation.render(), str(self.unique), str(self.type), now]
         string = "_".join(inputs)
-        return dbt.utils.md5(string)
+        return "index_" + dbt.utils.md5(string)
 
     @classmethod
     def parse(cls, raw_index) -> Optional["SingleStoreIndexConfig"]:
