@@ -13,7 +13,7 @@ terminate-s2ms-cluster() {
 }
 
 start-cluster-in-a-box() {
-  DEFAULT_IMAGE_NAME="singlestore/cluster-in-a-box:centos-7.5.12-3112a491c2-4.0.0-1.12.5"
+  DEFAULT_IMAGE_NAME="singlestore/cluster-in-a-box:alma-8.1.1-45eec847e2-4.0.11-1.16.0"
   IMAGE_NAME="${SINGLESTORE_IMAGE:-$DEFAULT_IMAGE_NAME}"
   CONTAINER_NAME="singlestore-integration"
   EXTERNAL_MASTER_PORT=3306

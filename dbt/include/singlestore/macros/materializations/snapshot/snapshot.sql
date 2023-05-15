@@ -1,4 +1,3 @@
-
 {% materialization snapshot, adapter='singlestore' %}
   {%- set config = model['config'] -%}
 

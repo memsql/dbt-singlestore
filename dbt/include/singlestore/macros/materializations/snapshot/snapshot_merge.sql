@@ -1,4 +1,3 @@
-
 {% macro singlestore__snapshot_merge_sql_update(target, source, insert_cols) -%}
     update {{ target }}, (select dbt_scd_id, dbt_change_type, dbt_valid_to from {{ source }}) as dbt_internal_source
        set {{ target }}.dbt_valid_to = dbt_internal_source.dbt_valid_to
