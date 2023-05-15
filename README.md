@@ -37,7 +37,11 @@ Models            | Custom schema     | Limited*   | Yes
 
 ## Testing and supported versions
 
-Default dbt [test suite](test/singlestore.dbtspec) is used to check the adapter functionality. [Development](Development.md) overview has a section "Run tests" which contains instructions on running the tests. Currently, the tests have been successfully run for the following product versions:
+Default dbt [test suite](tests/test_basic.py) is used to check the adapter functionality. [Development](Development.md) overview has a section "Run tests" which contains instructions on running the tests. Currently, the tests have been successfully run for the following product versions:
+
+Singlestore | dbt-core | dbt-tests-adapter
+------------|----------|-------------------
+7.8.29      | 1.2.2    | 1.2.2
 
 Singlestore | dbt-core | pytest-dbt-adapter
 ------------|----------|-------------------

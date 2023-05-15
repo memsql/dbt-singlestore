@@ -139,13 +139,6 @@
 {% endmacro %}
 
 
-{% macro singlestore__drop_schema(relation) -%}
-    {%- call statement('drop_database') -%}
-        drop database if exists {{ relation.database }}
-    {% endcall %}
-{% endmacro %}
-
-
 {% macro singlestore__drop_relation(relation) -%}
     {% call statement('drop_relation', auto_begin=False) -%}
         drop {{ relation.type }} if exists {{ relation.include(database=True) }}
@@ -178,7 +171,7 @@
     {% else -%}
         {{ '' }}
     {% endif -%}
-{% endmacro -%}}
+{% endmacro -%}
 
 
 {% macro singlestore__rename_relation(from_relation, to_relation) -%}

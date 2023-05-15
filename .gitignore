@@ -2,7 +2,9 @@
 .idea
 .env
 build
+logs
 dist
 CLUSTER_ID
 *__pycache__*
 *egg-info*
+test.env

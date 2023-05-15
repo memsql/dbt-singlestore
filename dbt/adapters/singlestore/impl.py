@@ -30,7 +30,7 @@ class SingleStoreIndexConfig(dbtClassMixin):
         now = datetime.utcnow().isoformat()
         inputs = self.columns + [relation.render(), str(self.unique), str(self.type), now]
         string = "_".join(inputs)
-        return dbt.utils.md5(string)
+        return "index_" + dbt.utils.md5(string)
 
     @classmethod
     def parse(cls, raw_index) -> Optional["SingleStoreIndexConfig"]:
@@ -93,6 +93,11 @@ class SingleStoreAdapter(SQLAdapter):
             column_index=idx,
             dtype=column.dtype,
         ) for idx, column in enumerate(raw_rows)]
+
+    def drop_schema(self, relation: SingleStoreRelation) -> None:
+        # in SingleStore, schema does not have a physical representation in the database
+        # so we don't execute DROP SCHEMA macro, only update the cache
+        self.cache.drop_schema(relation.database, relation.schema)
 
     def list_relations_without_caching(
         self, schema_relation: SingleStoreRelation

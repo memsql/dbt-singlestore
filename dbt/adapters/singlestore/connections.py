@@ -23,6 +23,7 @@ class SingleStoreCredentials(Credentials):
     password: str = ''
     database: str
     schema: str
+    retries: int = 1
 
     ALIASES = {
         'db': 'database',
@@ -57,8 +58,8 @@ class SingleStoreConnectionManager(SQLConnectionManager):
 
         credentials = cls.get_credentials(connection.credentials)
 
-        try:
-            handle = pymysql.connect(
+        def connect():
+            return pymysql.connect(
                 user=credentials.user,
                 password=credentials.password,
                 host=credentials.host,
@@ -67,25 +68,18 @@ class SingleStoreConnectionManager(SQLConnectionManager):
                 client_flag=pymysql.constants.CLIENT.MULTI_STATEMENTS
             )
 
-            connection.handle = handle
-            connection.state = "open"
-        except pymysql.Error as e:
-            logger.debug(
-                "Got an error when attempting to open a "
-                "connection: '{}'".format(e)
-            )
+        retryable_exceptions = [
+            pymysql.OperationalError,
+            pymysql.DatabaseError
+        ]
 
-            connection.handle = None
-            connection.state = "fail"
-            err_msg = str(e)
-            err_msg += "\nFailed to connect to Singlestore server with the credentials specified in profile:" + \
-                f"\n  host={credentials.host}, port={credentials.port}, " + \
-                f"database={credentials.database}, user={credentials.user}, password=****." + \
-                "\nPlease check that your dbt profile contains valid credentials and SingleStore server is running"
-
-            raise dbt.exceptions.FailedToConnectException(err_msg)
-
-        return connection
+        return cls.retry_connection(
+            connection,
+            connect=connect,
+            logger=logger,
+            retry_limit=credentials.retries,
+            retryable_exceptions=retryable_exceptions,
+        )
 
     @classmethod
     def get_response(cls, cursor: Cursor) -> AdapterResponse:
