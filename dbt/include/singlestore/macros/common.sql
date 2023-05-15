@@ -171,7 +171,7 @@
     {% else -%}
         {{ '' }}
     {% endif -%}
-{% endmacro -%}}
+{% endmacro -%}
 
 
 {% macro singlestore__rename_relation(from_relation, to_relation) -%}
