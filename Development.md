@@ -45,3 +45,10 @@ mv  ~/github.com/singlestore ~/github.com/dbt-singlestore;
 git init;
 mkdir -p build  # folder for artifacts and test scripts
 ```
+
+## Package connector for distribution
+
+```
+pip3 install --upgrade build twine
+python3 setup.py sdist; python3 setup.py bdist_wheel --universal; twine upload dist/*
+```
