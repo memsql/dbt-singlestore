@@ -8,6 +8,8 @@ from dbt.tests.adapter.basic.test_generic_tests import BaseGenericTests
 from dbt.tests.adapter.basic.test_snapshot_check_cols import BaseSnapshotCheckCols
 from dbt.tests.adapter.basic.test_snapshot_timestamp import BaseSnapshotTimestamp
 from dbt.tests.adapter.basic.test_validate_connection import BaseValidateConnection
+from dbt.tests.adapter.basic.test_incremental import BaseIncrementalNotSchemaChange
+from dbt.tests.adapter.basic.test_ephemeral import BaseEphemeral
 
 
 class TestSimpleMaterializationsMyAdapter(BaseSimpleMaterializations):
@@ -49,3 +51,10 @@ class TestSnapshotTimestampMyAdapter(BaseSnapshotTimestamp):
 class TestValidateConnection(BaseValidateConnection):
     pass
 
+
+class TestIncrementalNotSchemaChange(BaseIncrementalNotSchemaChange):
+    pass
+
+
+class TestEphemeral(BaseEphemeral):
+    pass
