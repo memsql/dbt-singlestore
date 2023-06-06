@@ -22,7 +22,7 @@ from dbt.tests.adapter.utils.test_safe_cast import BaseSafeCast
 from dbt.tests.adapter.utils.test_split_part import BaseSplitPart, models__test_split_part_yml
 from dbt.tests.adapter.utils.test_string_literal import BaseStringLiteral
 from dbt.tests.adapter.utils.data_types.test_type_boolean import BaseTypeBoolean
-from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampAware
+from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampNaive
 
 
 class TestAnyValue(BaseAnyValue):
@@ -283,5 +283,15 @@ class TestTypeBoolean(BaseTypeBoolean):
     pass
 
 
-class TestCurrentTimestamp(BaseCurrentTimestampAware):
+models__current_ts_sql = """
+select {{ current_timestamp_in_utc_backcompat() }} as current_ts_column
+"""
+
+
+class TestCurrentTimestamp(BaseCurrentTimestampNaive):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "current_ts.sql": models__current_ts_sql,
+        }
     pass
