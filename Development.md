@@ -8,7 +8,7 @@ Replace dbt-core and dbt-tests-adapter values in the dev_requirements.txt file w
 ```
 pip install virtualenv &&
 virtualenv ~/.env3 -p /usr/bin/python3 &&
-source ~/.env3/bin/activate &&
+source ~/.env3/bin/activate
 ```
 
 ## Run tests

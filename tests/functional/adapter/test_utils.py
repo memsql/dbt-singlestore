@@ -29,38 +29,7 @@ class TestAnyValue(BaseAnyValue):
     pass
 
 
-models__test_bool_or_sql = """
-with data as (
-    select * from {{ ref('data_bool_or') }}
-),
-data_output as (
-    select * from {{ ref('data_bool_or_expected') }}
-),
-calculate as (
-    select
-        `key`,
-        {{ bool_or('val1 = val2') }} as value
-    from data
-    group by `key`
-)
-select
-    calculate.value as actual,
-    data_output.value as expected
-from calculate
-left join data_output
-on calculate.`key` = data_output.`key`
-"""
-
-
 class TestBoolOr(BaseBoolOr):
-    @pytest.fixture(scope="class")
-    def models(self):
-        return {
-            "test_bool_or.yml": models__test_bool_or_yml,
-            "test_bool_or.sql": self.interpolate_macro_namespace(
-                models__test_bool_or_sql, "bool_or"
-            ),
-        }
     pass
 
 
