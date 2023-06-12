@@ -133,3 +133,9 @@ if __name__ == "__main__":
             cl_id = f.read()
         terminate_cluster(cl_id)
         exit(0)
+
+    if command == "update":
+        with open(CLUSTER_ID_FILE, "r") as f:
+            cl_id = f.read()
+        check_connection(cl_id, db_name)
+        exit(0)

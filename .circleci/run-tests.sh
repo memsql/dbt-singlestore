@@ -10,7 +10,11 @@ export DBT_TEST_USER_2=user_2
 export DBT_TEST_USER_3=user_3
 
 pytest ./tests/functional/adapter/test_docs.py
-mysql -u root -h 127.0.0.1 -P 3306 -p"${SQL_USER_PASSWORD}" --batch -N -e "DROP DATABASE IF EXISTS dbt_test; CREATE DATABASE dbt_test"
+if [ "$CLUSTER_TYPE" = "ciab" ]; then
+  mysql -u root -h 127.0.0.1 -P 3306 -p"${SQL_USER_PASSWORD}" --batch -N -e "DROP DATABASE IF EXISTS dbt_test; CREATE DATABASE dbt_test"
+else
+  python ./.circleci/s2ms_cluster.py update dbt_test
+fi
 pytest -k "not test_docs"
 result_code=$?
 
