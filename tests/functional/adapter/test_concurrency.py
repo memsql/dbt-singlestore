@@ -1,8 +1,21 @@
 import pytest
-from dbt.tests.util import run_dbt, check_relations_equal, rm_file, write_file, run_dbt_and_capture
-from dbt.tests.adapter.concurrency.test_concurrency import BaseConcurrency, seeds__update_csv, models__dep_sql, models__view_with_conflicting_cascade_sql, models__skip_sql
+from dbt.tests.util import (
+    run_dbt,
+    check_relations_equal,
+    rm_file,
+    write_file,
+    run_dbt_and_capture
+)
+from dbt.tests.adapter.concurrency.test_concurrency import (
+    BaseConcurrency,
+    seeds__update_csv,
+    models__dep_sql,
+    models__view_with_conflicting_cascade_sql,
+    models__skip_sql
+)
 
 
+# There is no 
 models__invalid_sql = """
 {{
   config(

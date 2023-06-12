@@ -1,7 +1,7 @@
 import pytest
 from dbt.tests.adapter.utils.base_utils import BaseUtils
 from dbt.tests.adapter.utils.test_any_value import BaseAnyValue
-from dbt.tests.adapter.utils.test_bool_or import BaseBoolOr, models__test_bool_or_yml
+from dbt.tests.adapter.utils.test_bool_or import BaseBoolOr
 from dbt.tests.adapter.utils.test_cast_bool_to_text import BaseCastBoolToText
 from dbt.tests.adapter.utils.test_concat import BaseConcat
 from dbt.tests.adapter.utils.test_dateadd import BaseDateAdd, models__test_dateadd_yml
@@ -29,38 +29,7 @@ class TestAnyValue(BaseAnyValue):
     pass
 
 
-models__test_bool_or_sql = """
-with data as (
-    select * from {{ ref('data_bool_or') }}
-),
-data_output as (
-    select * from {{ ref('data_bool_or_expected') }}
-),
-calculate as (
-    select
-        `key`,
-        {{ bool_or('val1 = val2') }} as value
-    from data
-    group by `key`
-)
-select
-    calculate.value as actual,
-    data_output.value as expected
-from calculate
-left join data_output
-on calculate.`key` = data_output.`key`
-"""
-
-
 class TestBoolOr(BaseBoolOr):
-    @pytest.fixture(scope="class")
-    def models(self):
-        return {
-            "test_bool_or.yml": models__test_bool_or_yml,
-            "test_bool_or.sql": self.interpolate_macro_namespace(
-                models__test_bool_or_sql, "bool_or"
-            ),
-        }
     pass
 
 

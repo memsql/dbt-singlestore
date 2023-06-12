@@ -1,14 +1,14 @@
 
 # Adapter development
 In the steps below, `~/.env3` is used a virtualenv directory, and `~/github.com` is used as a location of `dbt-singlestore` folder containing these sources. Certain parts of code have been copied from 
-https://github.com/dbeatty10/dbt-mysql and susequently modified.
+https://github.com/dbeatty10/dbt-mysql and subsequently modified.
 
 ## Prepare environment
 Replace dbt-core and dbt-tests-adapter values in the dev_requirements.txt file with the version you want to work with 
 ```
 pip install virtualenv &&
 virtualenv ~/.env3 -p /usr/bin/python3 &&
-source ~/.env3/bin/activate &&
+source ~/.env3/bin/activate
 ```
 
 ## Run tests
