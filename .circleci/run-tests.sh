@@ -11,7 +11,7 @@ export DBT_TEST_USER_3=user_3
 
 pytest ./tests/functional/adapter/test_docs.py
 mysql -u root -h 127.0.0.1 -P 3306 -p"${SQL_USER_PASSWORD}" --batch -N -e "DROP DATABASE IF EXISTS dbt_test; CREATE DATABASE dbt_test"
-pytest
+pytest -k "not test_docs"
 result_code=$?
 
 ./.circleci/setup-cluster.sh terminate $CLUSTER_TYPE
