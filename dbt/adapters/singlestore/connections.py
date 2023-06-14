@@ -2,7 +2,7 @@ import singlestoredb
 
 from contextlib import contextmanager
 from dataclasses import dataclass
-from singlestoredb.cursors import Cursor
+from singlestoredb.connection import Cursor
 
 import dbt.exceptions
 from dbt.adapters.base import Credentials
@@ -65,7 +65,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
                 host=credentials.host,
                 port=credentials.port,
                 database=credentials.database,
-                client_flag=singlestoredb.constants.CLIENT.MULTI_STATEMENTS
+                client_flag= singlestoredb#singlestoredb.constants.CLIENT.MULTI_STATEMENTS
             )
 
         retryable_exceptions = [
