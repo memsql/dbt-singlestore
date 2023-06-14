@@ -19,7 +19,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "dbt-core>=1.0.0",
-        "PyMySQL==1.0.2",
+        "singlestoredb=0.7.0",
         "dataclasses_json>=0.5.6"
     ]
 )

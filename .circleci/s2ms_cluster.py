@@ -1,6 +1,6 @@
 import json
 import os
-import pymysql
+import singlestoredb
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
@@ -91,7 +91,7 @@ def terminate_cluster(cluster_id: str) -> None:
 
 
 def check_and_update_connection(cluster_id: str, create_db: Optional[str] = None):
-    conn = pymysql.connect(
+    conn = singlestoredb.connect(
         user="admin",
         password=SQL_USER_PASSWORD,
         host=HOSTNAME_TMPL.format(cluster_id),
