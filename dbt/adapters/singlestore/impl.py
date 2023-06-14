@@ -7,8 +7,10 @@ from dbt.adapters.singlestore import SingleStoreConnectionManager
 from dbt.adapters.singlestore.column import SingleStoreColumn
 from dbt.adapters.singlestore.relation import SingleStoreRelation
 
+from dbt.adapters.base.impl import ConstraintSupport
 from dbt.adapters.base.meta import available
 from dbt.adapters.sql import SQLAdapter
+from dbt.contracts.graph.nodes import ConstraintType
 from dbt.dataclass_schema import dbtClassMixin, ValidationError
 from dbt.exceptions import DbtRuntimeError, CompilationError
 from dbt.logger import GLOBAL_LOGGER as logger
@@ -51,6 +53,14 @@ class SingleStoreAdapter(SQLAdapter):
     ConnectionManager = SingleStoreConnectionManager
     Relation = SingleStoreRelation
     Column = SingleStoreColumn
+
+    CONSTRAINT_SUPPORT = {
+        ConstraintType.check: ConstraintSupport.NOT_SUPPORTED,
+        ConstraintType.not_null: ConstraintSupport.ENFORCED,
+        ConstraintType.unique: ConstraintSupport.NOT_ENFORCED,
+        ConstraintType.primary_key: ConstraintSupport.NOT_ENFORCED,
+        ConstraintType.foreign_key: ConstraintSupport.NOT_SUPPORTED,
+    }
 
     @classmethod
     def date_function(cls):

@@ -136,3 +136,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
         except Exception as e:
             logger.debug("Error running SQL: {}", sql)
             raise dbt.exceptions.DbtRuntimeError(e) from e
+
+    @classmethod
+    def data_type_code_to_name(cls, type_code: Union[int, str]) -> str:
+        st.ColumnTypes.get_name(type_code)
