@@ -1,8 +1,8 @@
-import pymysql
+import singlestoredb
 
 from contextlib import contextmanager
 from dataclasses import dataclass
-from pymysql.cursors import Cursor
+from singlestoredb.cursors import Cursor
 
 import dbt.exceptions
 from dbt.adapters.base import Credentials
@@ -59,18 +59,18 @@ class SingleStoreConnectionManager(SQLConnectionManager):
         credentials = cls.get_credentials(connection.credentials)
 
         def connect():
-            return pymysql.connect(
+            return singlestoredb.connect(
                 user=credentials.user,
                 password=credentials.password,
                 host=credentials.host,
                 port=credentials.port,
                 database=credentials.database,
-                client_flag=pymysql.constants.CLIENT.MULTI_STATEMENTS
+                client_flag=singlestoredb.constants.CLIENT.MULTI_STATEMENTS
             )
 
         retryable_exceptions = [
-            pymysql.OperationalError,
-            pymysql.DatabaseError
+            singlestoredb.OperationalError,
+            singlestoredb.DatabaseError
         ]
 
         return cls.retry_connection(
@@ -97,7 +97,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
         try:
             yield
 
-        except pymysql.DatabaseError as e:
+        except singlestoredb.DatabaseError as e:
             logger.debug('Database error: {}'.format(str(e)))
             raise dbt.exceptions.DbtDatabaseError(str(e).strip()) from e
 
