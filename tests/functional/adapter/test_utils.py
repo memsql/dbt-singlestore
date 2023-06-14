@@ -1,7 +1,7 @@
 import pytest
 from dbt.tests.adapter.utils.base_utils import BaseUtils
 from dbt.tests.adapter.utils.test_any_value import BaseAnyValue
-from dbt.tests.adapter.utils.test_bool_or import BaseBoolOr, models__test_bool_or_yml
+from dbt.tests.adapter.utils.test_bool_or import BaseBoolOr
 from dbt.tests.adapter.utils.test_cast_bool_to_text import BaseCastBoolToText
 from dbt.tests.adapter.utils.test_concat import BaseConcat
 from dbt.tests.adapter.utils.test_dateadd import BaseDateAdd, models__test_dateadd_yml
@@ -21,44 +21,15 @@ from dbt.tests.adapter.utils.test_right import BaseRight
 from dbt.tests.adapter.utils.test_safe_cast import BaseSafeCast
 from dbt.tests.adapter.utils.test_split_part import BaseSplitPart, models__test_split_part_yml
 from dbt.tests.adapter.utils.test_string_literal import BaseStringLiteral
+from dbt.tests.adapter.utils.data_types.test_type_boolean import BaseTypeBoolean
+from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampNaive
 
 
 class TestAnyValue(BaseAnyValue):
     pass
 
 
-models__test_bool_or_sql = """
-with data as (
-    select * from {{ ref('data_bool_or') }}
-),
-data_output as (
-    select * from {{ ref('data_bool_or_expected') }}
-),
-calculate as (
-    select
-        `key`,
-        {{ bool_or('val1 = val2') }} as value
-    from data
-    group by `key`
-)
-select
-    calculate.value as actual,
-    data_output.value as expected
-from calculate
-left join data_output
-on calculate.`key` = data_output.`key`
-"""
-
-
 class TestBoolOr(BaseBoolOr):
-    @pytest.fixture(scope="class")
-    def models(self):
-        return {
-            "test_bool_or.yml": models__test_bool_or_yml,
-            "test_bool_or.sql": self.interpolate_macro_namespace(
-                models__test_bool_or_sql, "bool_or"
-            ),
-        }
     pass
 
 
@@ -266,4 +237,30 @@ class TestSplitPart(BaseSplitPart):
 
 
 class TestStringLiteral(BaseStringLiteral):
+    pass
+
+
+models__actual_sql = """
+select True :> {{ type_boolean() }} as boolean_col
+"""
+
+
+class TestTypeBoolean(BaseTypeBoolean):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {"actual.sql": self.interpolate_macro_namespace(models__actual_sql, "type_boolean")}
+    pass
+
+
+models__current_ts_sql = """
+select {{ current_timestamp_in_utc_backcompat() }} as current_ts_column
+"""
+
+
+class TestCurrentTimestamp(BaseCurrentTimestampNaive):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "current_ts.sql": models__current_ts_sql,
+        }
     pass

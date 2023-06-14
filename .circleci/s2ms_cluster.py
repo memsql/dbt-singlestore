@@ -90,7 +90,7 @@ def terminate_cluster(cluster_id: str) -> None:
     request_with_retry("DELETE", BASE_URL + CLUSTERS_PATH + f"/{cluster_id}")
 
 
-def check_connection(cluster_id: str, create_db: Optional[str] = None):
+def check_and_update_connection(cluster_id: str, create_db: Optional[str] = None):
     conn = pymysql.connect(
         user="admin",
         password=SQL_USER_PASSWORD,
@@ -125,11 +125,17 @@ if __name__ == "__main__":
         with open(CLUSTER_ID_FILE, "w") as f:
             f.write(new_cl_id)
         wait_start(new_cl_id)
-        check_connection(new_cl_id, db_name)
+        check_and_update_connection(new_cl_id, db_name)
         exit(0)
 
     if command == "terminate":
         with open(CLUSTER_ID_FILE, "r") as f:
             cl_id = f.read()
         terminate_cluster(cl_id)
+        exit(0)
+
+    if command == "update":
+        with open(CLUSTER_ID_FILE, "r") as f:
+            cl_id = f.read()
+        check_and_update_connection(cl_id, db_name)
         exit(0)

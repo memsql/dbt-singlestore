@@ -1,29 +1,29 @@
 
 # Adapter development
 In the steps below, `~/.env3` is used a virtualenv directory, and `~/github.com` is used as a location of `dbt-singlestore` folder containing these sources. Certain parts of code have been copied from 
-https://github.com/dbeatty10/dbt-mysql and susequently modified.
+https://github.com/dbeatty10/dbt-mysql and subsequently modified.
 
 ## Prepare environment
+Replace dbt-core and dbt-tests-adapter values in the dev_requirements.txt file with the version you want to work with 
 ```
-virtualenv ~/.env3 -p /usr/bin/python3;
-source ~/.env3/bin/activate;
-pip install dbt-core PyMySQL=1.0.2;
+pip install virtualenv &&
+virtualenv ~/.env3 -p /usr/bin/python3 &&
+source ~/.env3/bin/activate
 ```
 
 ## Run tests
 1. Install test packages
     ```
-    pip install pytest pytest-dbt-adapter
+    pip install -r dev_requirements.txt
     ```
 2. Run SingleStore server instance locally or use Managed Service instance.
-3. Create a file named `test.env` and fill credentails in ENV variables referenced in `tests/conftest.py`.
+3. Create a file named `test.env` and fill credentials in ENV variables referenced in `tests/conftest.py`.
 4. A database named `dbt_test` is used in tests. Snapshot tests expect it to be empty before running the tests. Therefore, prior to running the test suite, the following SQL must be executed:
     ```
     DROP DATABASE IF EXISTS dbt_test; CREATE DATABASE dbt_test;
     ```
 5. Run the tests:
     ```
-    cd ~/github.com/dbt-singlestore;
     pytest
     ```
     - append `--pdb` to debug
