@@ -167,3 +167,6 @@ class SingleStoreAdapter(SQLAdapter):
             raise DbtRuntimeError(
                 f'Got an unexpected location value of "{location}"'
             )
+
+    def valid_incremental_strategies(self):
+        return ["delete+insert"]
