@@ -205,16 +205,6 @@
     {% endcall %}
 {% endmacro %}
 
-
-{% macro singlestore__current_timestamp() -%}
-    current_timestamp()
-{%- endmacro %}
-
-
-{%- macro singlestore__current_timestamp_in_utc_backcompat() -%}
-    UTC_TIMESTAMP()
-{%- endmacro -%}
-
        
 {% macro singlestore__create_view_as(relation, sql) -%}
     {%- set sql_header = config.get('sql_header', none) -%}

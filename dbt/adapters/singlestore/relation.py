@@ -1,7 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from dbt.adapters.base.relation import BaseRelation, Policy
-from dbt.exceptions import RuntimeException
+from dbt.exceptions import DbtRuntimeError
 
 
 @dataclass
@@ -20,13 +20,13 @@ class SingleStoreIncludePolicy(Policy):
 
 @dataclass(frozen=True, eq=False, repr=False)
 class SingleStoreRelation(BaseRelation):
-    quote_policy: SingleStoreQuotePolicy = SingleStoreQuotePolicy()
-    include_policy: SingleStoreIncludePolicy = SingleStoreIncludePolicy()
+    quote_policy: Policy = field(default_factory=lambda: SingleStoreQuotePolicy())
+    include_policy: Policy = field(default_factory=lambda: SingleStoreIncludePolicy())
     quote_character: str = '`'
 
     def render(self):
         if self.include_policy.database and self.include_policy.schema:
-            raise RuntimeException(
+            raise DbtRuntimeError(
                 "Got a relation with schema and database set to True"
                 "but only one can be set"
             )

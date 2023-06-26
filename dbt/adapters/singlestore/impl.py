@@ -10,7 +10,7 @@ from dbt.adapters.singlestore.relation import SingleStoreRelation
 from dbt.adapters.base.meta import available
 from dbt.adapters.sql import SQLAdapter
 from dbt.dataclass_schema import dbtClassMixin, ValidationError
-from dbt.exceptions import RuntimeException, raise_compiler_error
+from dbt.exceptions import DbtRuntimeError, CompilationError
 from dbt.logger import GLOBAL_LOGGER as logger
 
 import dbt.utils
@@ -41,9 +41,9 @@ class SingleStoreIndexConfig(dbtClassMixin):
             return cls.from_dict(raw_index)
         except ValidationError as exc:
             msg = dbt.exceptions.validator_error_message(exc)
-            raise_compiler_error(f"Could not parse index config: {msg}")
+            raise CompilationError(f"Could not parse index config: {msg}")
         except TypeError:
-            raise_compiler_error(f"Invalid index config:\n  Got: {raw_index}\n"
+            raise CompilationError(f"Invalid index config:\n  Got: {raw_index}\n"
                                  f"  Expected a dictionary with at minimum a \"columns\" key")
 
 
@@ -108,7 +108,7 @@ class SingleStoreAdapter(SQLAdapter):
                 'list_relations_without_caching',
                 kwargs=kwargs
             )
-        except RuntimeException as e:
+        except DbtRuntimeError as e:
             description = "Error while retrieving information about"
             logger.debug(f"{description} {schema_relation}: {e.msg}")
             return []
@@ -116,7 +116,7 @@ class SingleStoreAdapter(SQLAdapter):
         relations = []
         for row in results:
             if len(row) != 4:
-                raise RuntimeException(
+                raise DbtRuntimeError(
                     f'Invalid value from "singlestore__list_relations_without_caching({kwargs})", '
                     f'got {len(row)} values, expected 4'
                 )
@@ -164,6 +164,6 @@ class SingleStoreAdapter(SQLAdapter):
         elif location == 'prepend':
             return f"concat({value}, '{add_to}')"
         else:
-            raise RuntimeException(
+            raise DbtRuntimeError(
                 f'Got an unexpected location value of "{location}"'
             )

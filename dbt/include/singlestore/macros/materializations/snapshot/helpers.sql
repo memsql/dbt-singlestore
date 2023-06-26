@@ -1,9 +1,3 @@
-{% macro singlestore__snapshot_string_as_time(timestamp) -%}
-    {%- set result = "'" ~ timestamp ~ "' :> datetime" -%}
-    {{ return(result) }}
-{%- endmacro %}
-
-
 {% macro singlestore__snapshot_staging_table_deletes(strategy, source_sql, target_relation) -%}
     with snapshot_query as (
         {{ source_sql }}
