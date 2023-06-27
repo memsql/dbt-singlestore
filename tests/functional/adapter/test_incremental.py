@@ -1,38 +1,11 @@
 import pytest
 from dbt.tests.util import run_dbt, check_relations_equal
 from collections import namedtuple
+from dbt.tests.adapter.incremental.test_incremental_predicates import(
+    models__delete_insert_incremental_predicates_sql,
+    seeds__expected_delete_insert_incremental_predicates_csv
+)
 
-
-models__delete_insert_incremental_predicates_sql = """
-{{ config(
-    materialized = 'incremental',
-    unique_key = 'id'
-) }}
-
-{% if not is_incremental() %}
-
-select 1 as id, 'hello' as msg, 'blue' as color
-union all
-select 2 as id, 'goodbye' as msg, 'red' as color
-
-{% else %}
-
--- delete will not happen on the above record where id = 2, so new record will be inserted instead
-select 1 as id, 'hey' as msg, 'blue' as color
-union all
-select 2 as id, 'yo' as msg, 'green' as color
-union all
-select 3 as id, 'anyway' as msg, 'purple' as color
-
-{% endif %}
-"""
-
-seeds__expected_delete_insert_incremental_predicates_csv = """id,msg,color
-1,hey,blue
-2,goodbye,red
-2,yo,green
-3,anyway,purple
-"""
 
 ResultHolder = namedtuple(
     "ResultHolder",
