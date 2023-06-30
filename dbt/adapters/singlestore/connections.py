@@ -99,8 +99,8 @@ class SingleStoreConnectionManager(SQLConnectionManager):
 
         except pymysql.DatabaseError as e:
             logger.debug('Database error: {}'.format(str(e)))
-            raise dbt.exceptions.DatabaseException(str(e).strip()) from e
+            raise dbt.exceptions.DbtDatabaseError(str(e).strip()) from e
 
         except Exception as e:
             logger.debug("Error running SQL: {}", sql)
-            raise dbt.exceptions.RuntimeException(e) from e
+            raise dbt.exceptions.DbtRuntimeError(e) from e
