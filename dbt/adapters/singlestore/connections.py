@@ -66,7 +66,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
                 host=credentials.host,
                 port=credentials.port,
                 database=credentials.database,
-                client_flag=CLIENT.MULTI_STATEMENTS
+                multi_statements=True
             )
 
         retryable_exceptions = [
