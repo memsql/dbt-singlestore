@@ -40,6 +40,10 @@ class SingleStoreCredentials(Credentials):
         # Omit fields like 'password'!
         return 'host', 'port', 'user', 'database', 'schema'
 
+    @property
+    def unique_filed(self):
+        return 'SingleStore'
+
 
 class SingleStoreConnectionManager(SQLConnectionManager):
     TYPE = 'singlestore'
@@ -91,7 +95,14 @@ class SingleStoreConnectionManager(SQLConnectionManager):
         )
 
     def cancel(self, connection):
-        pass
+        connection_name = connection.name
+        query_id = connection.handle.thread_id()
+        cur = connection.handle.cursor()
+        cur.execute("SELECT @@aggregator_id;")
+        aggregator_id = cur.fetchone()[0]
+        kill_sql = f"kill query {query_id} {aggregator_id}"
+        logger.debug("Cancelling query {} {} of connection '{}'".format(query_id, aggregator_id, connection_name))
+        self.execute(kill_sql)
 
     @contextmanager
     def exception_handler(self, sql):
