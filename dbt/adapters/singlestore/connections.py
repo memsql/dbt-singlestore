@@ -94,12 +94,16 @@ class SingleStoreConnectionManager(SQLConnectionManager):
             code=DUMMY_RESPONSE_CODE
         )
 
+    def _get_aggregator_id(self):
+        sql = "SELECT @@aggregator_id"
+        _, cursor = self.add_query(sql)
+        res = cursor.fetchone()
+        return res
+
     def cancel(self, connection):
         connection_name = connection.name
         query_id = connection.handle.thread_id()
-        cur = connection.handle.cursor()
-        cur.execute("SELECT @@aggregator_id;")
-        aggregator_id = cur.fetchone()[0]
+        aggregator_id = self._get_aggregator_id()
         kill_sql = f"kill query {query_id} {aggregator_id}"
         logger.debug("Cancelling query {} {} of connection '{}'".format(query_id, aggregator_id, connection_name))
         self.execute(kill_sql)
