@@ -1,15 +1,18 @@
+import os
+
 import singlestoredb
 
 from contextlib import contextmanager
 from dataclasses import dataclass
 from singlestoredb.connection import Cursor
-from singlestoredb.mysql.constants import CLIENT
 
 import dbt.exceptions
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager
 from dbt.contracts.connection import AdapterResponse
 from dbt.logger import GLOBAL_LOGGER as logger
+
+import __version__
 
 
 DUMMY_RESPONSE_CODE = 0
@@ -70,6 +73,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
                 host=credentials.host,
                 port=credentials.port,
                 database=credentials.database,
+                conn_attrs={"_client_name": "dbt-singlestore", "_client_version": __version__.version, "_pid": str(os.getpid())},
                 multi_statements=True
             )
 
