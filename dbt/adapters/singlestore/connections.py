@@ -1,26 +1,28 @@
+import ast
 import os
+from collections import defaultdict
 
 import singlestoredb
 
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from singlestoredb.connection import Cursor
+from typing import Optional
 
 import dbt.exceptions
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager
 from dbt.contracts.connection import AdapterResponse
 from dbt.logger import GLOBAL_LOGGER as logger
-
-import __version__
+from dbt.adapters.singlestore import __version__
 
 
 DUMMY_RESPONSE_CODE = 0
 
-
 @dataclass
 class SingleStoreCredentials(Credentials):
     # Add credentials members here, like:
+    conn_attrs: Optional[str] = None
     host: str = 'localhost'
     port: int = 3306
     user: str = 'root'
@@ -66,6 +68,15 @@ class SingleStoreConnectionManager(SQLConnectionManager):
 
         credentials = cls.get_credentials(connection.credentials)
 
+        parsed_conn_attrs = {}
+        if credentials.conn_attrs is not None:
+            try:
+                parsed_conn_attrs = ast.literal_eval(credentials.conn_attrs)
+            except ValueError as e:
+                raise dbt.exceptions.DbtRuntimeError(
+                    "Invalid value for conn_attrs value in SingleStoreCredential class.\nPlease, make sure it looks like this \"{'key1': 'value1', 'key2': 'value2', 'key3': 'value3'}\""
+                )
+
         def connect():
             return singlestoredb.connect(
                 user=credentials.user,
@@ -73,7 +84,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
                 host=credentials.host,
                 port=credentials.port,
                 database=credentials.database,
-                conn_attrs={"_client_name": "dbt-singlestore", "_client_version": __version__.version, "_pid": str(os.getpid())},
+                conn_attrs={**parsed_conn_attrs, '_connector_name': 'dbt-singlestore', '_connector_version': __version__.version},
                 multi_statements=True
             )
 
