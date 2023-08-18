@@ -1,6 +1,5 @@
 import os
 import unittest
-import pytest
 
 from dbt.adapters.singlestore import (
     SingleStoreCredentials,

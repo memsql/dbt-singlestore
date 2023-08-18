@@ -1,11 +1,9 @@
 import ast
-import os
-from collections import defaultdict
 
 import singlestoredb
 
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from singlestoredb.connection import Cursor
 from typing import Optional
 
@@ -18,6 +16,7 @@ from dbt.adapters.singlestore import __version__
 
 
 DUMMY_RESPONSE_CODE = 0
+
 
 @dataclass
 class SingleStoreCredentials(Credentials):
