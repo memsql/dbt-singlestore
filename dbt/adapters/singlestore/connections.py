@@ -112,7 +112,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
     def _get_aggregator_id(self):
         sql = "SELECT @@aggregator_id"
         _, cursor = self.add_query(sql)
-        res = cursor.fetchone()
+        res = cursor.fetchone()[0]
         return res
 
     def cancel(self, connection):
