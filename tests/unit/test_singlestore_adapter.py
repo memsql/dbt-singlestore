@@ -8,13 +8,14 @@ from dbt.adapters.singlestore import (
 from dbt.contracts.connection import Connection
 from dbt.adapters.singlestore import __version__
 
+
 class SingleStoreConnectionManagerTest(unittest.TestCase):
     def setUp(self):
         self.credentials = SingleStoreCredentials(
-            host="localhost",
-            user="root",
-            port=3306,
-            password="pass",
+            host=os.getenv('S2_HOST', '127.0.0.1'),
+            port=int(os.getenv('S2_PORT', 3306)),
+            user=os.getenv('S2_USER', 'root'),
+            password=os.getenv('S2_PASSWORD', 'p'),
             database="dbt_test",
             schema="dbt_test",
             conn_attrs="{'my_key_1': 'my_val_1', 'my_key_2': 'my_val_2'}",
@@ -28,13 +29,10 @@ class SingleStoreConnectionManagerTest(unittest.TestCase):
         cursor.execute(sql)
 
         actual_attributes = {}
-        with open("/tmp/out.txt", "w") as f:
-            for row in cursor.fetchall():
-                attribute_key = row[2]
-                attribute_value = row[3]
-                f.write(attribute_key + " ")
-                f.write(attribute_value + " ")
-                actual_attributes[attribute_key] = attribute_value
+        for row in cursor.fetchall():
+            attribute_key = row[2]
+            attribute_value = row[3]
+            actual_attributes[attribute_key] = attribute_value
 
         expected_attributes = {
             "_connector_name": "dbt-singlestore",
@@ -45,4 +43,3 @@ class SingleStoreConnectionManagerTest(unittest.TestCase):
 
         assert set(expected_attributes.keys()).issubset(actual_attributes.keys())
         assert set(expected_attributes.values()).issubset(actual_attributes.values())
-
