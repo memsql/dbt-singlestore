@@ -36,6 +36,10 @@ class SingleStoreCredentials(Credentials):
     }
 
     @property
+    def unique_filed(self):
+        return 'SingleStore'
+
+    @property
     def type(self):
         return 'singlestore'
 
@@ -43,10 +47,6 @@ class SingleStoreCredentials(Credentials):
         # return an iterator of keys to pretty-print in 'dbt debug'.
         # Omit fields like 'password'!
         return 'host', 'port', 'user', 'database', 'schema'
-
-    @property
-    def unique_filed(self):
-        return 'SingleStore'
 
 
 class SingleStoreConnectionManager(SQLConnectionManager):
