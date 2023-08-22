@@ -64,7 +64,7 @@ class SingleStoreAdapter(SQLAdapter):
 
     @classmethod
     def is_cancelable(cls):
-        return False
+        return True
 
     def quote(self, identifier):
         return '`{}`'.format(identifier)

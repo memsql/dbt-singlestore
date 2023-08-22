@@ -1,14 +1,18 @@
-import pymysql
+import ast
+
+import singlestoredb
 
 from contextlib import contextmanager
 from dataclasses import dataclass
-from pymysql.cursors import Cursor
+from singlestoredb.connection import Cursor
+from typing import Optional
 
 import dbt.exceptions
 from dbt.adapters.base import Credentials
 from dbt.adapters.sql import SQLConnectionManager
 from dbt.contracts.connection import AdapterResponse
 from dbt.logger import GLOBAL_LOGGER as logger
+from dbt.adapters.singlestore import __version__
 
 
 DUMMY_RESPONSE_CODE = 0
@@ -24,6 +28,7 @@ class SingleStoreCredentials(Credentials):
     database: str
     schema: str
     retries: int = 1
+    conn_attrs: Optional[str] = None
 
     ALIASES = {
         'db': 'database',
@@ -39,6 +44,10 @@ class SingleStoreCredentials(Credentials):
         # Omit fields like 'password'!
         return 'host', 'port', 'user', 'database', 'schema'
 
+    @property
+    def unique_field(self):
+        return 'SingleStore'
+
 
 class SingleStoreConnectionManager(SQLConnectionManager):
     TYPE = 'singlestore'
@@ -46,7 +55,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
     @classmethod
     def get_credentials(cls, credentials):
         if not credentials.database or not credentials.schema:
-            raise dbt.exceptions.Exception("database and schema must be specified in the project config")
+            raise dbt.exceptions.Exception("database or schema must be specified in the project config")
 
         return credentials
 
@@ -58,19 +67,31 @@ class SingleStoreConnectionManager(SQLConnectionManager):
 
         credentials = cls.get_credentials(connection.credentials)
 
+        parsed_conn_attrs = {}
+        if credentials.conn_attrs is not None:
+            try:
+                parsed_conn_attrs = ast.literal_eval(credentials.conn_attrs)
+            except ValueError as e:
+                raise dbt.exceptions.DbtRuntimeError(
+                    "Invalid value for conn_attrs value in SingleStoreCredential class.\nPlease, make sure it is "
+                    "formatted as a string that represents a dictionary, e.g. \"{'key1': 'value1', 'key2': 'value2', "
+                    "'key3': 'value3'}\""
+                )
+
         def connect():
-            return pymysql.connect(
+            return singlestoredb.connect(
                 user=credentials.user,
                 password=credentials.password,
                 host=credentials.host,
                 port=credentials.port,
                 database=credentials.database,
-                client_flag=pymysql.constants.CLIENT.MULTI_STATEMENTS
+                conn_attrs={**parsed_conn_attrs, '_connector_name': 'dbt-singlestore', '_connector_version': __version__.version},
+                multi_statements=True
             )
 
         retryable_exceptions = [
-            pymysql.OperationalError,
-            pymysql.DatabaseError
+            singlestoredb.OperationalError,
+            singlestoredb.DatabaseError
         ]
 
         return cls.retry_connection(
@@ -89,15 +110,26 @@ class SingleStoreConnectionManager(SQLConnectionManager):
             code=DUMMY_RESPONSE_CODE
         )
 
+    def _get_aggregator_id(self):
+        sql = "SELECT @@aggregator_id"
+        _, cursor = self.add_query(sql)
+        res = cursor.fetchone()[0]
+        return res
+
     def cancel(self, connection):
-        pass
+        connection_name = connection.name
+        query_id = connection.handle.thread_id()
+        aggregator_id = self._get_aggregator_id()
+        kill_sql = f"kill query {query_id} {aggregator_id}"
+        logger.debug("Cancelling query {} (internal node id {}) of connection '{}'".format(query_id, aggregator_id, connection_name))
+        self.execute(kill_sql)
 
     @contextmanager
     def exception_handler(self, sql):
         try:
             yield
 
-        except pymysql.DatabaseError as e:
+        except singlestoredb.DatabaseError as e:
             logger.debug('Database error: {}'.format(str(e)))
             raise dbt.exceptions.DbtDatabaseError(str(e).strip()) from e
 
