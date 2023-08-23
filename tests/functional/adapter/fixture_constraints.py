@@ -1,9 +1,3 @@
-import pytest
-
-from dbt.tests.adapter.constraints.test_constraints import (
-    BaseTableConstraintsColumnsEqual
-)
-
 # base mode definitions
 my_model_sql = """
 {{
@@ -149,7 +143,7 @@ my_model_with_nulls_sql = """
 
 select
   -- null value for 'id'
-  cast(null as SIGNED) as id,
+  cast(null as {{ dbt.type_int() }}) as id,
   -- change the color as well (to test rollback)
   'red' as color,
   '2019-01-01' as date_day
@@ -164,7 +158,7 @@ my_model_view_with_nulls_sql = """
 
 select
   -- null value for 'id'
-  cast(null as SIGNED) as id,
+  cast(null as {{ dbt.type_int() }}) as id,
   -- change the color as well (to test rollback)
   'red' as color,
   '2019-01-01' as date_day
@@ -179,7 +173,7 @@ my_model_incremental_with_nulls_sql = """
 
 select
   -- null value for 'id'
-  cast(null as SIGNED) as id,
+  cast(null as {{ dbt.type_int() }}) as id,
   -- change the color as well (to test rollback)
   'red' as color,
   '2019-01-01' as date_day
@@ -195,7 +189,7 @@ models:
     columns:
       - name: id
         quote: true
-        data_type: signed integer
+        data_type: integer
         description: hello
         constraints:
           - type: not_null
@@ -214,7 +208,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: signed integer
+        data_type: integer
         description: hello
         constraints:
           - type: not_null
@@ -233,7 +227,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: signed integer
+        data_type: integer
         description: hello
         constraints:
           - type: not_null
@@ -252,7 +246,7 @@ models:
         enforced: true
     columns:
       - name: id
-        data_type: signed integer
+        data_type: integer
         description: hello
         constraints:
           - type: not_null
@@ -285,7 +279,7 @@ models:
     columns:
       - name: id
         quote: true
-        data_type: signed integer
+        data_type: integer
         description: hello
         constraints:
           - type: not_null
@@ -309,40 +303,3 @@ models:
       - name: wrong_data_type_column_name
         data_type: {data_type}
 """
-
-
-class SingleStoreColumnEqualSetup:
-    @pytest.fixture
-    def int_type(self):
-        return "SIGNED"
-
-    @pytest.fixture
-    def schema_int_type(self):
-        return "INT"
-
-    @pytest.fixture
-    def string_type(self):
-        return "LONGTEXT"
-
-    @pytest.fixture
-    def data_types(self, int_type, schema_int_type, string_type):
-        # sql_column_value, schema_data_type, error_data_type
-        return [
-            ["1", schema_int_type, int_type],
-            ["'1'", string_type, string_type],
-            ["true", "bool", "BOOL"],
-            ["cast('2019-01-01' as date)", "date", "DATE"],
-            ["cast('2013-11-03 00:00:00-07' as datetime(6))", "datetime", "DATETIME"],
-            ["'1'::numeric", "numeric", "DECIMAL"],
-            ["""'{"bar": "baz", "balance": 7.77, "active": false}'::json""", "json", "JSON"],
-        ]
-
-
-class TestTableConstraintsColumnsEqual(SingleStoreColumnEqualSetup, BaseTableConstraintsColumnsEqual):
-    @pytest.fixture(scope="class")
-    def models(self):
-        return {
-            "my_model_wrong_order.sql": my_model_wrong_order_sql,
-            "my_model_wrong_name.sql": my_model_wrong_name_sql,
-            "constraints_schema.yml": model_schema_yml,
-        }
