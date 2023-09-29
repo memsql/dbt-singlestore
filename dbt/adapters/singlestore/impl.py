@@ -57,8 +57,8 @@ class SingleStoreAdapter(SQLAdapter):
     CONSTRAINT_SUPPORT = {
         ConstraintType.check: ConstraintSupport.NOT_SUPPORTED,
         ConstraintType.not_null: ConstraintSupport.ENFORCED,
-        ConstraintType.unique: ConstraintSupport.NOT_ENFORCED,
-        ConstraintType.primary_key: ConstraintSupport.NOT_ENFORCED,
+        ConstraintType.unique: ConstraintSupport.ENFORCED,
+        ConstraintType.primary_key: ConstraintSupport.ENFORCED,
         ConstraintType.foreign_key: ConstraintSupport.NOT_SUPPORTED,
     }
 
