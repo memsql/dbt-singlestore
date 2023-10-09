@@ -27,7 +27,7 @@
 {% endmacro %}
 
 
-{% macro singlestore__create_table_as(temporary, relation, sql) -%}
+{% macro singlestore__create_table_as(temporary, relation, compiled_code, language='sql') -%}
     {%- set sql_header = config.get('sql_header', none) -%}
     {%- set primary_key = config.get('primary_key', []) -%} {# PRIMARY KEY (primary_key) #}
     {%- set sort_key = config.get('sort_key', []) -%} {# SORT KEY (sort_key) #}
@@ -35,9 +35,11 @@
     {%- set unique_table_key = config.get('unique_table_key', []) -%} {# UNIQUE KEY (unique_table_key) #}
     {%- set charset = config.get('charset', none) -%} {# CHARACTER SET charset #}
     {%- set collation = config.get('collation', none) -%} {# COLLATE collation #}
+    {%- set contract_config = config.get('contract') -%}
 
     {%- set create_definition_list = [] %}
-    {% if primary_key | length -%}
+    {%- set undefined_shard_key = True %}
+    {% if primary_key | length and not contract_config.enforced %}
         {% set quoted = [] -%}
             {%- for col in primary_key -%}
                 {%- do quoted.append(adapter.quote(col)) -%}
@@ -56,15 +58,16 @@
             {%- for col in shard_key -%}
                 {%- do quoted.append(adapter.quote(col)) -%}
             {%- endfor %}
+        {% set undefined_shard_key = False -%}
         {% do create_definition_list.append('SHARD KEY ({})'.format(", ".join(quoted))) -%}
-    {% elif unique_table_key | length -%}
+    {% elif unique_table_key | length and not contract_config.enforced -%}
         {% set quoted = [] -%}
             {%- for col in unique_table_key -%}
                 {%- do quoted.append(adapter.quote(col)) -%}
             {%- endfor %}
         {% do create_definition_list.append('SHARD KEY ({})'.format(", ".join(quoted))) -%}
     {% endif -%}
-    {% if unique_table_key | length -%}
+    {% if unique_table_key | length and not contract_config.enforced -%}
         {% set quoted = [] -%}
             {%- for col in unique_table_key -%}
                 {%- do quoted.append(adapter.quote(col)) -%}
@@ -72,10 +75,9 @@
         {% do create_definition_list.append('UNIQUE KEY ({})'.format(", ".join(quoted))) -%}
     {% endif -%}
 
+    {%- set create_definition_str = '' %}
     {% if create_definition_list | length -%}
-        {% set create_definition_str = '(' + create_definition_list|join(", ") + ')' -%}
-    {% else -%}
-        {% set create_definition_str = '(SHARD KEY ())' -%}
+        {% set create_definition_str = create_definition_list|join(", ") -%}
     {% endif -%}
 
     {%- set charset_definition_str = ' ' %}
@@ -97,14 +99,17 @@
     {% endif -%}
 
     create {{ storage_type }} table
-        {{ relation.include(database=True) }} {{create_definition_str }} {{ charset_definition_str }}
-    {%- set contract_config = config.get('contract') -%}
+        {{ relation.include(database=True) }}
     {%- if contract_config.enforced -%}
       {{ get_assert_columns_equivalent(sql) }}
-      {{ get_table_columns_and_constraints() }}
+      {{ singlestore__get_table_columns_and_constraints(create_definition_str, undefined_shard_key) }}
+      {% set compiled_code = get_select_subquery(compiled_code) %}
+    {% else -%}
+        {{ create_definition_str }}
     {% endif %}
+    {{ charset_definition_str }}
     as
-        {{ sql }}
+        {{ compiled_code }}
 {% endmacro %}
 
 

@@ -1,7 +1,7 @@
 import agate
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 
 from dbt.adapters.singlestore import SingleStoreConnectionManager
 from dbt.adapters.singlestore.column import SingleStoreColumn
@@ -10,7 +10,7 @@ from dbt.adapters.singlestore.relation import SingleStoreRelation
 from dbt.adapters.base.impl import ConstraintSupport
 from dbt.adapters.base.meta import available
 from dbt.adapters.sql import SQLAdapter
-from dbt.contracts.graph.nodes import ConstraintType
+from dbt.contracts.graph.nodes import ColumnLevelConstraint, ConstraintType, ModelLevelConstraint
 from dbt.dataclass_schema import dbtClassMixin, ValidationError
 from dbt.exceptions import DbtRuntimeError, CompilationError
 from dbt.logger import GLOBAL_LOGGER as logger
@@ -143,6 +143,57 @@ class SingleStoreAdapter(SQLAdapter):
 
     def check_schema_exists(self, database, schema):
         return True
+
+    @available
+    @classmethod
+    def render_raw_model_constraints(cls, raw_constraints: List[Dict[str, Any]], undefined_shard_key: bool = True) -> List[str]:
+        return [c for c in map(lambda rc: cls.render_raw_model_constraint(rc, undefined_shard_key), raw_constraints) if c is not None]
+
+    @classmethod
+    def render_raw_model_constraint(cls, raw_constraint: Dict[str, Any], undefined_shard_key: bool = True) -> Optional[str]:
+        constraint = cls._parse_model_constraint(raw_constraint)
+        return cls.process_parsed_constraint(constraint, cls.render_model_constraint(constraint, undefined_shard_key))
+
+    @classmethod
+    def render_model_constraint(cls, constraint: ModelLevelConstraint, undefined_shard_key: bool = True) -> Optional[str]:
+        """Render the given constraint as DDL text. Should be overriden by adapters which need custom constraint
+        rendering."""
+        constraint_prefix = f"constraint {constraint.name} " if constraint.name else ""
+        column_list = ", ".join(constraint.columns)
+        if constraint.type == ConstraintType.check and constraint.expression:
+            return f"{constraint_prefix}check ({constraint.expression})"
+        elif constraint.type == ConstraintType.unique:
+            constraint_expression = f" {constraint.expression}" if constraint.expression else ""
+            shard_key = f"{constraint_prefix}shard key{constraint_expression} ({column_list})" if undefined_shard_key else ""
+            return f"{constraint_prefix}unique {constraint_expression} ({column_list}), {shard_key}"
+        elif constraint.type == ConstraintType.primary_key:
+            constraint_expression = f" {constraint.expression}" if constraint.expression else ""
+            return f"{constraint_prefix}primry key{constraint_expression} ({column_list})"
+        elif constraint.type == ConstraintType.foreign_key and constraint.expression:
+            return f"{constraint_prefix}foreign key ({column_list}) references {constraint.expression}"
+        elif constraint.type == ConstraintType.custom and constraint.expression:
+            return f"{constraint_prefix}{constraint.expression}"
+        else:
+            return None
+
+    @classmethod
+    def render_column_constraint(cls, constraint: ColumnLevelConstraint) -> Optional[str]:
+        """Render the given constraint as DDL text. Should be overriden by adapters which need custom constraint
+        rendering."""
+        if constraint.type == ConstraintType.check and constraint.expression:
+            return f"check {constraint.expression}"
+        elif constraint.type == ConstraintType.not_null:
+            return "not null"
+        elif constraint.type == ConstraintType.unique:
+            return "unique"
+        elif constraint.type == ConstraintType.primary_key:
+            return "prmry key"
+        elif constraint.type == ConstraintType.foreign_key:
+            return "foreign key"
+        elif constraint.type == ConstraintType.custom and constraint.expression:
+            return constraint.expression
+        else:
+            return None
 
     # Methods used in adapter tests
     def update_column_sql(

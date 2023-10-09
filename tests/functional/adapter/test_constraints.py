@@ -11,6 +11,97 @@ from dbt.tests.adapter.constraints.test_constraints import (
     BaseModelConstraintsRuntimeEnforcement
 )
 
+from dbt.tests.adapter.constraints.fixtures import (
+    constrained_model_schema_yml
+)
+
+
+model_schema_yml = """
+version: 2
+models:
+  - name: my_model
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        quote: true
+        data_type: integer
+        description: hello
+        constraints:
+          - type: not_null
+          - type: primary_key
+          - type: check
+            expression: (id > 0)
+        tests:
+          - unique
+      - name: color
+        data_type: text
+      - name: date_day
+        data_type: text
+  - name: my_model_error
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: integer
+        description: hello
+        constraints:
+          - type: not_null
+          - type: primary_key
+          - type: check
+            expression: (id > 0)
+        tests:
+          - unique
+      - name: color
+        data_type: text
+      - name: date_day
+        data_type: text
+  - name: my_model_wrong_order
+    config:
+      contract:
+        enforced: true
+    constraints:
+      - type: unique
+        columns: ['id']
+    columns:
+      - name: id
+        data_type: integer
+        description: hello
+        constraints:
+          - type: not_null
+          - type: primary_key
+          - type: check
+            expression: (id > 0)
+        tests:
+          - unique
+      - name: color
+        data_type: text
+      - name: date_day
+        data_type: text
+  - name: my_model_wrong_name
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: integer
+        description: hello
+        constraints:
+          - type: not_null
+          - type: primary_key
+          - type: check
+            expression: (id > 0)
+        tests:
+          - unique
+      - name: color
+        data_type: text
+      - name: date_day
+        data_type: text
+"""
+
+
 # base mode definitions
 my_model_sql = """
 {{
@@ -20,9 +111,9 @@ my_model_sql = """
 }}
 
 select
-  1 as id,
-  'blue' as color,
-  '2019-01-01' as date_day
+  (1 :> {{ dbt.type_int() }}) as id,
+  ('blue' :> {{ dbt.type_string() }}) as color,
+  ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
 """
 
 my_model_view_sql = """
@@ -33,9 +124,9 @@ my_model_view_sql = """
 }}
 
 select
-  1 as id,
-  'blue' as color,
-  '2019-01-01' as date_day
+  (1 :> {{ dbt.type_int() }}) as id,
+  ('blue' :> {{ dbt.type_string() }}) as color,
+  ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
 """
 
 my_incremental_model_sql = """
@@ -47,9 +138,9 @@ my_incremental_model_sql = """
 }}
 
 select
-  1 as id,
-  'blue' as color,
-  '2019-01-01' as date_day
+  (1 :> {{ dbt.type_int() }}) as id,
+  ('blue' :> {{ dbt.type_string() }}) as color,
+  ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
 """
 
 # model columns in a different order to schema definitions
@@ -61,9 +152,9 @@ my_model_wrong_order_sql = """
 }}
 
 select
-  'blue' as color,
-  1 as id,
-  '2019-01-01' as date_day
+  ('blue' :> {{ dbt.type_string() }}) as color,
+  (1 :> {{ dbt.type_int() }}) as id,
+  ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
 """
 
 my_model_view_wrong_order_sql = """
@@ -74,9 +165,9 @@ my_model_view_wrong_order_sql = """
 }}
 
 select
-  'blue' as color,
-  1 as id,
-  '2019-01-01' as date_day
+  ('blue' :> {{ dbt.type_string() }}) as color,
+  (1 :> {{ dbt.type_int() }}) as id,
+  ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
 """
 
 my_model_incremental_wrong_order_sql = """
@@ -88,9 +179,9 @@ my_model_incremental_wrong_order_sql = """
 }}
 
 select
-  'blue' as color,
-  1 as id,
-  '2019-01-01' as date_day
+  ('blue' :> {{ dbt.type_string() }}) as color,
+  (1 :> {{ dbt.type_int() }}) as id,
+  ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
 """
 
 # model columns name different to schema definitions
@@ -102,9 +193,9 @@ my_model_wrong_name_sql = """
 }}
 
 select
-  'blue' as color,
-  1 as error,
-  '2019-01-01' as date_day
+  ('blue' :> {{ dbt.type_string() }}) as color,
+  (1 :> {{ dbt.type_int() }}) as error,
+  ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
 """
 
 my_model_view_wrong_name_sql = """
@@ -115,9 +206,9 @@ my_model_view_wrong_name_sql = """
 }}
 
 select
-  'blue' as color,
-  1 as error,
-  '2019-01-01' as date_day
+  ('blue' :> {{ dbt.type_string() }}) as color,
+  (1 :> {{ dbt.type_int() }}) as error,
+  ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
 """
 
 my_model_incremental_wrong_name_sql = """
@@ -129,9 +220,9 @@ my_model_incremental_wrong_name_sql = """
 }}
 
 select
-  'blue' as color,
-  1 as error,
-  '2019-01-01' as date_day
+  ('blue' :> {{ dbt.type_string() }}) as color,
+  (1 :> {{ dbt.type_int() }}) as error,
+  ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
 """
 
 # model columns data types different to schema definitions
@@ -158,8 +249,8 @@ select
   -- null value for 'id'
   (null :> {{ dbt.type_int() }}) as id,
   -- change the color as well (to test rollback)
-  'red' as color,
-  '2019-01-01' as date_day
+  ('red' :> {{ dbt.type_string() }}) as color,
+  ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
 """
 
 my_model_view_with_nulls_sql = """
@@ -173,8 +264,8 @@ select
   -- null value for 'id'
   (null :> {{ dbt.type_int() }}) as id,
   -- change the color as well (to test rollback)
-  'red' as color,
-  '2019-01-01' as date_day
+  ('red' :> {{ dbt.type_string() }}) as color,
+  ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
 """
 
 my_model_incremental_with_nulls_sql = """
@@ -188,152 +279,26 @@ select
   -- null value for 'id'
   (null :> {{ dbt.type_int() }}) as id,
   -- change the color as well (to test rollback)
-  'red' as color,
-  '2019-01-01' as date_day
-"""
-
-model_schema_yml = """
-version: 2
-models:
-  - name: my_model
-    config:
-      contract:
-        enforced: true
-    columns:
-      - name: id
-        quote: true
-        data_type: bigint
-        description: hello
-        constraints:
-          - type: not_null
-          - type: primary_key
-          - type: check
-            expression: (id > 0)
-        tests:
-          - unique
-      - name: color
-        data_type: longtext
-      - name: date_day
-        data_type: longtext
-  - name: my_model_error
-    config:
-      contract:
-        enforced: true
-    columns:
-      - name: id
-        data_type: bigint
-        description: hello
-        constraints:
-          - type: not_null
-          - type: primary_key
-          - type: check
-            expression: (id > 0)
-        tests:
-          - unique
-      - name: color
-        data_type: longtext
-      - name: date_day
-        data_type: longtext
-  - name: my_model_wrong_order
-    config:
-      contract:
-        enforced: true
-    columns:
-      - name: id
-        data_type: bigint
-        description: hello
-        constraints:
-          - type: not_null
-          - type: primary_key
-          - type: check
-            expression: (id > 0)
-        tests:
-          - unique
-      - name: color
-        data_type: longtext
-      - name: date_day
-        data_type: longtext
-  - name: my_model_wrong_name
-    config:
-      contract:
-        enforced: true
-    columns:
-      - name: id
-        data_type: bigint
-        description: hello
-        constraints:
-          - type: not_null
-          - type: primary_key
-          - type: check
-            expression: (id > 0)
-        tests:
-          - unique
-      - name: color
-        data_type: longtext
-      - name: date_day
-        data_type: longtext
-"""
-
-constrained_model_schema_yml = """
-version: 2
-models:
-  - name: my_model
-    config:
-      contract:
-        enforced: true
-    constraints:
-      - type: check
-        expression: (id > 0)
-      - type: primary_key
-        columns: [ id ]
-      - type: unique
-        columns: [ color, date_day ]
-        name: strange_uniqueness_requirement
-    columns:
-      - name: id
-        quote: true
-        data_type: signed integer
-        description: hello
-        constraints:
-          - type: not_null
-        tests:
-          - unique
-      - name: color
-        data_type: text
-      - name: date_day
-        data_type: text
-"""
-
-
-model_data_type_schema_yml = """
-version: 2
-models:
-  - name: my_model_data_type
-    config:
-      contract:
-        enforced: true
-    columns:
-      - name: wrong_data_type_column_name
-        data_type: {data_type}
+  ('red' :> {{ dbt.type_string() }}) as color,
+  ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
 """
 
 
 _expected_sql_singlestore = """
-create or replace table <model_identifier> (
-    id bigint not null primary key,
-    color longtext,
-    date_day longtext
-) as ( select
+create table <model_identifier> (
+    id integer not null primary key,
+    color text,
+    date_day text
+) as select
         id,
         color,
         date_day from
     (
     select
-        'blue' as color,
-        1 as id,
-        '2019-01-01' as date_day
+        ('blue' :> TEXT) as color,
+        (1 :> INT) as id,
+        ('2019-01-01' :> TEXT) as date_day
     ) as model_subq
-);
 """
 
 class SingleStoreColumnEqualSetup:
@@ -353,13 +318,13 @@ class SingleStoreColumnEqualSetup:
     def data_types(self, int_type, schema_int_type, string_type):
         # sql_column_value, schema_data_type, error_data_type
         return [
-            ["1", schema_int_type, int_type],
-            ["'1'", string_type, string_type],
-            ["true", "bool", "BOOL"],
+            ["(1 :> int)", schema_int_type, int_type],
+            ["('1' :> text)", string_type, string_type],
+            #["(true :> bool)", "bool", "BOOL"],
             ["('2019-01-01' :> date)", "date", "DATE"],
-            ["('2013-11-03 00:00:00-07' :> datetime(6))", "datetime", "DATETIME"],
-            ["'1'::numeric", "numeric", "DECIMAL"],
-            ["""'{"bar": "baz", "balance": 7.77, "active": false}'::json""", "json", "JSON"],
+            ["('2013-11-03 12:00:00' :> datetime)", "datetime", "DATETIME"],
+            ["('1' :> numeric)", "numeric", "DECIMAL"],
+            ["""('{"bar": "baz", "balance": 7.77, "active": false}' :> json)""", "json", "JSON"],
         ]
 
 
@@ -403,14 +368,90 @@ class TestTableConstraintsDdlEnforcement(BaseConstraintsRuntimeDdlEnforcement):
             "my_model.sql": my_model_wrong_order_sql,
             "constraints_schema.yml": model_schema_yml,
         }
+
     @pytest.fixture(scope="class")
     def expected_sql(self):
         return _expected_sql_singlestore
+    pass
 
 
 class TestIncrementalConstraintsDdlEnforcement(
     BaseIncrementalConstraintsRuntimeDdlEnforcement
 ):
     @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model.sql": my_model_wrong_order_sql,
+            "constraints_schema.yml": model_schema_yml,
+        }
+
+    @pytest.fixture(scope="class")
     def expected_sql(self):
         return _expected_sql_singlestore
+    pass
+
+
+class TestTableConstraintsRollback(BaseConstraintsRollback):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model.sql": my_incremental_model_sql,
+            "constraints_schema.yml": model_schema_yml,
+        }
+
+    @pytest.fixture(scope="class")
+    def null_model_sql(self):
+        return my_model_with_nulls_sql
+
+    @pytest.fixture(scope="class")
+    def expected_error_messages(self):
+        return ["Column 'id' cannot be null"]
+    pass
+
+
+class TestIncrementalConstraintsRollback(BaseIncrementalConstraintsRollback):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model.sql": my_incremental_model_sql,
+            "constraints_schema.yml": model_schema_yml,
+        }
+
+    @pytest.fixture(scope="class")
+    def null_model_sql(self):
+        return my_model_with_nulls_sql
+
+    @pytest.fixture(scope="class")
+    def expected_error_messages(self):
+        return ["Column 'id' cannot be null"]
+    pass
+
+
+class TestModelConstraintsRuntimeEnforcement(BaseModelConstraintsRuntimeEnforcement):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model.sql": my_model_sql,
+            "constraints_schema.yml": constrained_model_schema_yml,
+        }
+
+    @pytest.fixture(scope="class")
+    def expected_sql(self):
+        return """
+create table <model_identifier> (
+    id integer not null,
+    color text,
+    date_day text,
+    primary key (id)
+) as select
+        id,
+        color,
+        date_day from
+    (
+    select
+        (1 :> INT) as id,
+        ('blue' :> TEXT) as color,
+        ('2019-01-01' :> TEXT) as date_day
+    ) as model_subq
+"""
+    pass
