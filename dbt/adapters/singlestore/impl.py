@@ -1,3 +1,5 @@
+from functools import partial
+
 import agate
 from dataclasses import dataclass
 from datetime import datetime
@@ -146,13 +148,30 @@ class SingleStoreAdapter(SQLAdapter):
 
     @available
     @classmethod
+    def render_raw_columns_constraints(cls, raw_columns: Dict[str, Dict[str, Any]]) -> List:
+        rendered_column_constraints = []
+
+        for v in raw_columns.values():
+            rendered_column_constraint = [f"{v['name']} {v['data_type']}"]
+            for con in v.get("constraints", None):
+                constraint = cls._parse_column_constraint(con)
+                c = cls.process_parsed_constraint(constraint, cls.render_column_constraint)
+                if c is not None:
+                    rendered_column_constraint.append(c)
+            rendered_column_constraints.append(" ".join(rendered_column_constraint))
+
+        return rendered_column_constraints
+
+    @classmethod
     def render_raw_model_constraints(cls, raw_constraints: List[Dict[str, Any]], undefined_shard_key: bool = True) -> List[str]:
-        return [c for c in map(lambda rc: cls.render_raw_model_constraint(rc, undefined_shard_key), raw_constraints) if c is not None]
+        partial_render_raw_model_constraint = partial(cls.render_raw_model_constraint, undefined_shard_key=undefined_shard_key)
+        return [c for c in map(partial_render_raw_model_constraint, raw_constraints) if c is not None]
 
     @classmethod
     def render_raw_model_constraint(cls, raw_constraint: Dict[str, Any], undefined_shard_key: bool = True) -> Optional[str]:
         constraint = cls._parse_model_constraint(raw_constraint)
-        return cls.process_parsed_constraint(constraint, cls.render_model_constraint(constraint, undefined_shard_key))
+        partial_render_model_constraint = partial(cls.render_model_constraint, undefined_shard_key=undefined_shard_key)
+        return cls.process_parsed_constraint(constraint, partial_render_model_constraint)
 
     @classmethod
     def render_model_constraint(cls, constraint: ModelLevelConstraint, undefined_shard_key: bool = True) -> Optional[str]:
@@ -164,11 +183,11 @@ class SingleStoreAdapter(SQLAdapter):
             return f"{constraint_prefix}check ({constraint.expression})"
         elif constraint.type == ConstraintType.unique:
             constraint_expression = f" {constraint.expression}" if constraint.expression else ""
-            shard_key = f"{constraint_prefix}shard key{constraint_expression} ({column_list})" if undefined_shard_key else ""
-            return f"{constraint_prefix}unique {constraint_expression} ({column_list}), {shard_key}"
+            shard_key = f"shard key ({column_list})" if undefined_shard_key else ""
+            return f"{constraint_prefix}unique {constraint_expression} ({column_list}),\n {shard_key}"
         elif constraint.type == ConstraintType.primary_key:
             constraint_expression = f" {constraint.expression}" if constraint.expression else ""
-            return f"{constraint_prefix}primry key{constraint_expression} ({column_list})"
+            return f"{constraint_prefix}primary key{constraint_expression} ({column_list})"
         elif constraint.type == ConstraintType.foreign_key and constraint.expression:
             return f"{constraint_prefix}foreign key ({column_list}) references {constraint.expression}"
         elif constraint.type == ConstraintType.custom and constraint.expression:
@@ -187,7 +206,7 @@ class SingleStoreAdapter(SQLAdapter):
         elif constraint.type == ConstraintType.unique:
             return "unique"
         elif constraint.type == ConstraintType.primary_key:
-            return "prmry key"
+            return "primary key"
         elif constraint.type == ConstraintType.foreign_key:
             return "foreign key"
         elif constraint.type == ConstraintType.custom and constraint.expression:

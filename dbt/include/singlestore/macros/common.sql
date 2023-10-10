@@ -102,7 +102,7 @@
         {{ relation.include(database=True) }}
     {%- if contract_config.enforced -%}
       {{ get_assert_columns_equivalent(sql) }}
-      {{ singlestore__get_table_columns_and_constraints(create_definition_str, undefined_shard_key) }}
+      {{ singlestore__get_table_columns_and_constraints(create_definition_str, undefined_shard_key=undefined_shard_key) }}
       {% set compiled_code = get_select_subquery(compiled_code) %}
     {% else -%}
         {{ create_definition_str }}
