@@ -15,6 +15,7 @@ drop_and_create_new_db()
     mysql -u root -h 127.0.0.1 -P 3306 -p"${SQL_USER_PASSWORD}" --batch -N -e "DROP DATABASE IF EXISTS dbt_test; CREATE DATABASE dbt_test"
   else
     python ./.circleci/s2ms_cluster.py update dbt_test
+  fi
 }
 
 test_cases=(
