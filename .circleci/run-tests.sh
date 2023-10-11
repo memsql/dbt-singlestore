@@ -18,17 +18,13 @@ drop_and_create_new_db()
   fi
 }
 
-test_cases=(
-  'TestIncrementalConstraintsRollback'
-  'TestTableConstraintsRollback'
-  '"not test_docs and not TestIncrementalConstraintsRollback and not TestTableConstraintsRol"'
-)
-
-for test_case in "${test_cases[@]}"; do
-  pytest -k $test_case
-  drop_and_create_new_db
-done
 pytest /tests/functional/adapter/test_docs.py
+drop_and_create_new_db
+pytest -k TestIncrementalConstraintsRollback
+drop_and_create_new_db
+pytest -k TestTableConstraintsRollback
+drop_and_create_new_db
+pytest -k "not test_docs and not ConstraintsRollback"
 result_code=$?
 
 ./.circleci/setup-cluster.sh terminate $CLUSTER_TYPE
