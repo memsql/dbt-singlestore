@@ -22,7 +22,7 @@ test_cases=(
   "./tests/functional/adapter/test_docs.py"
   "-k TestIncrementalConstraintsRollback"
   "-k TestTableConstraintsRollback"
-  "-k \"not test_docs and not TestIncrementalConstraintsRollback and not TestTableConstraintsRollback\""
+  '-k "not test_docs and not TestIncrementalConstraintsRollback and not TestTableConstraintsRollback"'
 )
 
 for test_case in "${test_cases[@]}"; do
