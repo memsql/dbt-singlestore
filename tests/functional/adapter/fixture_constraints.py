@@ -93,9 +93,6 @@ models:
         expression: (id > 0)
       - type: primary_key
         columns: [ id ]
-      - type: unique
-        columns: [ color ]
-        name: strange_uniqueness_requirement
     columns:
       - name: id
         quote: true

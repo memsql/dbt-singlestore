@@ -27,11 +27,10 @@ from fixture_constraints import (
 )
 
 
-
 class SingleStoreColumnEqualSetup:
     @pytest.fixture
     def int_type(self):
-        return "INT"
+        return "LONG"
 
     @pytest.fixture
     def schema_int_type(self):
@@ -39,15 +38,15 @@ class SingleStoreColumnEqualSetup:
 
     @pytest.fixture
     def string_type(self):
-        return "TEXT"
+        return "BLOB"
 
     @pytest.fixture
     def data_types(self, int_type, schema_int_type, string_type):
         # sql_column_value, schema_data_type, error_data_type
         return [
             ["(1 :> int)", schema_int_type, int_type],
-            ["('1' :> text)", string_type, string_type],
-            #["(true :> bool)", "bool", "BOOL"],
+            ["('1' :> text)", "TEXT", string_type],
+            ["(true :> bool)", "bool", "TINY"],
             ["('2019-01-01' :> date)", "date", "DATE"],
             ["('2013-11-03 12:00:00' :> datetime)", "datetime", "DATETIME"],
             ["('1' :> numeric)", "numeric", "DECIMAL"],

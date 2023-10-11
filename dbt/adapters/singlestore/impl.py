@@ -1,8 +1,7 @@
-from functools import partial
-
 import agate
 from dataclasses import dataclass
 from datetime import datetime
+from functools import partial
 from typing import List, Optional, Any, Dict
 
 from dbt.adapters.singlestore import SingleStoreConnectionManager
@@ -146,22 +145,6 @@ class SingleStoreAdapter(SQLAdapter):
     def check_schema_exists(self, database, schema):
         return True
 
-    @available
-    @classmethod
-    def render_raw_columns_constraints(cls, raw_columns: Dict[str, Dict[str, Any]]) -> List:
-        rendered_column_constraints = []
-
-        for v in raw_columns.values():
-            rendered_column_constraint = [f"{v['name']} {v['data_type']}"]
-            for con in v.get("constraints", None):
-                constraint = cls._parse_column_constraint(con)
-                c = cls.process_parsed_constraint(constraint, cls.render_column_constraint)
-                if c is not None:
-                    rendered_column_constraint.append(c)
-            rendered_column_constraints.append(" ".join(rendered_column_constraint))
-
-        return rendered_column_constraints
-
     @classmethod
     def render_raw_model_constraints(cls, raw_constraints: List[Dict[str, Any]], undefined_shard_key: bool = True) -> List[str]:
         partial_render_raw_model_constraint = partial(cls.render_raw_model_constraint, undefined_shard_key=undefined_shard_key)
@@ -192,25 +175,6 @@ class SingleStoreAdapter(SQLAdapter):
             return f"{constraint_prefix}foreign key ({column_list}) references {constraint.expression}"
         elif constraint.type == ConstraintType.custom and constraint.expression:
             return f"{constraint_prefix}{constraint.expression}"
-        else:
-            return None
-
-    @classmethod
-    def render_column_constraint(cls, constraint: ColumnLevelConstraint) -> Optional[str]:
-        """Render the given constraint as DDL text. Should be overriden by adapters which need custom constraint
-        rendering."""
-        if constraint.type == ConstraintType.check and constraint.expression:
-            return f"check {constraint.expression}"
-        elif constraint.type == ConstraintType.not_null:
-            return "not null"
-        elif constraint.type == ConstraintType.unique:
-            return "unique"
-        elif constraint.type == ConstraintType.primary_key:
-            return "primary key"
-        elif constraint.type == ConstraintType.foreign_key:
-            return "foreign key"
-        elif constraint.type == ConstraintType.custom and constraint.expression:
-            return constraint.expression
         else:
             return None
 
