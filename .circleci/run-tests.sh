@@ -18,7 +18,7 @@ drop_and_create_new_db()
   fi
 }
 
-pytest /tests/functional/adapter/test_docs.py
+pytest ./tests/functional/adapter/test_docs.py
 drop_and_create_new_db
 pytest -k TestIncrementalConstraintsRollback
 drop_and_create_new_db
