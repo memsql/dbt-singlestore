@@ -38,7 +38,11 @@
     {%- set contract_config = config.get('contract') -%}
 
     {%- set create_definition_list = [] %}
+    {%- set contract_defined_primary = False %}
+    {%- set contract_defined_unique = False %}
     {%- set undefined_shard_key = True %}
+
+
     {% if primary_key | length and not contract_config.enforced %}
         {% set quoted = [] -%}
             {%- for col in primary_key -%}

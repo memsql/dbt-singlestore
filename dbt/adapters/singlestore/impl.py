@@ -178,6 +178,22 @@ class SingleStoreAdapter(SQLAdapter):
         else:
             return None
 
+    @classmethod
+    def check_for_constraint(cls, raw_model_constraints: List[Dict[str, Any]], raw_column_constraints: List[Dict[str, Any]], primary_key: bool):
+        constraint_type = ConstraintType.primary_key if primary_key else ConstraintType.unique
+        for raw_constraint in raw_model_constraints:
+            constraint = cls._parse_model_constraint(raw_constraint)
+            if constraint.type == constraint_type:
+                return True
+
+        for raw_constraint in raw_column_constraints:
+            constraint = cls._parse_column_constraint(raw_constraint)
+            if constraint.type == constraint_type:
+                return True
+
+        return False
+
+
     # Methods used in adapter tests
     def update_column_sql(
         self,
@@ -214,3 +230,5 @@ class SingleStoreAdapter(SQLAdapter):
 
     def valid_incremental_strategies(self):
         return ["delete+insert"]
+
+
