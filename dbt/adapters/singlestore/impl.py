@@ -167,7 +167,7 @@ class SingleStoreAdapter(SQLAdapter):
         elif constraint.type == ConstraintType.unique:
             constraint_expression = f" {constraint.expression}" if constraint.expression else ""
             shard_key = f"shard key ({column_list})" if undefined_shard_key else ""
-            return f"{constraint_prefix}unique {constraint_expression} ({column_list}),\n {shard_key}"
+            return f"{constraint_prefix}unique key{constraint_expression} ({column_list}),\n {shard_key}"
         elif constraint.type == ConstraintType.primary_key:
             constraint_expression = f" {constraint.expression}" if constraint.expression else ""
             return f"{constraint_prefix}primary key{constraint_expression} ({column_list})"
@@ -178,18 +178,20 @@ class SingleStoreAdapter(SQLAdapter):
         else:
             return None
 
-    @classmethod
-    def check_for_constraint(cls, raw_model_constraints: List[Dict[str, Any]], raw_column_constraints: List[Dict[str, Any]], primary_key: bool):
+
+    @available
+    def check_for_constraint(cls, raw_model_constraints: List[Dict[str, Any]], raw_column_constraints: Dict[str, Dict[str, Any]], primary_key: bool):
         constraint_type = ConstraintType.primary_key if primary_key else ConstraintType.unique
         for raw_constraint in raw_model_constraints:
             constraint = cls._parse_model_constraint(raw_constraint)
             if constraint.type == constraint_type:
                 return True
 
-        for raw_constraint in raw_column_constraints:
-            constraint = cls._parse_column_constraint(raw_constraint)
-            if constraint.type == constraint_type:
-                return True
+        for raw_constraint in raw_column_constraints.values():
+            for con in raw_constraint.get("constraints", None):
+                constraint = cls._parse_column_constraint(con)
+                if constraint.type == constraint_type:
+                    return True
 
         return False
 

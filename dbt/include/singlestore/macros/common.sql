@@ -27,6 +27,10 @@
 {% endmacro %}
 
 
+{% macro check_for_constraint(primary_key) -%}
+    {% do return(adapter.check_for_constraint(raw_model_constraints=model['constraints'], raw_column_constraints=model['columns'], primary_key=primary_key)) -%}
+{% endmacro %}
+
 {% macro singlestore__create_table_as(temporary, relation, compiled_code, language='sql') -%}
     {%- set sql_header = config.get('sql_header', none) -%}
     {%- set primary_key = config.get('primary_key', []) -%} {# PRIMARY KEY (primary_key) #}
@@ -42,8 +46,12 @@
     {%- set contract_defined_unique = False %}
     {%- set undefined_shard_key = True %}
 
+    {% if contract_config.enforced %}
+        {% set contract_defined_primary = check_for_constraint(True) -%}
+        {% set contract_defined_unique = check_for_constraint(False) -%}
+    {% endif -%}
 
-    {% if primary_key | length and not contract_config.enforced %}
+    {% if primary_key | length and (not contract_config.enforced or (contract_config.enforced and not contract_defined_primary)) %}
         {% set quoted = [] -%}
             {%- for col in primary_key -%}
                 {%- do quoted.append(adapter.quote(col)) -%}
@@ -64,14 +72,14 @@
             {%- endfor %}
         {% set undefined_shard_key = False -%}
         {% do create_definition_list.append('SHARD KEY ({})'.format(", ".join(quoted))) -%}
-    {% elif unique_table_key | length and not contract_config.enforced -%}
+    {% elif unique_table_key | length and (not contract_config.enforced or (contract_config.enforced and not contract_defined_unique)) -%}
         {% set quoted = [] -%}
             {%- for col in unique_table_key -%}
                 {%- do quoted.append(adapter.quote(col)) -%}
             {%- endfor %}
         {% do create_definition_list.append('SHARD KEY ({})'.format(", ".join(quoted))) -%}
     {% endif -%}
-    {% if unique_table_key | length and not contract_config.enforced -%}
+    {% if unique_table_key | length and (not contract_config.enforced or (contract_config.enforced and not contract_defined_unique)) -%}
         {% set quoted = [] -%}
             {%- for col in unique_table_key -%}
                 {%- do quoted.append(adapter.quote(col)) -%}
