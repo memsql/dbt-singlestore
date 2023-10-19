@@ -10,7 +10,7 @@ S2MS_API_KEY = os.getenv("S2MS_API_KEY")  # project UI env-var reference
 
 WORKSPACE_GROUP_BASE_NAME = "dbt-connector-ci-test-cluster"
 WORKSPACE_NAME = "tests"
-AWS_EU_CENTRAL_REGION = "5781fbe5-8e2d-40ee-8cfe-82d6cfe74aed"
+AWS_US_EAST_REGION = "3482219c-a389-4079-b18b-d50662524e8a"
 AUTO_TERMINATE_MINUTES = 20
 WORKSPACE_ENDPOINT_FILE = "WORKSPACE_ENDPOINT_FILE"
 WORKSPACE_GROUP_ID_FILE = "WORKSPACE_GROUP_ID_FILE"
@@ -20,7 +20,7 @@ def create_workspace(workspace_manager):
     w_group_name = WORKSPACE_GROUP_BASE_NAME + "-" + uuid.uuid4().hex
     workspace_group = workspace_manager.create_workspace_group(
         name=w_group_name,
-        region=AWS_EU_CENTRAL_REGION,
+        region=AWS_US_EAST_REGION,
         firewall_ranges=["0.0.0.0/0"],
         admin_password=SQL_USER_PASSWORD,
         expires_at="20m"
