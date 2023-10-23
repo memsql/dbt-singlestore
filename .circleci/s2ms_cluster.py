@@ -3,9 +3,6 @@ import singlestoredb as s2
 import uuid
 import sys
 from typing import Dict, Optional
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3 import Retry
 
 SQL_USER_PASSWORD = os.getenv("SQL_USER_PASSWORD")  # project UI env-var reference
 S2MS_API_KEY = os.getenv("S2MS_API_KEY")  # project UI env-var reference
@@ -46,8 +43,9 @@ def create_workspace(workspace_manager):
         f.write(workspace_group.id)
     print("Created workspace group {}".format(w_group_name))
 
+    print("Starting creation of a workspace")
     def create_workspace_within_group():
-        return workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00", wait_on_active=True, wait_timeout=600)
+        return workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00", wait_on_active=True, wait_timeout=550)
     workspace = retry(create_workspace_within_group)
 
     with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
