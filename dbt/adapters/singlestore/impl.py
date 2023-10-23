@@ -58,8 +58,8 @@ class SingleStoreAdapter(SQLAdapter):
     CONSTRAINT_SUPPORT = {
         ConstraintType.check: ConstraintSupport.NOT_SUPPORTED,
         ConstraintType.not_null: ConstraintSupport.ENFORCED,
-        ConstraintType.unique: ConstraintSupport.ENFORCED,
-        ConstraintType.primary_key: ConstraintSupport.ENFORCED,
+        ConstraintType.unique: ConstraintSupport.NOT_ENFORCED,
+        ConstraintType.primary_key: ConstraintSupport.NOT_ENFORCED,
         ConstraintType.foreign_key: ConstraintSupport.NOT_SUPPORTED,
     }
 
@@ -158,8 +158,8 @@ class SingleStoreAdapter(SQLAdapter):
 
     @classmethod
     def render_model_constraint(cls, constraint: ModelLevelConstraint, undefined_shard_key: bool = True) -> Optional[str]:
-        """Render the given constraint as DDL text. Should be overriden by adapters which need custom constraint
-        rendering."""
+        """We're overriding this method because when the shard key is not defined and the unique key is
+           defined, we want them to be the same due to the SingleStoreDB peculiarities"""
         constraint_prefix = f"constraint {constraint.name} " if constraint.name else ""
         column_list = ", ".join(constraint.columns)
         if constraint.type == ConstraintType.check and constraint.expression:
@@ -232,5 +232,3 @@ class SingleStoreAdapter(SQLAdapter):
 
     def valid_incremental_strategies(self):
         return ["delete+insert"]
-
-
