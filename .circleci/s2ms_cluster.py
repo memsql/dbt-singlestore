@@ -21,21 +21,12 @@ TOTAL_RETRIES = 5
 
 
 def retry(func):
-    retries = Retry(
-        total=TOTAL_RETRIES,
-        backoff_factor=0.2,
-        status_forcelist=[500, 502, 503, 504]
-    )
-
-    with requests.Session() as s:
-        s.mount('http://', HTTPAdapter(max_retries=retries))
-        s.mount('https://', HTTPAdapter(max_retries=retries))
-
+     for i in range(TOTAL_RETRIES):
         try:
-            result = func()
-            return result
-        except requests.exceptions.RequestException as e:
-            raise SystemExit(e)
+            return func()
+        except Exception as e:
+            if i == TOTAL_RETRIES - 1:
+                raise SystemExit(e)
 
 
 def create_workspace(workspace_manager):
@@ -60,6 +51,7 @@ def create_workspace(workspace_manager):
 
     with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
         f.write(workspace.endpoint)
+    print("Created workspace {}".format(WORKSPACE_NAME))
     return workspace
 
 
