@@ -88,8 +88,10 @@
     {% endif -%}
 
     {%- set create_definition_str = '' %}
-    {% if create_definition_list | length -%}
+    {% if create_definition_list | length and contract_config.enforced -%}
         {% set create_definition_str = create_definition_list|join(", ") -%}
+    {% elif create_definition_list | length and not contract_config.enforced -%}
+        {% set create_definition_str = '(' + create_definition_list|join(", ") + ')' -%}
     {% endif -%}
 
     {%- set charset_definition_str = ' ' %}
