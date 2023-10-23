@@ -27,6 +27,7 @@ def retry(func):
         except Exception as e:
             if i == TOTAL_RETRIES - 1:
                 raise SystemExit(e)
+            print(f"Attempt {i+1} failed with error: {e}. Retrying...")
 
 
 def create_workspace(workspace_manager):
@@ -46,7 +47,7 @@ def create_workspace(workspace_manager):
     print("Created workspace group {}".format(w_group_name))
 
     def create_workspace_within_group():
-        return workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00", wait_on_active=True, wait_timeout=1200)
+        return workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00", wait_on_active=True, wait_timeout=600)
     workspace = retry(create_workspace_within_group)
 
     with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
