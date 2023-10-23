@@ -46,7 +46,7 @@ def create_workspace(workspace_manager):
     print("Created workspace group {}".format(w_group_name))
 
     def create_workspace_within_group():
-        workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00", wait_on_active=True, wait_timeout=1200)
+        return workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00", wait_on_active=True, wait_timeout=1200)
     workspace = retry(create_workspace_within_group)
 
     with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
