@@ -3,7 +3,9 @@ import singlestoredb as s2
 import uuid
 import sys
 from typing import Dict, Optional
-
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3 import Retry
 
 SQL_USER_PASSWORD = os.getenv("SQL_USER_PASSWORD")  # project UI env-var reference
 S2MS_API_KEY = os.getenv("S2MS_API_KEY")  # project UI env-var reference
@@ -15,21 +17,47 @@ AUTO_TERMINATE_MINUTES = 20
 WORKSPACE_ENDPOINT_FILE = "WORKSPACE_ENDPOINT_FILE"
 WORKSPACE_GROUP_ID_FILE = "WORKSPACE_GROUP_ID_FILE"
 
+TOTAL_RETRIES = 5
+
+
+def retry(func):
+    retries = Retry(
+        total=TOTAL_RETRIES,
+        backoff_factor=0.2,
+        status_forcelist=[500, 502, 503, 504]
+    )
+
+    with requests.Session() as s:
+        s.mount('http://', HTTPAdapter(max_retries=retries))
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        try:
+            result = func()
+            return result
+        except requests.exceptions.RequestException as e:
+            raise SystemExit(e)
+
 
 def create_workspace(workspace_manager):
     w_group_name = WORKSPACE_GROUP_BASE_NAME + "-" + uuid.uuid4().hex
-    workspace_group = workspace_manager.create_workspace_group(
-        name=w_group_name,
-        region=AWS_US_EAST_REGION,
-        firewall_ranges=["0.0.0.0/0"],
-        admin_password=SQL_USER_PASSWORD,
-        expires_at="20m"
-    )
+    def create_workspace_group():
+        return workspace_manager.create_workspace_group(
+            name=w_group_name,
+            region=AWS_US_EAST_REGION,
+            firewall_ranges=["0.0.0.0/0"],
+            admin_password=SQL_USER_PASSWORD,
+            expires_at="20m"
+        )
+    workspace_group = retry(create_workspace_group)
+
     with open(WORKSPACE_GROUP_ID_FILE, "w") as f:
         f.write(workspace_group.id)
     print("Created workspace group {}".format(w_group_name))
 
-    workspace = workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00", wait_on_active=True, wait_timeout=1200)
+    def create_workspace_within_group():
+        workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00", wait_on_active=True, wait_timeout=1200)
+    workspace = retry(create_workspace_within_group)
+
     with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
         f.write(workspace.endpoint)
     return workspace
