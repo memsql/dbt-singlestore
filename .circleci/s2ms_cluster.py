@@ -50,7 +50,7 @@ def create_workspace(workspace_manager):
     def get_workspace_endpoint():
         with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
             f.write(workspace.endpoint)
-    retry(get_workspace_endpoint())
+    retry(get_workspace_endpoint)
     print("Created workspace {}".format(WORKSPACE_NAME))
     return workspace
 
