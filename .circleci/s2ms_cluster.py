@@ -2,6 +2,7 @@ import os
 import singlestoredb as s2
 import uuid
 import sys
+import time
 from typing import Dict, Optional
 
 SQL_USER_PASSWORD = os.getenv("SQL_USER_PASSWORD")  # project UI env-var reference
@@ -15,7 +16,7 @@ WORKSPACE_ENDPOINT_FILE = "WORKSPACE_ENDPOINT_FILE"
 WORKSPACE_GROUP_ID_FILE = "WORKSPACE_GROUP_ID_FILE"
 
 TOTAL_RETRIES = 5
-
+RETRY_DELAY = 300
 
 def retry(func):
      for i in range(TOTAL_RETRIES):
@@ -23,8 +24,9 @@ def retry(func):
             return func()
         except Exception as e:
             if i == TOTAL_RETRIES - 1:
-                raise SystemExit(e)
-            print(f"Attempt {i+1} failed with error: {e}. Retrying...")
+                raise
+            print(f"Attempt {i+1} failed with error: {e}. Retrying in {RETRY_DELAY} seconds...")
+            time.sleep(RETRY_DELAY)
 
 
 def create_workspace(workspace_manager):
@@ -35,7 +37,7 @@ def create_workspace(workspace_manager):
             region=AWS_US_EAST_REGION,
             firewall_ranges=["0.0.0.0/0"],
             admin_password=SQL_USER_PASSWORD,
-            expires_at="20m"
+            expires_at="30m"
         )
     workspace_group = retry(create_workspace_group)
 
@@ -44,12 +46,11 @@ def create_workspace(workspace_manager):
     print("Created workspace group {}".format(w_group_name))
 
     print("Starting creation of a workspace")
-    def create_workspace_within_group():
-        return workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00", wait_on_active=True, wait_timeout=600)
-    workspace = retry(create_workspace_within_group)
-
-    with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
-        f.write(workspace.endpoint)
+    workspace = workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00")
+    def get_workspace_endpoint():
+        with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
+            f.write(workspace.endpoint)
+    retry(get_workspace_endpoint())
     print("Created workspace {}".format(WORKSPACE_NAME))
     return workspace
 
@@ -70,10 +71,9 @@ def check_and_update_connection(create_db: Optional[str] = None):
     workspace_group = workspace_manager.get_workspace_group(workspace_group_id)
     workspace = workspace_group.workspaces[0]
 
-    conn = workspace.connect(
-        user="admin",
-        password=SQL_USER_PASSWORD,
-        port=3306)
+    def connect_to_workspace():
+        return workspace.connect(user="admin", password=SQL_USER_PASSWORD, port=3306)
+    conn = retry(connect_to_workspace)
 
     cur = conn.cursor()
     try:
