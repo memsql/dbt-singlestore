@@ -45,13 +45,10 @@ def create_workspace(workspace_manager):
         f.write(workspace_group.id)
     print("Created workspace group {}".format(w_group_name))
 
-    print("Starting creation of a workspace")
     workspace = workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00")
-    def get_workspace_endpoint():
-        with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
-            f.write(workspace.endpoint)
-    retry(get_workspace_endpoint)
-    print("Created workspace {}".format(WORKSPACE_NAME))
+    with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
+        f.write(workspace.endpoint)
+
     return workspace
 
 
