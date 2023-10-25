@@ -46,8 +46,14 @@ def create_workspace(workspace_manager):
     print("Created workspace group {}".format(w_group_name))
 
     workspace = workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00")
-    with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
-        f.write(workspace.endpoint)
+
+    def get_workspace_endpoint():
+        with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
+            if workspace.endpoint is not None:
+                f.write(workspace.endpoint)
+            else:
+                raise Exception("Workspace is still not active")
+    retry(get_workspace_endpoint)
 
     return workspace
 
