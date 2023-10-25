@@ -47,13 +47,11 @@ def create_workspace(workspace_manager):
 
     workspace = workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00")
 
-    def get_workspace_endpoint():
+    def connect_and_save_endpoint():
+        workspace.connect(user="admin", password=SQL_USER_PASSWORD, port=3306)
         with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
-            if workspace.endpoint is not None:
-                f.write(workspace.endpoint)
-            else:
-                raise Exception("Workspace is still not active")
-    retry(get_workspace_endpoint)
+            f.write(workspace.endpoint)
+    retry(connect_and_save_endpoint)
 
     return workspace
 
