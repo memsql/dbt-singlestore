@@ -16,7 +16,6 @@ WORKSPACE_ENDPOINT_FILE = "WORKSPACE_ENDPOINT_FILE"
 WORKSPACE_GROUP_ID_FILE = "WORKSPACE_GROUP_ID_FILE"
 
 TOTAL_RETRIES = 5
-RETRY_DELAY = 300
 
 def retry(func):
      for i in range(TOTAL_RETRIES):
@@ -25,8 +24,7 @@ def retry(func):
         except Exception as e:
             if i == TOTAL_RETRIES - 1:
                 raise
-            print(f"Attempt {i+1} failed with error: {e}. Retrying in {RETRY_DELAY} seconds...")
-            time.sleep(RETRY_DELAY)
+            print(f"Attempt {i+1} failed with error: {e}.")
 
 
 def create_workspace(workspace_manager):
@@ -45,15 +43,10 @@ def create_workspace(workspace_manager):
         f.write(workspace_group.id)
     print("Created workspace group {}".format(w_group_name))
 
-    workspace = workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00")
+    workspace = workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00", wait_on_active=True, wait_timeout=600)
 
-    def save_endpoint():
-        with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
-            if workspace.endpoint is not None:
-                f.write(workspace.endpoint)
-            else:
-                raise Exception("Endpoint value is None")
-    retry(save_endpoint)
+    with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
+        f.write(workspace.endpoint)
 
     return workspace
 
