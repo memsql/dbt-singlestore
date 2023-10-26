@@ -10,7 +10,7 @@ S2MS_API_KEY = os.getenv("S2MS_API_KEY")  # project UI env-var reference
 
 WORKSPACE_GROUP_BASE_NAME = "dbt-connector-ci-test-cluster"
 WORKSPACE_NAME = "tests"
-AWS_US_EAST_REGION = "3482219c-a389-4079-b18b-d50662524e8a"
+AWS_US_WEST_REGION = "1c1de314-2cc0-4c74-bd54-5047ff90842e"
 AUTO_TERMINATE_MINUTES = 20
 WORKSPACE_ENDPOINT_FILE = "WORKSPACE_ENDPOINT_FILE"
 WORKSPACE_GROUP_ID_FILE = "WORKSPACE_GROUP_ID_FILE"
@@ -34,7 +34,7 @@ def create_workspace(workspace_manager):
     def create_workspace_group():
         return workspace_manager.create_workspace_group(
             name=w_group_name,
-            region=AWS_US_EAST_REGION,
+            region=AWS_US_WEST_REGION,
             firewall_ranges=["0.0.0.0/0"],
             admin_password=SQL_USER_PASSWORD,
             expires_at="30m"
@@ -47,11 +47,13 @@ def create_workspace(workspace_manager):
 
     workspace = workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00")
 
-    def connect_and_save_endpoint():
-        workspace.connect(user="admin", password=SQL_USER_PASSWORD, port=3306)
+    def save_endpoint():
         with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
-            f.write(workspace.endpoint)
-    retry(connect_and_save_endpoint)
+            if workspace.endpoint is not None:
+                f.write(workspace.endpoint)
+            else:
+                raise Exception("Endpoint value is None")
+    retry(save_endpoint)
 
     return workspace
 
