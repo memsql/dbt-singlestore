@@ -5,6 +5,7 @@ import singlestoredb
 from contextlib import contextmanager
 from dataclasses import dataclass
 from singlestoredb.connection import Cursor
+import singlestoredb.types as st
 from typing import Optional
 
 import dbt.exceptions
@@ -13,7 +14,6 @@ from dbt.adapters.sql import SQLConnectionManager
 from dbt.contracts.connection import AdapterResponse
 from dbt.logger import GLOBAL_LOGGER as logger
 from dbt.adapters.singlestore import __version__
-
 
 DUMMY_RESPONSE_CODE = 0
 
@@ -136,3 +136,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
         except Exception as e:
             logger.debug("Error running SQL: {}", sql)
             raise dbt.exceptions.DbtRuntimeError(e) from e
+
+    @classmethod
+    def data_type_code_to_name(cls, type_code: int) -> str:
+        return st.ColumnType.get_name(type_code)
