@@ -8,7 +8,7 @@ from dbt.tests.util import run_dbt, run_dbt_and_capture
 from dbt.tests.adapter.dbt_debug.test_dbt_debug import BaseDebug, BaseDebugProfileVariable
 
 
-class TestDebugPostgres(BaseDebug):
+class TestDebug(BaseDebug):
     def test_ok(self, project):
         run_dbt(["debug"])
         assert "ERROR" not in self.capsys.readouterr().out
@@ -44,11 +44,11 @@ class TestDebugPostgres(BaseDebug):
         self.assertGotValue(re.compile(r"\s+output 'none_target'"), "misconfigured")
 
 
-class TestDebugProfileVariablePostgres(BaseDebugProfileVariable):
+class TestDebugProfileVariable(BaseDebugProfileVariable):
     pass
 
 
-class TestDebugInvalidProjectPostgres(BaseDebug):
+class TestDebugInvalidProject(BaseDebug):
     def test_empty_project(self, project):
         with open("dbt_project.yml", "w") as f:  # noqa: F841
             pass

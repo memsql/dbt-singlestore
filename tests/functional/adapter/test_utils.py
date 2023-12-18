@@ -24,7 +24,9 @@ from dbt.tests.adapter.utils.test_string_literal import BaseStringLiteral
 from dbt.tests.adapter.utils.data_types.test_type_boolean import BaseTypeBoolean
 from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampNaive
 from dbt.tests.adapter.utils.test_timestamps import BaseCurrentTimestamps
-
+from dbt.tests.adapter.utils.test_equals import BaseEquals
+from dbt.tests.adapter.utils.test_null_compare import BaseNullCompare, BaseMixedNullCompare
+from dbt.tests.adapter.utils.test_validate_sql import BaseValidateSqlMethod
 
 class TestAnyValue(BaseAnyValue):
     pass
@@ -291,3 +293,18 @@ class TestCurrentTimestamps(BaseCurrentTimestamps):
                 select current_timestamp() as curr_timestamp,
                        utc_timestamp() as curr_timestamp_in_utc_backcompat
                 """
+
+class TestEquals(BaseEquals):
+    pass
+
+
+class TestMixedNullCompare(BaseMixedNullCompare):
+    pass
+
+
+class TestNullCompare(BaseNullCompare):
+    pass
+
+
+class TestValidateSqlMethod(BaseValidateSqlMethod):
+    pass

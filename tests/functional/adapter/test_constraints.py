@@ -8,7 +8,13 @@ from dbt.tests.adapter.constraints.test_constraints import (
     BaseConstraintsRollback,
     BaseIncrementalConstraintsRuntimeDdlEnforcement,
     BaseIncrementalConstraintsRollback,
-    BaseModelConstraintsRuntimeEnforcement
+    BaseModelConstraintsRuntimeEnforcement,
+    BaseConstraintQuotedColumn,
+)
+
+from dbt.tests.adapter.constraints.fixtures import (
+    model_contract_header_schema_yml,
+    model_quoted_column_schema_yml,
 )
 
 from fixture_constraints import (
@@ -21,6 +27,7 @@ from fixture_constraints import (
     my_model_incremental_wrong_order_sql,
     my_model_incremental_wrong_name_sql,
     my_model_with_nulls_sql,
+    my_model_with_quoted_column_name_sql,
     model_schema_yml,
     constrained_model_schema_yml,
     _expected_sql_singlestore
@@ -178,6 +185,33 @@ create table <model_identifier> (
         (1 :> INT) as id,
         ('blue' :> TEXT) as color,
         ('2019-01-01' :> TEXT) as date_day
+    ) as model_subq
+"""
+    pass
+
+
+class TestConstraintQuotedColumn(BaseConstraintQuotedColumn):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "my_model.sql": my_model_with_quoted_column_name_sql,
+            "constraints_schema.yml": model_quoted_column_schema_yml,
+        }
+    @pytest.fixture(scope="class")
+    def expected_sql(self):
+        return """
+create table <model_identifier> (
+    id integer not null,
+    `from` text not null,
+    date_day text,
+    shard key()
+) as
+    select id, `from`, date_day
+    from (
+        select
+          ('blue' :> TEXT) as `from`,
+          (1 :> INT) as id,
+          ('2019-01-01' :> TEXT) as date_day
     ) as model_subq
 """
     pass
