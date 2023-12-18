@@ -232,4 +232,4 @@ class SingleStoreAdapter(SQLAdapter):
             )
 
     def valid_incremental_strategies(self):
-        return ["delete+insert"]
+        return ["delete+insert", "append"]

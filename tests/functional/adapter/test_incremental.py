@@ -1,8 +1,48 @@
 import pytest
+
 from dbt.tests.util import run_dbt, check_relations_equal
 from dbt.tests.adapter.incremental.test_incremental_predicates import (
     BaseIncrementalPredicates,
     ResultHolder)
+from dbt.tests.adapter.incremental.test_incremental_on_schema_change import BaseIncrementalOnSchemaChange
+
+from fixture_incremental import (
+    _MODELS__INCREMENTAL_SYNC_REMOVE_ONLY,
+    _MODELS__INCREMENTAL_IGNORE,
+    _MODELS__INCREMENTAL_SYNC_REMOVE_ONLY_TARGET,
+    _MODELS__INCREMENTAL_IGNORE_TARGET,
+    _MODELS__INCREMENTAL_FAIL,
+    _MODELS__INCREMENTAL_SYNC_ALL_COLUMNS,
+    _MODELS__INCREMENTAL_APPEND_NEW_COLUMNS_REMOVE_ONE,
+    _MODELS__A,
+    _MODELS__INCREMENTAL_APPEND_NEW_COLUMNS_TARGET,
+    _MODELS__INCREMENTAL_APPEND_NEW_COLUMNS,
+    _MODELS__INCREMENTAL_SYNC_ALL_COLUMNS_TARGET,
+    _MODELS__INCREMENTAL_APPEND_NEW_COLUMNS_REMOVE_ONE_TARGET,
+)
+
+
+class SingleStoreIncrementalOnSchemaChangeSetup:
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "incremental_sync_remove_only.sql": _MODELS__INCREMENTAL_SYNC_REMOVE_ONLY,
+            "incremental_ignore.sql": _MODELS__INCREMENTAL_IGNORE,
+            "incremental_sync_remove_only_target.sql": _MODELS__INCREMENTAL_SYNC_REMOVE_ONLY_TARGET,
+            "incremental_ignore_target.sql": _MODELS__INCREMENTAL_IGNORE_TARGET,
+            "incremental_fail.sql": _MODELS__INCREMENTAL_FAIL,
+            "incremental_sync_all_columns.sql": _MODELS__INCREMENTAL_SYNC_ALL_COLUMNS,
+            "incremental_append_new_columns_remove_one.sql": _MODELS__INCREMENTAL_APPEND_NEW_COLUMNS_REMOVE_ONE,
+            "model_a.sql": _MODELS__A,
+            "incremental_append_new_columns_target.sql": _MODELS__INCREMENTAL_APPEND_NEW_COLUMNS_TARGET,
+            "incremental_append_new_columns.sql": _MODELS__INCREMENTAL_APPEND_NEW_COLUMNS,
+            "incremental_sync_all_columns_target.sql": _MODELS__INCREMENTAL_SYNC_ALL_COLUMNS_TARGET,
+            "incremental_append_new_columns_remove_one_target.sql": _MODELS__INCREMENTAL_APPEND_NEW_COLUMNS_REMOVE_ONE_TARGET,
+        }
+
+
+class TestIncrementalOnSchemaChange(SingleStoreIncrementalOnSchemaChangeSetup, BaseIncrementalOnSchemaChange):
+    pass
 
 
 # we don't support custom schema in models in a way dbt expects,
@@ -45,4 +85,3 @@ class TestPredicatesDeleteInsert(SingleStoreBaseIncrementalPredicates, BaseIncre
                 "+incremental_strategy": "delete+insert"
             }
         }
-
