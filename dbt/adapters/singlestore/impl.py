@@ -77,6 +77,7 @@ class SingleStoreAdapter(SQLAdapter):
     def is_cancelable(cls):
         return True
 
+    @classmethod
     def quote(self, identifier):
         return '`{}`'.format(identifier)
 
@@ -231,4 +232,4 @@ class SingleStoreAdapter(SQLAdapter):
             )
 
     def valid_incremental_strategies(self):
-        return ["delete+insert"]
+        return ["delete+insert", "append"]

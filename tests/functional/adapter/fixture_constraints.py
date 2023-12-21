@@ -7,7 +7,6 @@ models:
         enforced: true
     columns:
       - name: id
-        quote: true
         data_type: integer
         description: hello
         constraints:
@@ -95,7 +94,6 @@ models:
         columns: [ id ]
     columns:
       - name: id
-        quote: true
         data_type: integer
         description: hello
         constraints:
@@ -244,6 +242,7 @@ select
   {sql_value} as wrong_data_type_column_name
 """
 
+
 # model breaking constraints
 my_model_with_nulls_sql = """
 {{
@@ -287,6 +286,15 @@ select
   (null :> {{ dbt.type_int() }}) as id,
   -- change the color as well (to test rollback)
   ('red' :> {{ dbt.type_string() }}) as color,
+  ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
+"""
+
+
+# 'from' is a reserved word, so it must be quoted
+my_model_with_quoted_column_name_sql = """
+select
+  ('blue' :> {{ dbt.type_string() }}) as {{ adapter.quote('from') }},
+  (1 :> {{ dbt.type_int() }}) as id,
   ('2019-01-01' :> {{ dbt.type_string() }}) as date_day
 """
 
