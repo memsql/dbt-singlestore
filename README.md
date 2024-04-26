@@ -41,6 +41,9 @@ Default dbt [test suite](tests/test_basic.py) is used to check the adapter funct
 
 Singlestore | dbt-core | dbt-tests-adapter
 ------------|----------|-------------------
+8.1.1       | 1.6.0    | 1.6.0
+8.1.1       | 1.5.0    | 1.5.0
+8.1.1       | 1.4.0    | 1.4.0
 8.1.1       | 1.3.0    | 1.3.0
 7.8.29      | 1.2.2    | 1.2.2
 
@@ -58,6 +61,37 @@ To use this adapter, SingleStore must be upgraded to the version 7.5 or newer.
 - [Fixed]((https://github.com/memsql/dbt-singlestore/issues/6)) failing materialization with `unique_key`.
 - [Fixed](https://github.com/memsql/dbt-singlestore/issues/7) changing a column's data type during incremental materialization.
 - [Added support](https://github.com/memsql/dbt-singlestore/issues/5) for `primary_key`, `sort_key`, `shard_key`, `unique_table_key`, `charset`, `collation`, `storage_type`, `indexes` options for creating SingleStore tables in `table` materialization.
+
+### 1.2.2
+- Update test framework
+- Implement connection retry logic
+- Fix index name possibly starting with 0 which is not allowed in SingleStore
+- Add support for grants config
+- Implement utils macros and add tests
+
+### 1.3
+- Add tests introduced in dbt 1.3.0
+
+### 1.4
+- Consolidate timestamp functions & macros
+- Test against Python 3.11
+- Replace deprecated exception functions
+- Add support of the delete+insert incremental strategy + new tests for incremental predicates
+
+### 1.4.1
+- switching from pymysql connector to singlestoredb
+- implementing cancel() function in SingleStoreConnectionManager class
+- support of connection attributes
+
+### 1.5
+- Add model contracts support (check and foreign keys constraints aren't supported)
+- Add tests for constraints
+- Modify create_table_as to use column ordering subquery
+
+### 1.6
+Summary:
+- add new tests
+- add new incremental tests and 'append' incremental strategy support
 
 ## Contributors
 
