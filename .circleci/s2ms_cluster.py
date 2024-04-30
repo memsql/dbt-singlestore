@@ -3,6 +3,7 @@ import singlestoredb as s2
 import uuid
 import sys
 import time
+from enum import Enum
 from typing import Dict, Optional
 
 SQL_USER_PASSWORD = os.getenv("SQL_USER_PASSWORD")  # project UI env-var reference
@@ -16,6 +17,34 @@ WORKSPACE_ENDPOINT_FILE = "WORKSPACE_ENDPOINT_FILE"
 WORKSPACE_GROUP_ID_FILE = "WORKSPACE_GROUP_ID_FILE"
 
 TOTAL_RETRIES = 5
+
+class Command(Enum):
+    DROP_AND_CREATE_DB = 1
+    CREATE_ROLES = 2
+
+
+def run_command(workspace, command):
+    def connect_to_workspace():
+        return workspace.connect(user="admin", password=SQL_USER_PASSWORD, port=3306)
+    conn = retry(connect_to_workspace)
+
+    cur = conn.cursor()
+    try:
+        cur.execute("SELECT NOW():>TEXT")
+        res = cur.fetchall()
+        print(f"Successfully connected to {workspace.id} at {res[0][0]}")
+
+        if command == Command.DROP_AND_CREATE_DB:
+            cur.execute(f"DROP DATABASE IF EXISTS {create_db}")
+            cur.execute(f"CREATE DATABASE {create_db}")
+        elif command == Command.CREATE_ROLES:
+            cur.execute(f"CREATE ROLE user_1")
+            cur.execute(f"CREATE ROLE user_2")
+            cur.execute(f"CREATE ROLE user_3")
+    finally:
+        cur.close()
+        conn.close()
+
 
 def retry(func):
      for i in range(TOTAL_RETRIES):
@@ -48,6 +77,8 @@ def create_workspace(workspace_manager):
     with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
         f.write(workspace.endpoint)
 
+    run_command(workspace, Command.CREATE_ROLES)
+
     return workspace
 
 
@@ -67,25 +98,8 @@ def check_and_update_connection(create_db: Optional[str] = None):
     workspace_group = workspace_manager.get_workspace_group(workspace_group_id)
     workspace = workspace_group.workspaces[0]
 
-    def connect_to_workspace():
-        return workspace.connect(user="admin", password=SQL_USER_PASSWORD, port=3306)
-    conn = retry(connect_to_workspace)
-
-    cur = conn.cursor()
-    try:
-        cur.execute("SELECT NOW():>TEXT")
-        res = cur.fetchall()
-        print(f"Successfully connected to {workspace.id} at {res[0][0]}")
-
-        if create_db is not None:
-            cur.execute(f"DROP DATABASE IF EXISTS {create_db}")
-            cur.execute(f"CREATE DATABASE {create_db}")
-            cur.execute(f"CREATE ROLE dbt_test_user_1")
-            cur.execute(f"CREATE ROLE dbt_test_user_2")
-            cur.execute(f"CREATE ROLE dbt_test_user_3")
-    finally:
-        cur.close()
-        conn.close()
+    if create_db is not None:
+        run_command(workspace, Command.DROP_AND_CREATE_DB)
 
 
 if __name__ == "__main__":
