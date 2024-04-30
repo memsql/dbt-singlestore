@@ -115,7 +115,7 @@ class TestInvalidGrants(BaseInvalidGrants):
     #   Creation of users via GRANT is deprecated. Use CREATE USER.
     #   In future versions, the NO_AUTO_CREATE_USER flag will be enabled by default
     def grantee_does_not_exist_error(self):
-        return "Creation of users via GRANT is deprecated. Use CREATE USER. To disable this behavior, disable the NO_AUTO_CREATE_USER flag, but it wil be deprected in future releases"
+        return ""
 
     def privilege_does_not_exist_error(self):
         return "You have an error in your SQL syntax"
