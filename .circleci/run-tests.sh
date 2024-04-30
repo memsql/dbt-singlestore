@@ -16,6 +16,10 @@ drop_and_create_new_db()
   else
     python ./.circleci/s2ms_cluster.py update dbt_test
   fi
+
+  psql -c "CREATE ROLE user_1;"
+  psql -c "CREATE ROLE user_2;"
+  psql -c "CREATE ROLE user_3;"
 }
 
 pytest ./tests/functional/adapter/test_docs.py
