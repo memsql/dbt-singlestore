@@ -23,7 +23,7 @@ class Command(Enum):
     CREATE_ROLES = 2
 
 
-def run_command(workspace, command):
+def run_command(workspace, command, create_db: Optional[str] = None):
     def connect_to_workspace():
         return workspace.connect(user="admin", password=SQL_USER_PASSWORD, port=3306)
     conn = retry(connect_to_workspace)
@@ -35,8 +35,9 @@ def run_command(workspace, command):
         print(f"Successfully connected to {workspace.id} at {res[0][0]}")
 
         if command == Command.DROP_AND_CREATE_DB:
-            cur.execute(f"DROP DATABASE IF EXISTS {create_db}")
-            cur.execute(f"CREATE DATABASE {create_db}")
+            if create_db is not None:
+                cur.execute(f"DROP DATABASE IF EXISTS {create_db}")
+                cur.execute(f"CREATE DATABASE {create_db}")
         elif command == Command.CREATE_ROLES:
             cur.execute(f"CREATE ROLE user_1")
             cur.execute(f"CREATE ROLE user_2")
@@ -99,7 +100,7 @@ def check_and_update_connection(create_db: Optional[str] = None):
     workspace = workspace_group.workspaces[0]
 
     if create_db is not None:
-        run_command(workspace, Command.DROP_AND_CREATE_DB)
+        run_command(workspace, Command.DROP_AND_CREATE_DB, create_db)
 
 
 if __name__ == "__main__":
