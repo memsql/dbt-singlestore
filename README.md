@@ -34,7 +34,7 @@ Administration    | Hooks             | Yes        | Yes
 Models            | Custom schema     | Limited*   | Yes
 
 * Custom schemas can be defined in a project models, but they can only serve as a modification to the prefix of the corresponding table names.
-  
+
 * SSL connection would be automatically established by dbt-singlestore for SingleStore users created with 'Require SSL' flag.
 
 ## Testing and supported versions
@@ -61,7 +61,6 @@ To use this adapter, SingleStore must be upgraded to the version 7.5 or newer.
 ## Changelog
 
 ### 1.6.1
-- Updated `get_grants_sql` implementation according to the changes introduced in SingleStore 8.5
 - Updated singlestoredb connector version
 
 ### 1.6

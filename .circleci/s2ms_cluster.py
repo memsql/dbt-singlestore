@@ -99,8 +99,7 @@ def check_and_update_connection(create_db: Optional[str] = None):
     workspace_group = workspace_manager.get_workspace_group(workspace_group_id)
     workspace = workspace_group.workspaces[0]
 
-    if create_db is not None:
-        run_command(workspace, Command.DROP_AND_CREATE_DB, create_db)
+    run_command(workspace, Command.DROP_AND_CREATE_DB, create_db)
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ terminate-s2ms-cluster() {
 }
 
 start-cluster-in-a-box() {
-  DEFAULT_IMAGE_NAME="singlestore/cluster-in-a-box:alma-8.1.1-45eec847e2-4.0.11-1.16.0"
+  DEFAULT_IMAGE_NAME="singlestore/cluster-in-a-box:alma-8.5.17-84d474bebf-4.0.17-1.17.10"
   IMAGE_NAME="${SINGLESTORE_IMAGE:-$DEFAULT_IMAGE_NAME}"
   CONTAINER_NAME="singlestore-integration"
   EXTERNAL_MASTER_PORT=3306
@@ -67,7 +67,7 @@ start-cluster-in-a-box() {
   fi
 
   mysql -u root -h 127.0.0.1 -P $EXTERNAL_MASTER_PORT -p"${SQL_USER_PASSWORD}" --batch -N -e "DROP DATABASE IF EXISTS dbt_test; CREATE DATABASE dbt_test"
-  mysql -u root -h 127.0.0.1 -P $EXTERNAL_MASTER_PORT -p"${SQL_USER_PASSWORD}" --batch -N -e "SET sql_mode = 'NO_AUTO_CREATE_USER'; CREATE USER user_1; CREATE USER user_2; CREATE USER user_3"
+  mysql -u root -h 127.0.0.1 -P $EXTERNAL_MASTER_PORT -p"${SQL_USER_PASSWORD}" --batch -N -e "CREATE USER user_1; CREATE USER user_2; CREATE USER user_3"
 
   export S2_HOST=127.0.0.1
   export S2_PORT=$EXTERNAL_MASTER_PORT

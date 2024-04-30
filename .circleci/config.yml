@@ -38,7 +38,7 @@ workflows:
               cluster_type: 
                 - s2ms
       - pytest:
-          name: "SingleStore 8.1 connection test"
+          name: "SingleStore 8.5 connection test"
           matrix:
             parameters:
               cluster_type: 

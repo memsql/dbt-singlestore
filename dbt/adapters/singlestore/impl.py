@@ -196,6 +196,7 @@ class SingleStoreAdapter(SQLAdapter):
 
         return False
 
+
     # Methods used in adapter tests
     def update_column_sql(
         self,

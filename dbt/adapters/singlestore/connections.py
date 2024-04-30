@@ -115,12 +115,6 @@ class SingleStoreConnectionManager(SQLConnectionManager):
         _, cursor = self.add_query(sql)
         res = cursor.fetchone()[0]
         return res
-    
-    def _get_singlestore_version(self):
-        sql = "SELECT @@memsql_version"
-        _, cursor = self.add_query(sql)
-        res = cursor.fetchone()[0]
-        return res
 
     def cancel(self, connection):
         connection_name = connection.name
