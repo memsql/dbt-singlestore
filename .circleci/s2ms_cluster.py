@@ -80,9 +80,9 @@ def check_and_update_connection(create_db: Optional[str] = None):
         if create_db is not None:
             cur.execute(f"DROP DATABASE IF EXISTS {create_db}")
             cur.execute(f"CREATE DATABASE {create_db}")
-            cur.execute(f"CREATE ROLE user_1")
-            cur.execute(f"CREATE ROLE user_2")
-            cur.execute(f"CREATE ROLE user_3")
+            cur.execute(f"CREATE ROLE dbt_test_user_1")
+            cur.execute(f"CREATE ROLE dbt_test_user_2")
+            cur.execute(f"CREATE ROLE dbt_test_user_3")
     finally:
         cur.close()
         conn.close()
