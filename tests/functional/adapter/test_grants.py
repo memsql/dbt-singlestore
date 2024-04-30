@@ -115,7 +115,7 @@ class TestInvalidGrants(BaseInvalidGrants):
     #   Creation of users via GRANT is deprecated. Use CREATE USER.
     #   In future versions, the NO_AUTO_CREATE_USER flag will be enabled by default
     def grantee_does_not_exist_error(self):
-        return ""
+        return "Creation of users via GRANT is deprecated. Use CREATE USER. To disable this behavior, disable the NO_AUTO_CREATE_USER flag, but it wil be deprected in future releases"
 
     def privilege_does_not_exist_error(self):
         return "You have an error in your SQL syntax"
@@ -124,7 +124,7 @@ class TestInvalidGrants(BaseInvalidGrants):
         # failure when grant to a user/role that doesn't exist
         yaml_file = self.interpolate_name_overrides(invalid_user_table_model_schema_yml)
         write_file(yaml_file, project.project_root, "models", "schema.yml")
-        (results, log_output) = run_dbt_and_capture(["--debug", "run"], expect_pass=True)
+        (results, log_output) = run_dbt_and_capture(["--debug", "run"], expect_pass=False)
         assert self.grantee_does_not_exist_error() in log_output
 
         # failure when grant to a privilege that doesn't exist
