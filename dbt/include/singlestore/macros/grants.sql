@@ -7,8 +7,3 @@
    where table_schema = '{{ relation.database }}'
      and table_name = '{{ relation.identifier }}'
 {% endmacro %}
-
-{%- macro singlestore__get_grant_sql(relation, privilege, grantees) -%}
-    create user if not exists {{ grantees | join(', ') }};
-    grant {{ privilege }} on {{ relation }} to {{ grantees | join(', ') }}
-{%- endmacro -%}

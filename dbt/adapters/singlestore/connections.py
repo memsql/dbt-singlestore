@@ -109,6 +109,13 @@ class SingleStoreConnectionManager(SQLConnectionManager):
             rows_affected=cursor.rowcount,
             code=DUMMY_RESPONSE_CODE
         )
+    
+    def _get_server_version(self):
+        sql = "SELECT @@memsql_version"
+        _, cursor = self.add_query(sql)
+        res = cursor.fetchone()[0]
+        print(type(res))
+        return res
 
     def _get_aggregator_id(self):
         sql = "SELECT @@aggregator_id"
