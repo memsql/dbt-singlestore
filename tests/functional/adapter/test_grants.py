@@ -111,9 +111,10 @@ class TestSnapshotGrants(BaseSnapshotGrants):
 
 
 class TestInvalidGrants(BaseInvalidGrants):
-    # SingleStore creates the user and sets a warning:
+    #   Prior to 8.5, by default SingleStore creates the user and sets a warning:
     #   Creation of users via GRANT is deprecated. Use CREATE USER.
-    #   In future versions, the NO_AUTO_CREATE_USER flag will be enabled by default
+    #   In future versions, the NO_AUTO_CREATE_USER flag will be enabled by default.
+    #   Starting from 8.5 SingleStore won't create the user and will raise an error.
     def grantee_does_not_exist_error(self):
         return ""
 
@@ -124,7 +125,7 @@ class TestInvalidGrants(BaseInvalidGrants):
         # failure when grant to a user/role that doesn't exist
         yaml_file = self.interpolate_name_overrides(invalid_user_table_model_schema_yml)
         write_file(yaml_file, project.project_root, "models", "schema.yml")
-        (results, log_output) = run_dbt_and_capture(["--debug", "run"], expect_pass=True)
+        (results, log_output) = run_dbt_and_capture(["--debug", "run"], expect_pass=False)
         assert self.grantee_does_not_exist_error() in log_output
 
         # failure when grant to a privilege that doesn't exist

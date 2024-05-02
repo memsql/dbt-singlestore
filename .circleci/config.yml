@@ -5,11 +5,14 @@ jobs:
     parameters:
       cluster_type:
         type: string
+      ciab_image:
+        type: string
     machine:
       image: ubuntu-2004:202104-01
       docker_layer_caching: true
     environment:
       CLUSTER_TYPE: << parameters.cluster_type >>
+      CIAB_IMAGE: << parameters.ciab_image >>
     steps:
       - checkout
       - run:
@@ -37,9 +40,22 @@ workflows:
             parameters:
               cluster_type: 
                 - s2ms
+              ciab_image:
+                - none, because it's s2ms cluster
       - pytest:
           name: "SingleStore 8.1 connection test"
           matrix:
             parameters:
+              cluster_type:
+                - ciab
+              ciab_image:
+                - singlestore/cluster-in-a-box:alma-8.1.1-45eec847e2-4.0.11-1.16.0
+      - pytest:
+          name: "SingleStore 8.5 connection test"
+          matrix:
+            parameters:
               cluster_type: 
                 - ciab
+              ciab_image:
+                - singlestore/cluster-in-a-box:alma-8.5.16-21d309f57c-4.0.17-1.17.10
+

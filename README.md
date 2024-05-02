@@ -33,16 +33,22 @@ Resources         | Seeds             | Yes        | Yes
 Administration    | Hooks             | Yes        | Yes
 Models            | Custom schema     | Limited*   | Yes
 
-* Custom schemas can be defined in a project models, but they can only serve as a modification to the prefix of the corresponding table names.  
+* Custom schemas can be defined in a project models, but they can only serve as a modification to the prefix of the corresponding table names.
+
+* SSL connection would be automatically established by dbt-singlestore for SingleStore users created with 'Require SSL' flag.
 
 ## Testing and supported versions
 
 Default dbt [test suite](tests/test_basic.py) is used to check the adapter functionality. [Development](Development.md) overview has a section "Run tests" which contains instructions on running the tests. Currently, the tests have been successfully run for the following product versions:
 
 Singlestore | dbt-core | dbt-tests-adapter
-------------|----------|-------------------
-8.1.1       | 1.3.0    | 1.3.0
-7.8.29      | 1.2.2    | 1.2.2
+-------------|-----------|-------------------
+8.5.16       | 1.6.13    | 1.6.13
+8.1.1        | 1.6.0     | 1.6.0
+8.1.1        | 1.5.0     | 1.5.0
+8.1.1        | 1.4.0     | 1.4.0
+8.1.1        | 1.3.0     | 1.3.0
+7.8.29       | 1.2.2     | 1.2.2
 
 Singlestore | dbt-core | pytest-dbt-adapter
 ------------|----------|-------------------
@@ -53,6 +59,37 @@ Singlestore | dbt-core | pytest-dbt-adapter
 To use this adapter, SingleStore must be upgraded to the version 7.5 or newer.
 
 ## Changelog
+
+### 1.6.1
+- Updated singlestoredb connector version
+
+### 1.6
+- Added new tests
+- Added new incremental tests and `append` incremental strategy support
+
+### 1.5
+- Added `model contracts` support (`check` and `foreign` keys constraints aren't supported)
+- Modified `create_table_as` to use column ordering subquery
+
+### 1.4.1
+- Switched from pymysql connector to singlestoredb
+- Implemented `cancel()` function in SingleStoreConnectionManager class
+- Added support of connection attributes
+
+### 1.4
+- Consolidated timestamp functions & macros
+- Tested against Python 3.11
+- Replaced deprecated exception functions
+- Added support of the `delete+insert` incremental strategy + new tests for incremental predicates
+
+### 1.3
+- Added tests introduced in dbt 1.3.0
+
+### 1.2.2
+- Implemented connection retry logic
+- Fixed index name possibly starting with 0 which is not allowed in SingleStore
+- Added support for grants config
+- Implemented utils macros and added tests
 
 ### 1.1.2
 - [Fixed]((https://github.com/memsql/dbt-singlestore/issues/6)) failing materialization with `unique_key`.

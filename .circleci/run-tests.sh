@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 source .env3/bin/activate
-source ./.circleci/setup-cluster.sh start $CLUSTER_TYPE
+source ./.circleci/setup-cluster.sh start $CLUSTER_TYPE $CIAB_IMAGE
 
 export S2_PASSWORD=$SQL_USER_PASSWORD  # project UI env-var reference
 

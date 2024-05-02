@@ -3,7 +3,7 @@ from setuptools import find_namespace_packages, setup
 
 package_name = "dbt-singlestore"
 # make sure this always matches dbt/adapters/singlestore/__version__.py
-package_version = "1.6.0"
+package_version = "1.6.1"
 description = """The singlestore adapter plugin for dbt"""
 
 setup(
@@ -19,7 +19,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "dbt-core>=1.0.0",
-        "singlestoredb==0.8.1",
+        "singlestoredb==1.2.0",
         "dataclasses_json>=0.5.6"
     ]
 )
