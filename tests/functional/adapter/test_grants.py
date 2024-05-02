@@ -111,9 +111,10 @@ class TestSnapshotGrants(BaseSnapshotGrants):
 
 
 class TestInvalidGrants(BaseInvalidGrants):
-    #   SingleStore creates the user and sets a warning:
+    #   Prior to 8.5, by default SingleStore creates the user and sets a warning:
     #   Creation of users via GRANT is deprecated. Use CREATE USER.
-    #   In future versions, the NO_AUTO_CREATE_USER flag will be enabled by default
+    #   In future versions, the NO_AUTO_CREATE_USER flag will be enabled by default.
+    #   Starting from 8.5 SingleStore won't create the user and will raise an error.
     def grantee_does_not_exist_error(self):
         return ""
 
