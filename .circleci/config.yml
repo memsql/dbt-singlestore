@@ -38,6 +38,8 @@ workflows:
             parameters:
               cluster_type: 
                 - s2ms
+              ciab_image:
+                - none, because it's s2ms cluster
       - pytest:
           name: "SingleStore 8.1 connection test"
           matrix:
