@@ -10,6 +10,7 @@ jobs:
       docker_layer_caching: true
     environment:
       CLUSTER_TYPE: << parameters.cluster_type >>
+      CIAB_IMAGE: << parameters.ciab_image >>
     steps:
       - checkout
       - run:
@@ -38,8 +39,19 @@ workflows:
               cluster_type: 
                 - s2ms
       - pytest:
+          name: "SingleStore 8.1 connection test"
+          matrix:
+            parameters:
+              cluster_type:
+                - ciab
+              ciab_image:
+                - singlestore/cluster-in-a-box:alma-8.1.1-45eec847e2-4.0.11-1.16.0
+      - pytest:
           name: "SingleStore 8.5 connection test"
           matrix:
             parameters:
               cluster_type: 
                 - ciab
+              ciab_image:
+                - singlestore/cluster-in-a-box:alma-8.5.16-21d309f57c-4.0.17-1.17.10
+

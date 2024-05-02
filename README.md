@@ -43,7 +43,7 @@ Default dbt [test suite](tests/test_basic.py) is used to check the adapter funct
 
 Singlestore | dbt-core | dbt-tests-adapter
 -------------|-----------|-------------------
-8.5.17       | 1.6.13    | 1.6.13
+8.5.16       | 1.6.13    | 1.6.13
 8.1.1        | 1.6.0     | 1.6.0
 8.1.1        | 1.5.0     | 1.5.0
 8.1.1        | 1.4.0     | 1.4.0
