@@ -11,8 +11,8 @@ from dbt.adapters.singlestore.relation import SingleStoreRelation
 from dbt.adapters.base.impl import ConstraintSupport
 from dbt.adapters.base.meta import available
 from dbt.adapters.sql import SQLAdapter
-from dbt.contracts.graph.nodes import ColumnLevelConstraint, ConstraintType, ModelLevelConstraint
-from dbt.dataclass_schema import dbtClassMixin, ValidationError
+from dbt_common.contracts.constraints import ColumnLevelConstraint, ConstraintType, ModelLevelConstraint
+from dbt_common.dataclass_schema import dbtClassMixin, ValidationError
 from dbt.exceptions import DbtRuntimeError, CompilationError
 from dbt.logger import GLOBAL_LOGGER as logger
 
