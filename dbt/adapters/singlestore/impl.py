@@ -10,6 +10,7 @@ from dbt.adapters.singlestore.relation import SingleStoreRelation
 
 from dbt.adapters.base.impl import ConstraintSupport
 from dbt.adapters.base.meta import available
+from dbt.adapters.capability import CapabilityDict, CapabilitySupport, Support, Capability
 from dbt.adapters.sql import SQLAdapter
 from dbt.contracts.graph.nodes import ColumnLevelConstraint, ConstraintType, ModelLevelConstraint
 from dbt.dataclass_schema import dbtClassMixin, ValidationError
@@ -62,6 +63,14 @@ class SingleStoreAdapter(SQLAdapter):
         ConstraintType.primary_key: ConstraintSupport.NOT_ENFORCED,
         ConstraintType.foreign_key: ConstraintSupport.NOT_SUPPORTED,
     }
+
+    _capabilities: CapabilityDict = CapabilityDict(
+        {
+            # TODO: change support values
+            Capability.SchemaMetadataByRelations: CapabilitySupport(support=Support.Full),
+            Capability.TableLastModifiedMetadata: CapabilitySupport(support=Support.Full),
+        }
+    )
 
     @classmethod
     def date_function(cls):
