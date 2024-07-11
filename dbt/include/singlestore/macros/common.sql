@@ -108,7 +108,11 @@
     {{ sql_header if sql_header is not none }}
 
     {% if temporary -%}
-        {% set storage_type = 'rowstore temporary' -%}
+        {% if sort_key | length -%}
+            {% set storage_type = 'temporary' -%}
+        {% else -%}
+            {% set storage_type = 'rowstore temporary' -%}
+        {% endif -%}
     {% elif config.get('storage_type') == 'rowstore' -%}
         {% set storage_type = 'rowstore' -%}
     {% else -%}

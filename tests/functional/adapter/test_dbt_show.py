@@ -1,9 +1,9 @@
 from dbt.tests.adapter.dbt_show.test_dbt_show import BaseShowSqlHeader, BaseShowLimit
 
 
-class TestBigQueryShowLimit(BaseShowLimit):
+class TestSingleStoreShowLimit(BaseShowLimit):
     pass
 
 
-class TestBigQueryShowSqlHeader(BaseShowSqlHeader):
+class TestSingleStoreShowSqlHeader(BaseShowSqlHeader):
     pass

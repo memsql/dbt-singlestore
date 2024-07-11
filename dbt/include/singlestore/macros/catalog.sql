@@ -12,7 +12,7 @@
         columns.column_index,
         columns.column_type,
         columns.column_comment
-    from 
+    from
         ({{singlestore__get_catalog_tables_sql(information_schema)}}) as tables
     join
         ({{singlestore__get_catalog_columns_sql(information_schema)}}) as columns
@@ -41,7 +41,7 @@
         columns.column_index,
         columns.column_type,
         columns.column_comment
-    from 
+    from
         ({{singlestore__get_catalog_tables_sql(information_schema)}}
         {{ singlestore__get_catalog_relations_where_clause_sql(relations) }}) as tables
     join
@@ -90,7 +90,7 @@
 
 
 {% macro singlestore__catalog_equals(field, value) %}
-    LOWER({{ field }}) = LOWER('{{ value }}')
+    UPPER({{ field }}) = UPPER('{{ value }}')
 {% endmacro %}
 
 
@@ -99,13 +99,10 @@
         {%- for relation in relations -%}
             {% if relation.schema and relation.identifier %}
                 (
-                    {{ singlestore__catalog_equals('table_schema', relation.schema) }}
-                    and {{ singlestore__catalog_equals('table_name', relation.identifier) }}
+                    {{ singlestore__catalog_equals('table_name', relation.identifier) }}
                 )
             {% elif relation.schema %}
-                (
-                    {{ singlestore__catalog_equals('table_schema', relation.schema) }}
-                )
+                {# Skip this condition if only schema is present #}
             {% else %}
                 {% do exceptions.raise_compiler_error(
                     '`get_catalog_relations` requires a list of relations, each with a schema'
