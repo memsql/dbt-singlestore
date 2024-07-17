@@ -8,8 +8,7 @@
         from information_schema.tables
         where (
           {%- for relation in relations -%}
-            (upper(table_schema) = upper('{{ relation.schema }}') and
-             upper(table_name) = upper('{{ relation.identifier }}')){%- if not loop.last %} or {% endif -%}
+            (upper(table_name) = upper('{{ relation.identifier }}')){%- if not loop.last %} or {% endif -%}
           {%- endfor -%}
         )
   {%- endcall -%}
