@@ -145,7 +145,7 @@
 
 
 {% macro singlestore__list_relations_without_caching(schema_relation) %}
-    {% if schema_relation.database is not none -%}
+    {% if schema_relation.database is not none and schema_relation.database | length -%}
        {% set database = schema_relation.database -%}
     {% else -%}
        {% set query = 'select database()' -%}

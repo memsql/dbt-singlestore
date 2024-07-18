@@ -1,7 +1,6 @@
 import pytest
 from dbt.tests.adapter.caching.test_caching import (
     BaseCachingLowercaseModel,
-    BaseCachingUppercaseModel,
     BaseCachingSelectedSchemaOnly,
     TestNoPopulateCache,
     model_sql,
@@ -20,10 +19,6 @@ select 1 as id
 
 class TestCachingLowerCaseModel(BaseCachingLowercaseModel):
     pass
-
-
-#class TestCachingUppercaseModel(BaseCachingUppercaseModel):
-#   pass
 
 
 class TestCachingSelectedSchemaOnly(BaseCachingSelectedSchemaOnly):
