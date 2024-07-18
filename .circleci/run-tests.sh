@@ -24,6 +24,10 @@ pytest -k TestIncrementalConstraintsRollback
 drop_and_create_new_db
 pytest -k TestTableConstraintsRollback
 drop_and_create_new_db
+pytest ./tests/functional/adapter/test_caching.py
+drop_and_create_new_db
+pytest ./tests/functional/adapter/test_list_relations_without_caching.py
+drop_and_create_new_db
 pytest -k "not test_docs and not ConstraintsRollback"
 result_code=$?
 
