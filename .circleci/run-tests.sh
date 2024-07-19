@@ -28,7 +28,7 @@ pytest ./tests/functional/adapter/test_caching.py
 drop_and_create_new_db
 pytest ./tests/functional/adapter/test_list_relations_without_caching.py
 drop_and_create_new_db
-pytest -k "not test_docs and not ConstraintsRollback"
+pytest -k "not test_docs and not ConstraintsRollback and not test_caching and not test_list_relations_without_caching"
 result_code=$?
 
 ./.circleci/setup-cluster.sh terminate $CLUSTER_TYPE
