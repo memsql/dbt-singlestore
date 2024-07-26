@@ -83,7 +83,7 @@
             column_name as "column_name",
             ordinal_position as "column_index",
             data_type as "column_type",
-            null as "column_comment"
+            column_comment as "column_comment"
 
         from information_schema.columns
 {%- endmacro %}
