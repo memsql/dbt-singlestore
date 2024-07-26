@@ -182,7 +182,7 @@ create table <model_identifier> (
         date_day from
     (
     select
-        (1 :> INT) as id,
+        (1 :> INTEGER) as id,
         ('blue' :> TEXT) as color,
         ('2019-01-01' :> TEXT) as date_day
     ) as model_subq
@@ -210,7 +210,7 @@ create table <model_identifier> (
     from (
         select
           ('blue' :> TEXT) as `from`,
-          (1 :> INT) as id,
+          (1 :> INTEGER) as id,
           ('2019-01-01' :> TEXT) as date_day
     ) as model_subq
 """

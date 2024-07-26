@@ -1,7 +1,7 @@
 pytest==7.3.1
 pytest-dotenv==0.5.2
-dbt-core==1.6.13
-dbt-tests-adapter==1.6.13
+dbt-core==1.7.15
+dbt-tests-adapter==1.7.15
 pytz==2023.3
 singlestoredb==1.2.0
 

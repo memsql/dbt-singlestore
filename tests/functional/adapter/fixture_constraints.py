@@ -311,7 +311,7 @@ create table <model_identifier> (
     (
     select
         ('blue' :> TEXT) as color,
-        (1 :> INT) as id,
+        (1 :> INTEGER) as id,
         ('2019-01-01' :> TEXT) as date_day
     ) as model_subq
 """
