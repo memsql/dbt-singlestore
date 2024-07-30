@@ -8,3 +8,4 @@ CLUSTER_ID
 *__pycache__*
 *egg-info*
 test.env
+.DS_Store
