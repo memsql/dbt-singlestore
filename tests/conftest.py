@@ -16,6 +16,6 @@ def dbt_profile_target():
         'host': os.getenv('S2_HOST', '127.0.0.1'),
         'port': int(os.getenv('S2_PORT', 3306)),
         'user': os.getenv('S2_USER', 'root'),
-        'password': os.getenv('S2_PASSWORD', 'p'),
+        'password': os.getenv('S2_PASSWORD', 'pass'),
         'database': 'dbt_test',
     }
