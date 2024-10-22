@@ -8,7 +8,7 @@ jobs:
       ciab_image:
         type: string
     machine:
-      image: ubuntu-2004:202104-01
+      image: default
       docker_layer_caching: true
     environment:
       CLUSTER_TYPE: << parameters.cluster_type >>
