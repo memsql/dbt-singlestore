@@ -8,8 +8,7 @@
 
     {% if unique_key %}
         {% if unique_key is sequence and unique_key is not string %}
-            delete {{ target }}
-            from {{ target }}
+            delete {{ target.identifier }} from {{ target }}
             join {{ source }}
             where (
                 {% for key in unique_key %}
