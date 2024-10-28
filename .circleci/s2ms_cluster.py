@@ -65,7 +65,7 @@ def create_workspace(workspace_manager):
             region=AWS_US_WEST_REGION,
             firewall_ranges=["0.0.0.0/0"],
             admin_password=SQL_USER_PASSWORD,
-            expires_at="30m"
+            expires_at="60m"
         )
     workspace_group = retry(create_workspace_group)
 
