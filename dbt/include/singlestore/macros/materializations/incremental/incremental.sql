@@ -3,7 +3,17 @@
 {% endmacro %}
 
 {% macro singlestore__get_delete_insert_merge_sql(target, source, unique_key, dest_columns, incremental_predicates) %}
+    /*
+        The default dbt implementation uses syntax not compatible with SingleStore. We adjusted the `DELETE` statement:
 
+            delete from {{ target }}
+                using {{ source }}
+
+        to the following syntax required by SingleStore:
+
+            delete {{ target.identifier }} from {{ target }}
+                join {{ source }}
+    */
     {%- set dest_cols_csv = get_quoted_csv(dest_columns | map(attribute="name")) -%}
 
     {% if unique_key %}
