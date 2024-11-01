@@ -60,6 +60,14 @@ To use this adapter, SingleStore must be upgraded to the version 7.5 or newer.
 
 ## Changelog
 
+### 1.7.1
+- Resolved issue with delete + insert incremental strategy
+
+### 1.7
+- Added metadata freshness check support
+- Resolved issue with sort keys and rowstore temporary tables
+- Added new tests
+
 ### 1.6.1
 - Updated singlestoredb connector version
 
