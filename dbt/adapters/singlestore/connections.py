@@ -9,9 +9,9 @@ import singlestoredb.types as st
 from typing import Optional
 
 import dbt.exceptions
-from dbt.adapters.base import Credentials
+from dbt.adapters.contracts.connection import Credentials
 from dbt.adapters.sql import SQLConnectionManager
-from dbt.contracts.connection import AdapterResponse
+from dbt.adapters.contracts.connection import AdapterResponse
 from dbt.logger import GLOBAL_LOGGER as logger
 from dbt.adapters.singlestore import __version__
 
