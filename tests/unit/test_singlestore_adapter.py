@@ -4,7 +4,7 @@ import unittest
 from dbt.adapters.singlestore import (
     SingleStoreCredentials,
     SingleStoreConnectionManager)
-from dbt.contracts.connection import Connection
+from dbt.adapters.contracts.connection import Connection
 from dbt.adapters.singlestore import __version__
 
 

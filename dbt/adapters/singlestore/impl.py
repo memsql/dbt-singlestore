@@ -12,9 +12,9 @@ from dbt.adapters.base.impl import ConstraintSupport
 from dbt.adapters.base.meta import available
 from dbt.adapters.capability import CapabilityDict, CapabilitySupport, Support, Capability
 from dbt.adapters.sql import SQLAdapter
-from dbt.contracts.graph.nodes import ColumnLevelConstraint, ConstraintType, ModelLevelConstraint
-from dbt.dataclass_schema import dbtClassMixin, ValidationError
-from dbt.exceptions import DbtRuntimeError, CompilationError
+from dbt_common.contracts.constraints import ColumnLevelConstraint, ConstraintType, ModelLevelConstraint
+from dbt.common.dataclass_schema import dbtClassMixin, ValidationError
+from dbt_common.exceptions import DbtRuntimeError, CompilationError
 from dbt.logger import GLOBAL_LOGGER as logger
 
 import dbt.utils
@@ -44,7 +44,7 @@ class SingleStoreIndexConfig(dbtClassMixin):
             cls.validate(raw_index)
             return cls.from_dict(raw_index)
         except ValidationError as exc:
-            msg = dbt.exceptions.validator_error_message(exc)
+            msg = dbt_common.exceptions.validator_error_message(exc)
             raise CompilationError(f"Could not parse index config: {msg}")
         except TypeError:
             raise CompilationError(f"Invalid index config:\n  Got: {raw_index}\n"
