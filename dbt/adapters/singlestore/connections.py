@@ -12,11 +12,12 @@ import dbt_common.exceptions
 from dbt.adapters.contracts.connection import Credentials
 from dbt.adapters.sql import SQLConnectionManager
 from dbt.adapters.contracts.connection import AdapterResponse
-from dbt.logger import GLOBAL_LOGGER as logger
+from dbt.adapters.events.logging import AdapterLogger
 from dbt.adapters.singlestore import __version__
 
 DUMMY_RESPONSE_CODE = 0
 
+logger = AdapterLogger("SingleStore")
 
 @dataclass
 class SingleStoreCredentials(Credentials):
