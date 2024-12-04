@@ -2,6 +2,7 @@ import pytest
 from dbt.tests.util import (
     run_dbt,
     check_relations_equal,
+    check_table_does_not_exist,
     rm_file,
     write_file,
     run_dbt_and_capture
@@ -83,6 +84,8 @@ class TestConcurrency(BaseConcurrency):
         check_relations_equal(project.adapter, ["seed", "dep"])
         check_relations_equal(project.adapter, ["seed", "table_a"])
         check_relations_equal(project.adapter, ["seed", "table_b"])
+        check_table_does_not_exist(project.adapter, "invalid")
+        check_table_does_not_exist(project.adapter, "skip")
 
         rm_file(project.project_root, "seeds", "seed.csv")
         write_file(seeds__update_csv, project.project_root, "seeds", "seed.csv")
@@ -93,5 +96,7 @@ class TestConcurrency(BaseConcurrency):
         check_relations_equal(project.adapter, ["seed", "dep"])
         check_relations_equal(project.adapter, ["seed", "table_a"])
         check_relations_equal(project.adapter, ["seed", "table_b"])
+        check_table_does_not_exist(project.adapter, "invalid")
+        check_table_does_not_exist(project.adapter, "skip")
 
         assert "PASS=5 WARN=0 ERROR=1 SKIP=1 TOTAL=7" in output
