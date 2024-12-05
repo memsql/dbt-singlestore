@@ -19,7 +19,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "dbt-adapters>=1.0.0, <2.0.0",
-        "dbt-core>=1.8, <2.0.0",
+        "dbt-core>=1.8",
         "singlestoredb==1.2.0",
         "dataclasses_json>=0.5.6"
     ]
