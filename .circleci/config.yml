@@ -49,7 +49,7 @@ workflows:
               cluster_type:
                 - ciab
               ciab_image:
-                - singlestore/cluster-in-a-box:alma-8.1.1-45eec847e2-4.0.11-1.16.0
+                - singlestore/cluster-in-a-box:alma-8.1.32-e3d3cde6da-4.0.16-1.17.6
       - pytest:
           name: "SingleStore 8.5 connection test"
           matrix:
@@ -57,5 +57,14 @@ workflows:
               cluster_type: 
                 - ciab
               ciab_image:
-                - singlestore/cluster-in-a-box:alma-8.5.16-21d309f57c-4.0.17-1.17.10
+                - singlestore/cluster-in-a-box:alma-8.5.22-fe61f40cd1-4.1.0-1.17.11
+      - pytest:
+          name: "SingleStore 8.7 connection test"
+          matrix:
+            parameters:
+              cluster_type:
+                - ciab
+              ciab_image:
+                - singlestore/cluster-in-a-box:alma-8.7.12-483e5f8acb-4.1.0-1.17.15
+
 
