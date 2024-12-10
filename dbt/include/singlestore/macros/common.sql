@@ -135,12 +135,26 @@
 
 
 {% macro singlestore__get_columns_in_relation(relation) -%}
-    {% call statement('get_columns_in_relation', fetch_result=True) %}
-        show columns from {{ relation.include(database=True) }}
-    {% endcall %}
+    {% set table_exists_query %}
+        select count(*)
+        from information_schema.tables
+        where table_schema = '{{ relation.database }}'
+            and table_name = '{{ relation.identifier }}'
+    {% endset %}
 
-    {% set table = load_result('get_columns_in_relation').table %}
-    {{ return(sql_convert_columns_in_relation(table)) }}
+    {% set table_exists = run_query(table_exists_query).table[0][0] %}
+
+    {% if table_exists > 0 %}
+        {% call statement('get_columns_in_relation', fetch_result=True) %}
+            show columns from {{ relation.include(database=True) }}
+        {% endcall %}
+
+        {% set table = load_result('get_columns_in_relation').table %}
+        {{ return(sql_convert_columns_in_relation(table)) }}
+    {% else %}
+        {{ log("Table does not exist: " ~ relation, info=True) }}
+        {{ return([]) }}
+    {% endif %}
 {% endmacro %}
 
 
