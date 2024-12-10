@@ -60,6 +60,10 @@ To use this adapter, SingleStore must be upgraded to the version 7.5 or newer.
 
 ## Changelog
 
+### 1.8.0
+- Decoupled dependency on dbt-core
+- dbt unit testing support
+
 ### 1.7.1
 - Resolved issue with delete + insert incremental strategy
 
