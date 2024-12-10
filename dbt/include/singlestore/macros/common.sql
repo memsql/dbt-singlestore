@@ -142,7 +142,8 @@
             and table_name = '{{ relation.identifier }}'
     {% endset %}
 
-    {% set table_exists = run_query(table_exists_query).table[0][0] %}
+    {% set table_exists_result = run_query(table_exists_query) %}
+    {% set table_exists = table_exists_result.rows[0][0] %}
 
     {% if table_exists > 0 %}
         {% call statement('get_columns_in_relation', fetch_result=True) %}
@@ -152,7 +153,6 @@
         {% set table = load_result('get_columns_in_relation').table %}
         {{ return(sql_convert_columns_in_relation(table)) }}
     {% else %}
-        {{ log("Table does not exist: " ~ relation, info=True) }}
         {{ return([]) }}
     {% endif %}
 {% endmacro %}
