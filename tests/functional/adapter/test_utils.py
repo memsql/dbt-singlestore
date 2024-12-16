@@ -1,19 +1,19 @@
 import pytest
+from dbt.tests.adapter.utils import fixture_dateadd, fixture_datediff, fixture_get_intervals_between, fixture_date_trunc, fixture_split_part
 from dbt.tests.adapter.utils.base_utils import BaseUtils
 from dbt.tests.adapter.utils.test_any_value import BaseAnyValue
 from dbt.tests.adapter.utils.test_bool_or import BaseBoolOr
 from dbt.tests.adapter.utils.test_cast_bool_to_text import BaseCastBoolToText
 from dbt.tests.adapter.utils.test_concat import BaseConcat
-from dbt.tests.adapter.utils.test_dateadd import BaseDateAdd, models__test_dateadd_yml
-from dbt.tests.adapter.utils.test_datediff import BaseDateDiff, models__test_datediff_yml
+from dbt.tests.adapter.utils.test_dateadd import BaseDateAdd,fixture_dateadd
+from dbt.tests.adapter.utils.test_datediff import BaseDateDiff
 from dbt.tests.adapter.utils.test_date_spine import BaseDateSpine
-from dbt.tests.adapter.utils.test_date_trunc import BaseDateTrunc, models__test_date_trunc_yml
+from dbt.tests.adapter.utils.test_date_trunc import BaseDateTrunc
 from dbt.tests.adapter.utils.test_escape_single_quotes import BaseEscapeSingleQuotesQuote
 from dbt.tests.adapter.utils.test_escape_single_quotes import BaseEscapeSingleQuotesBackslash
 from dbt.tests.adapter.utils.test_except import BaseExcept
 from dbt.tests.adapter.utils.test_generate_series import BaseGenerateSeries
 from dbt.tests.adapter.utils.test_get_intervals_between import BaseGetIntervalsBetween
-from dbt.tests.adapter.utils.fixture_get_intervals_between import models__test_get_intervals_between_yml
 from dbt.tests.adapter.utils.test_get_powers_of_two import BaseGetPowersOfTwo
 from dbt.tests.adapter.utils.test_hash import BaseHash
 from dbt.tests.adapter.utils.test_intersect import BaseIntersect
@@ -24,7 +24,7 @@ from dbt.tests.adapter.utils.test_position import BasePosition
 from dbt.tests.adapter.utils.test_replace import BaseReplace
 from dbt.tests.adapter.utils.test_right import BaseRight
 from dbt.tests.adapter.utils.test_safe_cast import BaseSafeCast
-from dbt.tests.adapter.utils.test_split_part import BaseSplitPart, models__test_split_part_yml
+from dbt.tests.adapter.utils.test_split_part import BaseSplitPart
 from dbt.tests.adapter.utils.test_string_literal import BaseStringLiteral
 from dbt.tests.adapter.utils.data_types.test_type_boolean import BaseTypeBoolean
 from dbt.tests.adapter.utils.test_current_timestamp import BaseCurrentTimestampNaive
@@ -70,7 +70,7 @@ class TestDateAdd(BaseDateAdd):
     @pytest.fixture(scope="class")
     def models(self):
         return {
-            "test_dateadd.yml": models__test_dateadd_yml,
+            "test_dateadd.yml": fixture_dateadd.models__test_dateadd_yml,
             "test_dateadd.sql": self.interpolate_macro_namespace(
                 models__test_dateadd_sql, "dateadd"
             ),
@@ -127,7 +127,7 @@ class TestDateDiff(BaseDateDiff):
     @pytest.fixture(scope="class")
     def models(self):
          return {
-            "test_datediff.yml": models__test_datediff_yml,
+            "test_datediff.yml": fixture_datediff.models__test_datediff_yml,
             "test_datediff.sql": self.interpolate_macro_namespace(
                 models__test_datediff_sql, "datediff"
             ),
@@ -158,7 +158,7 @@ class TestDateTrunc(BaseDateTrunc):
     @pytest.fixture(scope="class")
     def models(self):
         return {
-            "test_date_trunc.yml": models__test_date_trunc_yml,
+            "test_date_trunc.yml": fixture_date_trunc.models__test_date_trunc_yml,
             "test_date_trunc.sql": self.interpolate_macro_namespace(
                 models__test_date_trunc_sql, "date_trunc"
             ),
@@ -194,7 +194,7 @@ class TestGetIntervalsBeteween(BaseGetIntervalsBetween):
     @pytest.fixture(scope="class")
     def models(self):
         return {
-            "test_get_intervals_between.yml": models__test_get_intervals_between_yml,
+            "test_get_intervals_between.yml": fixture_get_intervals_between.models__test_get_intervals_between_yml,
             "test_get_intervals_between.sql": self.interpolate_macro_namespace(
                 models__test_get_intervals_between_sql, "get_intervals_between"
             ),
@@ -268,7 +268,7 @@ class TestSplitPart(BaseSplitPart):
     @pytest.fixture(scope="class")
     def models(self):
         return {
-            "test_split_part.yml": models__test_split_part_yml,
+            "test_split_part.yml": fixture_split_part.models__test_split_part_yml,
             "test_split_part.sql": self.interpolate_macro_namespace(
                 models__test_split_part_sql, "split_part"
             ),

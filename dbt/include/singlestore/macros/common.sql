@@ -135,12 +135,31 @@
 
 
 {% macro singlestore__get_columns_in_relation(relation) -%}
-    {% call statement('get_columns_in_relation', fetch_result=True) %}
-        show columns from {{ relation.include(database=True) }}
-    {% endcall %}
+    {% set table_exists_query %}
+        show tables from {{ relation.database }} like '{{ relation.identifier }}'
+    {% endset %}
 
-    {% set table = load_result('get_columns_in_relation').table %}
-    {{ return(sql_convert_columns_in_relation(table)) }}
+    {% set temporary_table_exists_query %}
+        show temporary tables from {{ relation.database }} like '{{ relation.identifier }}'
+    {% endset %}
+
+    {% set table_exists_result = run_query(table_exists_query) %}
+    {% set temporary_table_exists_result = run_query(temporary_table_exists_query) %}
+    {% set table_exists = (
+        table_exists_result.rows | length or 
+        temporary_table_exists_result.rows | length
+    ) %}
+
+    {% if table_exists > 0 %}
+        {% call statement('get_columns_in_relation', fetch_result=True) %}
+            show columns from {{ relation.include(database=True) }}
+        {% endcall %}
+
+        {% set table = load_result('get_columns_in_relation').table %}
+        {{ return(sql_convert_columns_in_relation(table)) }}
+    {% else %}
+        {{ return([]) }}
+    {% endif %}
 {% endmacro %}
 
 

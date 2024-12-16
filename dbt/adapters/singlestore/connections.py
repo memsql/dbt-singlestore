@@ -8,15 +8,16 @@ from singlestoredb.connection import Cursor
 import singlestoredb.types as st
 from typing import Optional
 
-import dbt.exceptions
-from dbt.adapters.base import Credentials
+import dbt_common.exceptions
+from dbt.adapters.contracts.connection import Credentials
 from dbt.adapters.sql import SQLConnectionManager
-from dbt.contracts.connection import AdapterResponse
-from dbt.logger import GLOBAL_LOGGER as logger
+from dbt.adapters.contracts.connection import AdapterResponse
+from dbt.adapters.events.logging import AdapterLogger
 from dbt.adapters.singlestore import __version__
 
 DUMMY_RESPONSE_CODE = 0
 
+logger = AdapterLogger("SingleStore")
 
 @dataclass
 class SingleStoreCredentials(Credentials):
@@ -55,7 +56,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
     @classmethod
     def get_credentials(cls, credentials):
         if not credentials.database or not credentials.schema:
-            raise dbt.exceptions.Exception("database or schema must be specified in the project config")
+            raise dbt_common.exceptions.Exception("database or schema must be specified in the project config")
 
         return credentials
 
@@ -72,7 +73,7 @@ class SingleStoreConnectionManager(SQLConnectionManager):
             try:
                 parsed_conn_attrs = ast.literal_eval(credentials.conn_attrs)
             except ValueError as e:
-                raise dbt.exceptions.DbtRuntimeError(
+                raise dbt_common.exceptions.DbtRuntimeError(
                     "Invalid value for conn_attrs value in SingleStoreCredential class.\nPlease, make sure it is "
                     "formatted as a string that represents a dictionary, e.g. \"{'key1': 'value1', 'key2': 'value2', "
                     "'key3': 'value3'}\""
@@ -131,11 +132,11 @@ class SingleStoreConnectionManager(SQLConnectionManager):
 
         except singlestoredb.DatabaseError as e:
             logger.debug('Database error: {}'.format(str(e)))
-            raise dbt.exceptions.DbtDatabaseError(str(e).strip()) from e
+            raise dbt_common.exceptions.DbtDatabaseError(str(e).strip()) from e
 
         except Exception as e:
             logger.debug("Error running SQL: {}", sql)
-            raise dbt.exceptions.DbtRuntimeError(e) from e
+            raise dbt_common.exceptions.DbtRuntimeError(e) from e
 
     @classmethod
     def data_type_code_to_name(cls, type_code: int) -> str:
