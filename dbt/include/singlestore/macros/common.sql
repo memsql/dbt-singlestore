@@ -139,8 +139,16 @@
         show tables from {{ relation.database }} like '{{ relation.identifier }}'
     {% endset %}
 
+    {% set temporary_table_exists_query %}
+        show temporary tables from {{ relation.database }} like '{{ relation.identifier }}'
+    {% endset %}
+
     {% set table_exists_result = run_query(table_exists_query) %}
-    {% set table_exists = table_exists_result.rows | length %}
+    {% set temporary_table_exists_result = run_query(temporary_table_exists_query) %}
+    {% set table_exists = (
+        table_exists_result.rows | length or 
+        temporary_table_exists_result.rows | length
+    ) %}
 
     {% if table_exists > 0 %}
         {% call statement('get_columns_in_relation', fetch_result=True) %}
