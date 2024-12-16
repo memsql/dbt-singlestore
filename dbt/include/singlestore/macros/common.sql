@@ -136,14 +136,11 @@
 
 {% macro singlestore__get_columns_in_relation(relation) -%}
     {% set table_exists_query %}
-        select count(*)
-        from information_schema.tables
-        where table_schema = '{{ relation.database }}'
-            and table_name = '{{ relation.identifier }}'
+        show tables from {{ relation.database }} like '{{ relation.identifier }}'
     {% endset %}
 
     {% set table_exists_result = run_query(table_exists_query) %}
-    {% set table_exists = table_exists_result.rows[0][0] %}
+    {% set table_exists = table_exists_result.rows | length %}
 
     {% if table_exists > 0 %}
         {% call statement('get_columns_in_relation', fetch_result=True) %}
