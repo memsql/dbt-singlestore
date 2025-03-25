@@ -60,6 +60,9 @@ To use this adapter, SingleStore must be upgraded to the version 7.5 or newer.
 
 ## Changelog
 
+### 1.8.1
+- Fix view definition retrieval in replace_view_definition macro
+
 ### 1.8.0
 - Decoupled dependency on dbt-core
 - dbt unit testing support
