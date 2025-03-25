@@ -197,13 +197,18 @@
 
 
 {% macro singlestore__replace_view_definition(from_relation, to_relation) -%}
-    {% set query = 'show create view {}'.format(from_relation) -%}
+    {%- set query -%}
+        SELECT CONCAT('CREATE VIEW ', table_name, ' AS ', view_definition, ';')
+        FROM information_schema.views
+        WHERE table_schema = '{{ from_relation.database }}'
+        AND table_name = '{{ from_relation.identifier }}'
+    {%- endset -%}
     {% set result = run_query(query) -%}
-    {% set create_query = result[0][1] -%}
+    {% set create_query = result[0][0] -%}
     {% if create_query is none or create_query is undefined -%}
         {%- do exceptions.raise_compiler_error('Could not get view definition for {}'.format(from_relation.identifier)) -%}
     {%- endif %}
-    {{ create_query|replace('`{}`'.format(from_relation.identifier), to_relation, 1) }}
+    {{ create_query|replace(from_relation.identifier, to_relation.identifier, 1) }}
 {% endmacro %}
 
 
