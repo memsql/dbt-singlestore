@@ -198,7 +198,7 @@
 
 {% macro singlestore__replace_view_definition(from_relation, to_relation) -%}
     {%- set query -%}
-        SELECT CONCAT('CREATE VIEW ', table_name, ' AS ', view_definition, ';')
+        SELECT CONCAT('USING {{ from_relation.database }} CREATE VIEW ', table_name, ' AS ', view_definition, ';')
         FROM information_schema.views
         WHERE table_schema = '{{ from_relation.database }}'
         AND table_name = '{{ from_relation.identifier }}'
