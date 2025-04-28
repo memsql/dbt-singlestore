@@ -35,7 +35,7 @@ class SingleStoreIndexConfig(dbtClassMixin):
         now = datetime.utcnow().isoformat()
         inputs = self.columns + [relation.render(), str(self.unique), str(self.type), now]
         string = "_".join(inputs)
-        return "index_" + dbt.utils.md5(string)
+        return "index_" + utils.md5(string)
 
     @classmethod
     def parse(cls, raw_index) -> Optional["SingleStoreIndexConfig"]:
@@ -45,7 +45,7 @@ class SingleStoreIndexConfig(dbtClassMixin):
             cls.validate(raw_index)
             return cls.from_dict(raw_index)
         except ValidationError as exc:
-            msg = dbt_common.exceptions.validator_error_message(exc)
+            msg = DbtRuntimeError(raw_index).validator_error_message(exc)
             raise CompilationError(f"Could not parse index config: {msg}")
         except TypeError:
             raise CompilationError(f"Invalid index config:\n  Got: {raw_index}\n"
