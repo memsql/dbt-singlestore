@@ -1,1 +1,48 @@
-bems
+name: dbt-singlestore
+
+on: [push]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        include:
+          - name: "Managed Service connection test"
+            cluster_type: s2ms
+            ciab_image: none, because it's s2ms cluster
+          - name: "SingleStore 8.1 connection test"
+            cluster_type: ciab
+            ciab_image: singlestore/cluster-in-a-box:alma-8.1.32-e3d3cde6da-4.0.16-1.17.6
+          - name: "SingleStore 8.5 connection test"
+            cluster_type: ciab
+            ciab_image: singlestore/cluster-in-a-box:alma-8.5.22-fe61f40cd1-4.1.0-1.17.11
+          - name: "SingleStore 8.7 connection test"
+            cluster_type: ciab
+            ciab_image: singlestore/cluster-in-a-box:alma-8.7.12-483e5f8acb-4.1.0-1.17.15
+
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-22.04
+    env:
+      CLUSTER_TYPE: ${{ matrix.cluster_type }}
+      CIAB_IMAGE: ${{ matrix.ciab_image }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https
+          sudo apt-get update
+          sudo apt-get install mariadb-client-core-10.6 python3 python3-virtualenv
+
+      - name: Set up Python environment
+        run: |
+          virtualenv .env3 -p /usr/bin/python3
+          source .env3/bin/activate
+          pip install .
+          pip install -r dev_requirements.txt
+
+      - name: Start SingleStore cluster and run integration tests
+        run: ./.circleci/run-tests.sh
