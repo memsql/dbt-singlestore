@@ -25,6 +25,9 @@ jobs:
     env:
       CLUSTER_TYPE: ${{ matrix.cluster_type }}
       CIAB_IMAGE: ${{ matrix.ciab_image }}
+      LICENSE_KEY: ${{ secrets.LICENSE_KEY }}
+      SQL_USER_PASSWORD: ${{ secrets.SQL_USER_PASSWORD }}
+      S2MS_API_KEY: ${{ secrets.S2MS_API_KEY }}
 
     steps:
       - name: Checkout repository
