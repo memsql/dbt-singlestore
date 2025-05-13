@@ -2,14 +2,14 @@
 set -euo pipefail
 
 start-s2ms-cluster() {
-  python ./.circleci/s2ms_cluster.py start dbt_test
+  python ./.github/workflows/s2ms_cluster.py start dbt_test
   export S2_HOST=$(cat WORKSPACE_ENDPOINT_FILE)
   export S2_PORT=3306
   export S2_USER=admin
 }
 
 terminate-s2ms-cluster() {
-  python ./.circleci/s2ms_cluster.py terminate
+  python ./.github/workflows/s2ms_cluster.py terminate
 }
 
 start-cluster-in-a-box() {

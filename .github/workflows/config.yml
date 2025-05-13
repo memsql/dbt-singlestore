@@ -48,4 +48,4 @@ jobs:
           pip install -r dev_requirements.txt
 
       - name: Start SingleStore cluster and run integration tests
-        run: ./.circleci/run-tests.sh
+        run: ./.github/workflows/run-tests.sh

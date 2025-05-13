@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 source .env3/bin/activate
-source ./.circleci/setup-cluster.sh start $CLUSTER_TYPE $CIAB_IMAGE
+source ./.github/workflows/setup-cluster.sh start $CLUSTER_TYPE $CIAB_IMAGE
 
 export S2_PASSWORD=$SQL_USER_PASSWORD  # project UI env-var reference
 
@@ -14,7 +14,7 @@ drop_and_create_new_db()
   if [ "$CLUSTER_TYPE" = "ciab" ]; then
     mysql -u root -h 127.0.0.1 -P 3306 -p"${SQL_USER_PASSWORD}" --batch -N -e "DROP DATABASE IF EXISTS dbt_test; CREATE DATABASE dbt_test"
   else
-    python ./.circleci/s2ms_cluster.py update dbt_test
+    python ./.github/workflows/s2ms_cluster.py update dbt_test
   fi
 }
 
@@ -31,5 +31,5 @@ drop_and_create_new_db
 pytest -k "not test_docs and not ConstraintsRollback and not test_caching and not test_list_relations_without_caching"
 result_code=$?
 
-./.circleci/setup-cluster.sh terminate $CLUSTER_TYPE
+./.github/workflows/setup-cluster.sh terminate $CLUSTER_TYPE
 exit $result_code
