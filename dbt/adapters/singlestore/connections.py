@@ -26,8 +26,8 @@ class SingleStoreCredentials(Credentials):
     port: int = 3306
     user: str = 'root'
     password: str = ''
-    database: str
-    schema: str
+    database: Optional[str] = None
+    schema: Optional[str] = None
     retries: int = 1
     conn_attrs: Optional[str] = None
 
@@ -55,8 +55,8 @@ class SingleStoreConnectionManager(SQLConnectionManager):
 
     @classmethod
     def get_credentials(cls, credentials):
-        if not (credentials.database or credentials.schema):
-            raise dbt_common.exceptions.DbtConfigError("database or schema must be specified in the project config")
+        if not credentials.database:
+            raise dbt_common.exceptions.DbtConfigError("database must be specified in the project config")
 
         return credentials
 

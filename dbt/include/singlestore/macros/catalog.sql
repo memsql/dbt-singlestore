@@ -93,19 +93,16 @@
     UPPER({{ field }}) = UPPER('{{ value }}')
 {% endmacro %}
 
-
 {% macro singlestore__get_catalog_relations_where_clause_sql(relations) -%}
     where (
         {%- for relation in relations -%}
-            {% if relation.schema and relation.identifier %}
+            {% if relation.identifier %}
                 (
                     {{ singlestore__catalog_equals('table_name', relation.identifier) }}
                 )
-            {% elif relation.schema %}
-                {# Skip this condition if only schema is present #}
             {% else %}
                 {% do exceptions.raise_compiler_error(
-                    '`get_catalog_relations` requires a list of relations, each with a schema'
+                    '`get_catalog_relations` requires a list of relations, each with an identifier'
                 ) %}
             {% endif %}
 
@@ -113,3 +110,4 @@
         {%- endfor -%}
     )
 {%- endmacro %}
+
