@@ -26,7 +26,7 @@ class SingleStoreCredentials(Credentials):
     port: int = 3306
     user: str = 'root'
     password: str = ''
-    database: Optional[str] = None
+    database: str
     schema: Optional[str] = None
     retries: int = 1
     conn_attrs: Optional[str] = None
