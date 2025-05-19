@@ -17,7 +17,7 @@ from dbt_common.dataclass_schema import dbtClassMixin, ValidationError
 from dbt_common.exceptions import DbtRuntimeError, CompilationError
 from dbt.adapters.events.logging import AdapterLogger
 
-import dbt_common.utils
+import dbt_common.utils as utils
 
 logger = AdapterLogger("SingleStore")
 
