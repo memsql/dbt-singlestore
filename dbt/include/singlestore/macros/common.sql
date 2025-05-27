@@ -211,6 +211,7 @@
         {% set create_query = create_query[:definer_start] ~ after_definer[first_space + 1:] %}
     {% endif %}
 
+    USING {{ from_relation.database }}
     {{ create_query|replace('`{}`'.format(from_relation.identifier), to_relation, 1) }}
 {% endmacro %}
 
