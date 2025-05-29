@@ -6,12 +6,12 @@
         columns.table_schema,
         columns.table_name,
         tables.table_type,
-        columns.table_comment,
+        nullif(columns.table_comment, ''),
         tables.table_owner,
         columns.column_name,
         columns.column_index,
         columns.column_type,
-        columns.column_comment
+        nullif(columns.column_comment, '')
     from
         ({{singlestore__get_catalog_tables_sql(information_schema)}}) as tables
     join
@@ -35,12 +35,12 @@
         columns.table_schema,
         columns.table_name,
         tables.table_type,
-        columns.table_comment,
+        nullif(columns.table_comment, ''),
         tables.table_owner,
         columns.column_name,
         columns.column_index,
         columns.column_type,
-        columns.column_comment
+        nullif(columns.column_comment, '')
     from
         ({{singlestore__get_catalog_tables_sql(information_schema)}}
         {{ singlestore__get_catalog_relations_where_clause_sql(relations) }}) as tables
@@ -83,7 +83,7 @@
             column_name as "column_name",
             ordinal_position as "column_index",
             data_type as "column_type",
-            column_comment as "column_comment"
+            nullif(column_comment, '') as "column_comment"
 
         from information_schema.columns
 {%- endmacro %}
@@ -93,19 +93,16 @@
     UPPER({{ field }}) = UPPER('{{ value }}')
 {% endmacro %}
 
-
 {% macro singlestore__get_catalog_relations_where_clause_sql(relations) -%}
     where (
         {%- for relation in relations -%}
-            {% if relation.schema and relation.identifier %}
+            {% if relation.identifier %}
                 (
                     {{ singlestore__catalog_equals('table_name', relation.identifier) }}
                 )
-            {% elif relation.schema %}
-                {# Skip this condition if only schema is present #}
             {% else %}
                 {% do exceptions.raise_compiler_error(
-                    '`get_catalog_relations` requires a list of relations, each with a schema'
+                    '`get_catalog_relations` requires a list of relations, each with an identifier'
                 ) %}
             {% endif %}
 
@@ -113,3 +110,4 @@
         {%- endfor -%}
     )
 {%- endmacro %}
+

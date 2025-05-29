@@ -195,20 +195,24 @@
     {%- endcall %}
 {% endmacro %}
 
-
 {% macro singlestore__replace_view_definition(from_relation, to_relation) -%}
-    {%- set query -%}
-        SELECT CONCAT('CREATE VIEW ', table_name, ' AS ', view_definition, ';')
-        FROM information_schema.views
-        WHERE table_schema = '{{ from_relation.database }}'
-        AND table_name = '{{ from_relation.identifier }}'
-    {%- endset -%}
+    {% set query = 'show create view {}'.format(from_relation) -%}
     {% set result = run_query(query) -%}
-    {% set create_query = result[0][0] -%}
+    {% set create_query = result[0][1] -%}
     {% if create_query is none or create_query is undefined -%}
         {%- do exceptions.raise_compiler_error('Could not get view definition for {}'.format(from_relation.identifier)) -%}
     {%- endif %}
-    {{ create_query|replace(from_relation.identifier, to_relation.identifier, 1) }}
+
+    {# Remove DEFINER=... (works if DEFINER appears only once) #}
+    {% if 'DEFINER=' in create_query %}
+        {% set definer_start = create_query.find('DEFINER=') %}
+        {% set after_definer = create_query[definer_start:] %}
+        {% set first_space = after_definer.find(' ') %}
+        {% set create_query = create_query[:definer_start] ~ after_definer[first_space + 1:] %}
+    {% endif %}
+
+    USING {{ from_relation.database }}
+    {{ create_query|replace('`{}`'.format(from_relation.identifier), to_relation, 1) }}
 {% endmacro %}
 
 
