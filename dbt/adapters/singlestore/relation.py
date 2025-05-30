@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
+from typing import FrozenSet
 
+from dbt.adapters.base import RelationType
 from dbt.adapters.base.relation import BaseRelation, Policy
 from dbt_common.exceptions import DbtRuntimeError
 
@@ -23,6 +25,13 @@ class SingleStoreRelation(BaseRelation):
     quote_policy: Policy = field(default_factory=lambda: SingleStoreQuotePolicy())
     include_policy: Policy = field(default_factory=lambda: SingleStoreIncludePolicy())
     quote_character: str = '`'
+    replaceable_relations: FrozenSet[RelationType] = field(
+        default_factory=lambda: frozenset(
+            {
+                RelationType.View,
+            }
+        )
+    )
 
     def render(self):
         if self.include_policy.database and self.include_policy.schema:
