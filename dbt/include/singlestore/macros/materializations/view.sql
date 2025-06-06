@@ -46,6 +46,7 @@
   -- move the existing view out of the way
   {% if existing_relation is not none %}
      {% set existing_relation = load_cached_relation(existing_relation) %}
+  -- (SingleStore) if the view already exists, drop it immediately instead of renaming it to __dbt_backup and dropping it later
      {% if existing_relation is not none %}
          {{ drop_relation_if_exists(existing_relation) }}
      {% endif %}
