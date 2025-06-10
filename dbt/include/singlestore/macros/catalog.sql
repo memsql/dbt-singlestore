@@ -6,12 +6,12 @@
         columns.table_schema,
         columns.table_name,
         tables.table_type,
-        nullif(columns.table_comment, ''),
+        nullif(columns.table_comment, '') as table_comment,
         tables.table_owner,
         columns.column_name,
         columns.column_index,
         columns.column_type,
-        nullif(columns.column_comment, '')
+        nullif(columns.column_comment, '') as column_comment
     from
         ({{singlestore__get_catalog_tables_sql(information_schema)}}) as tables
     join
@@ -35,12 +35,12 @@
         columns.table_schema,
         columns.table_name,
         tables.table_type,
-        nullif(columns.table_comment, ''),
+        nullif(columns.table_comment, '') as table_comment,
         tables.table_owner,
         columns.column_name,
         columns.column_index,
         columns.column_type,
-        nullif(columns.column_comment, '')
+        nullif(columns.column_comment, '') as column_comment
     from
         ({{singlestore__get_catalog_tables_sql(information_schema)}}
         {{ singlestore__get_catalog_relations_where_clause_sql(relations) }}) as tables
