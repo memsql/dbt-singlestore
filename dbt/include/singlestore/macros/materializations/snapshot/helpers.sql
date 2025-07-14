@@ -89,7 +89,7 @@
 
 
 {% macro singlestore__insert_select(relation, select_query) %}
-    insert into {{ relation.include(database=False) }}
+    insert into {{ relation.include(database=True) }}
     {{ select_query }}
 {% endmacro %}
 
