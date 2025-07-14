@@ -11,6 +11,7 @@ from dbt.adapters.singlestore.relation import SingleStoreRelation
 from dbt.adapters.base.impl import ConstraintSupport
 from dbt.adapters.base.meta import available
 from dbt.adapters.capability import CapabilityDict, CapabilitySupport, Support, Capability
+from dbt.adapters.contracts.relation import RelationType
 from dbt.adapters.sql import SQLAdapter
 from dbt_common.contracts.constraints import ColumnLevelConstraint, ConstraintType, ModelLevelConstraint
 from dbt_common.dataclass_schema import dbtClassMixin, ValidationError
@@ -142,6 +143,9 @@ class SingleStoreAdapter(SQLAdapter):
                     f'got {len(row)} values, expected 4'
                 )
             database, name, schema, relation_type = row
+            if relation_type not in RelationType:
+                logger.debug(f"Invalid value from singlestore__list_relations_without_caching({kwargs}): {relation_type}")
+                continue
             relation = self.Relation.create(
                 database=database,
                 schema=schema,
