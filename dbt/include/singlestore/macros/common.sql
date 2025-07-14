@@ -37,6 +37,7 @@
     {%- set sort_key = config.get('sort_key', []) -%} {# SORT KEY (sort_key) #}
     {%- set shard_key = config.get('shard_key', []) -%} {# SHARD KEY (shard_key) #}
     {%- set unique_table_key = config.get('unique_table_key', []) -%} {# UNIQUE KEY (unique_table_key) #}
+    {%- set storage_type = config.get('storage_type', '') -%} {# REFERENCE | ROWSTORE #}
     {%- set charset = config.get('charset', none) -%} {# CHARACTER SET charset #}
     {%- set collation = config.get('collation', none) -%} {# COLLATE collation #}
     {%- set contract_config = config.get('contract') -%}
@@ -90,10 +91,14 @@
     {% if create_definition_list | length -%}
         {% set create_definition_str = create_definition_list|join(", ") -%}
     {% elif not contract_defined_primary and not contract_defined_unique -%}
-        {% set create_definition_str = 'SHARD KEY ()' -%}
+        {% if storage_type | lower == 'reference' -%}
+            {% set create_definition_str = '' -%}
+        {% else -%}
+            {% set create_definition_str = 'SHARD KEY ()' -%}
+        {% endif -%}
     {% endif -%}
 
-    {% if not contract_config.enforced -%}
+    {% if not contract_config.enforced and create_definition_str | length -%}
         {% set create_definition_str = '(' + create_definition_str + ')' -%}
     {% endif -%}
 
@@ -113,10 +118,6 @@
         {% else -%}
             {% set storage_type = 'rowstore temporary' -%}
         {% endif -%}
-    {% elif config.get('storage_type') == 'rowstore' -%}
-        {% set storage_type = 'rowstore' -%}
-    {% else -%}
-        {% set storage_type = '' -%}
     {% endif -%}
 
     create {{ storage_type }} table
