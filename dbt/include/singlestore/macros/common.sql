@@ -37,7 +37,7 @@
     {%- set sort_key = config.get('sort_key', []) -%} {# SORT KEY (sort_key) #}
     {%- set shard_key = config.get('shard_key', []) -%} {# SHARD KEY (shard_key) #}
     {%- set unique_table_key = config.get('unique_table_key', []) -%} {# UNIQUE KEY (unique_table_key) #}
-    {%- set reference = config.get('reference', True) -%} {# REFERENCE #}
+    {%- set reference = config.get('reference', False) -%} {# REFERENCE #}
     {%- set storage_type = config.get('storage_type', '') -%} {# ROWSTORE | COLUMNSTORE #}
     {%- set charset = config.get('charset', none) -%} {# CHARACTER SET charset #}
     {%- set collation = config.get('collation', none) -%} {# COLLATE collation #}
