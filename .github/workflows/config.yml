@@ -94,4 +94,4 @@ jobs:
         run: git clone https://github.com/singlestore-labs/jaffle_shop.git
 
       - name: Run jaffle_shop test
-        run: ./.github/workflows/run-jaffle-tests.sh
+        run: ./.github/workflows/run-jaffle-shop.sh
