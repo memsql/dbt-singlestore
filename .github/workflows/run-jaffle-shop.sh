@@ -21,6 +21,19 @@ create_dbs() {
 
 create_dbs
 
+if [ "$CLUSTER_TYPE" = "ciab" ]; then
+  DBT_HOST="127.0.0.1"
+  DBT_USER="root"
+else
+  if [[ -f "$WORKSPACE_ENDPOINT_FILE" ]]; then
+    DBT_HOST=$(cat "$WORKSPACE_ENDPOINT_FILE")
+    DBT_USER="admin"
+  else
+    echo "Workspace endpoint file not found!"
+    exit 1
+  fi
+fi
+
 # Set up dbt profile
 mkdir -p ~/.dbt
 cat > ~/.dbt/profiles.yml <<EOL
@@ -28,9 +41,9 @@ default:
   outputs:
     dev:
       type: singlestore
-      host: 127.0.0.1
+      host: ${DBT_HOST}
       port: 3306
-      user: root
+      user: ${DBT_USER}
       password: ${SQL_USER_PASSWORD}
       database: testdb
   target: dev
@@ -39,9 +52,9 @@ test:
   outputs:
     dev:
       type: singlestore
-      host: 127.0.0.1
+      host: ${DBT_HOST}
       port: 3306
-      user: root
+      user: ${DBT_USER}
       password: ${SQL_USER_PASSWORD}
       database: dbt_test
       schema: pm
@@ -51,9 +64,9 @@ jaffle_shop:
   outputs:
     dev:
       type: singlestore
-      host: 127.0.0.1
+      host: ${DBT_HOST}
       port: 3306
-      user: root
+      user: ${DBT_USER}
       password: ${SQL_USER_PASSWORD}
       database: jaffle_db
       schema: pm_jaffle
@@ -62,7 +75,7 @@ EOL
 
 cd jaffle_shop
 
-dbt seed && dbt run && dbt snapshot && dbt test && dbt docs generate && dbt docs serve
+dbt seed && dbt run && dbt snapshot && dbt test
 result_code=$?
 
 cd ..
