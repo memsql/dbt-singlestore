@@ -124,8 +124,11 @@ jobs:
           pip install .
           pip install -r dev_requirements.txt
 
-      - name: Clone jaffle_shop
-        run: git clone https://github.com/singlestore-labs/jaffle_shop.git
+      - name: Checkout jaffle_shop
+        uses: actions/checkout@v3
+        with:
+          repository: singlestore-labs/jaffle_shop
+          path: jaffle_shop
 
       - name: Run jaffle_shop test
         run: ./.github/workflows/run-jaffle-shop.sh

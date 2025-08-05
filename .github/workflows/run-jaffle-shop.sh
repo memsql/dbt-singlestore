@@ -60,9 +60,12 @@ jaffle_shop:
   target: dev
 EOL
 
+cd jaffle_shop
+
 dbt seed && dbt run && dbt snapshot && dbt test && dbt docs generate && dbt docs serve
 result_code=$?
-popd
+
+cd ..
 
 ./.github/workflows/setup-cluster.sh terminate $CLUSTER_TYPE
 exit $result_code
