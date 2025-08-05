@@ -2,6 +2,11 @@ name: dbt-singlestore
 
 on: [push]
 
+env:
+  LICENSE_KEY: ${{ secrets.LICENSE_KEY }}
+  SQL_USER_PASSWORD: ${{ secrets.SQL_USER_PASSWORD }}
+  S2MS_API_KEY: ${{ secrets.S2MS_API_KEY }}
+
 jobs:
   test:
     strategy:
@@ -11,9 +16,6 @@ jobs:
           - name: "Managed Service connection test"
             cluster_type: s2ms
             ciab_image: none, because it's s2ms cluster
-          - name: "SingleStore 8.1 connection test"
-            cluster_type: ciab
-            ciab_image: singlestore/cluster-in-a-box:alma-8.1.32-e3d3cde6da-4.0.16-1.17.6
           - name: "SingleStore 8.5 connection test"
             cluster_type: ciab
             ciab_image: singlestore/cluster-in-a-box:alma-8.5.22-fe61f40cd1-4.1.0-1.17.11
@@ -26,9 +28,6 @@ jobs:
     env:
       CLUSTER_TYPE: ${{ matrix.cluster_type }}
       CIAB_IMAGE: ${{ matrix.ciab_image }}
-      LICENSE_KEY: ${{ secrets.LICENSE_KEY }}
-      SQL_USER_PASSWORD: ${{ secrets.SQL_USER_PASSWORD }}
-      S2MS_API_KEY: ${{ secrets.S2MS_API_KEY }}
 
     steps:
       - name: Checkout repository
@@ -50,3 +49,52 @@ jobs:
 
       - name: Start SingleStore cluster and run integration tests
         run: ./.github/workflows/run-tests.sh
+
+
+  test-jaffle-shop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Managed Service connection test"
+            cluster_type: s2ms
+            ciab_image: none
+          - name: "SingleStore 8.5 connection test"
+            cluster_type: ciab
+            ciab_image: singlestore/cluster-in-a-box:alma-8.5.22-fe61f40cd1-4.1.0-1.17.11
+          - name: "SingleStore 8.7 connection test"
+            cluster_type: ciab
+            ciab_image: singlestore/cluster-in-a-box:alma-8.7.12-483e5f8acb-4.1.0-1.17.15
+
+    name: ${{ matrix.name }} - Jaffle Shop
+    runs-on: ubuntu-22.04
+    env:
+      CLUSTER_TYPE: ${{ matrix.cluster_type }}
+      CIAB_IMAGE: ${{ matrix.ciab_image }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup environment
+        uses: ./.github/actions/setup
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https
+          sudo apt-get update
+          sudo apt-get install mariadb-client-core-10.6 python3 python3-virtualenv
+
+      - name: Set up Python environment
+        run: |
+          virtualenv .env3 -p /usr/bin/python3
+          source .env3/bin/activate
+          pip install .
+          pip install -r dev_requirements.txt
+
+      - name: Clone jaffle_shop
+        run: git clone https://github.com/singlestore-labs/jaffle_shop.git
+
+      - name: Run jaffle_shop test
+        run: ./.github/workflows/run-jaffle-tests.sh
