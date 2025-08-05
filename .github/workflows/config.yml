@@ -76,9 +76,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup environment
-        uses: ./.github/actions/setup
-
       - name: Install system dependencies
         run: |
           sudo apt-get update
