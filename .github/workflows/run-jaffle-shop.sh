@@ -60,13 +60,7 @@ jaffle_shop:
   target: dev
 EOL
 
-# Clone and run jaffle_shop
-git clone https://github.com/singlestore-labs/jaffle_shop.git
-pushd jaffle_shop
-dbt deps
-dbt seed --profiles-dir ~/.dbt
-dbt run --profiles-dir ~/.dbt
-dbt test --profiles-dir ~/.dbt
+dbt seed && dbt run && dbt snapshot && dbt test && dbt docs generate && dbt docs serve
 result_code=$?
 popd
 
