@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup build environment
-        uses: ./.github/actions/setup
+        uses: ./.github/workflows/actions/setup
 
       - name: Start SingleStore cluster and run integration tests
         run: ./.github/workflows/run-tests.sh
@@ -66,7 +66,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup build environment
-        uses: ./.github/actions/setup
+        uses: ./.github/workflows/actions/setup
 
       - name: Checkout jaffle_shop
         uses: actions/checkout@v3
