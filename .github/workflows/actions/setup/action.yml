@@ -5,6 +5,7 @@ runs:
   using: "composite"
   steps:
       - name: Remove unnecessary pre-installed toolchains for free disk spaces
+        shell: bash
         run: |
           echo "=== BEFORE ==="
           df -h
@@ -22,6 +23,7 @@ runs:
           df -h
 
       - name: Install system dependencies
+        shell: bash
         run: |
           sudo apt-get update
           sudo apt-get install -y apt-transport-https
@@ -29,6 +31,7 @@ runs:
           sudo apt-get install mariadb-client-core-10.6 python3 python3-virtualenv
 
       - name: Set up Python environment
+        shell: bash
         run: |
           virtualenv .env3 -p /usr/bin/python3
           source .env3/bin/activate
