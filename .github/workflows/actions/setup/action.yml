@@ -1,0 +1,37 @@
+name: Setup build environment
+description: Shared setup for all jobs
+
+runs:
+  using: "composite"
+  steps:
+      - name: Remove unnecessary pre-installed toolchains for free disk spaces
+        run: |
+          echo "=== BEFORE ==="
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /opt/hostedtoolcache/Ruby
+          sudo rm -rf /opt/hostedtoolcache/Go
+          docker system prune -af || true
+          sudo apt-get clean
+          echo "=== AFTER ==="
+          df -h
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https
+          sudo apt-get update
+          sudo apt-get install mariadb-client-core-10.6 python3 python3-virtualenv
+
+      - name: Set up Python environment
+        run: |
+          virtualenv .env3 -p /usr/bin/python3
+          source .env3/bin/activate
+          pip install .
+          pip install -r dev_requirements.txt
+

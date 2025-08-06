@@ -35,7 +35,7 @@ else
   fi
 fi
 
-# Set up dbt profile
+# set up dbt profile
 mkdir -p ~/.dbt
 cat > ~/.dbt/profiles.yml <<EOL
 default:
