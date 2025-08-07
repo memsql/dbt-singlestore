@@ -7,23 +7,21 @@ env:
   SQL_USER_PASSWORD: ${{ secrets.SQL_USER_PASSWORD }}
   S2MS_API_KEY: ${{ secrets.S2MS_API_KEY }}
 
-x-matrix: &test_matrix
-  include:
-    - name: "Managed Service connection test"
-      cluster_type: s2ms
-      ciab_image: none
-    - name: "SingleStore 8.5 connection test"
-      cluster_type: ciab
-      ciab_image: singlestore/cluster-in-a-box:alma-8.5.22-fe61f40cd1-4.1.0-1.17.11
-    - name: "SingleStore 8.7 connection test"
-      cluster_type: ciab
-      ciab_image: singlestore/cluster-in-a-box:alma-8.7.12-483e5f8acb-4.1.0-1.17.15
-
 jobs:
   test:
-    strategy:
+    strategy: &dbt_singlestore_strategy
       fail-fast: false
-      matrix: *test_matrix
+      matrix:
+        include:
+          - name: "Managed Service connection test"
+            cluster_type: s2ms
+            ciab_image: none
+          - name: "SingleStore 8.5 connection test"
+            cluster_type: ciab
+            ciab_image: singlestore/cluster-in-a-box:alma-8.5.22-fe61f40cd1-4.1.0-1.17.11
+          - name: "SingleStore 8.7 connection test"
+            cluster_type: ciab
+            ciab_image: singlestore/cluster-in-a-box:alma-8.7.12-483e5f8acb-4.1.0-1.17.15
 
     name: ${{ matrix.name }}
     runs-on: ubuntu-22.04
@@ -43,12 +41,11 @@ jobs:
 
 
   test-jaffle-shop:
-    strategy:
-      fail-fast: false
-      matrix: *test_matrix
-
     name: ${{ matrix.name }} - Jaffle Shop
     runs-on: ubuntu-22.04
+
+    strategy: *dbt_singlestore_strategy
+
     env:
       CLUSTER_TYPE: ${{ matrix.cluster_type }}
       CIAB_IMAGE: ${{ matrix.ciab_image }}
