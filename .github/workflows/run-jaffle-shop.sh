@@ -6,21 +6,17 @@ source ./.github/workflows/setup-cluster.sh start $CLUSTER_TYPE $CIAB_IMAGE
 export S2_PASSWORD=$SQL_USER_PASSWORD  # project UI env-var reference
 WORKSPACE_ENDPOINT_FILE="WORKSPACE_ENDPOINT_FILE"
 
-create_dbs() {
-  if [ "$CLUSTER_TYPE" = "ciab" ]; then
-    mysql -u root -h 127.0.0.1 -P 3306 -p"${SQL_USER_PASSWORD}" --batch -N -e "
-      DROP DATABASE IF EXISTS jaffle_db;
-      CREATE DATABASE jaffle_db;
-      DROP DATABASE IF EXISTS dbt_custom_db;
-      CREATE DATABASE dbt_custom_db;
-    "
-  else
-    python ./.github/workflows/s2ms_cluster.py update jaffle_db
-    python ./.github/workflows/s2ms_cluster.py update dbt_custom_db
-  fi
-}
-
-create_dbs
+if [ "$CLUSTER_TYPE" = "ciab" ]; then
+mysql -u root -h 127.0.0.1 -P 3306 -p"${SQL_USER_PASSWORD}" --batch -N -e "
+    DROP DATABASE IF EXISTS jaffle_db;
+    CREATE DATABASE jaffle_db;
+    DROP DATABASE IF EXISTS dbt_custom_db;
+    CREATE DATABASE dbt_custom_db;
+"
+else
+python ./.github/workflows/s2ms_cluster.py update jaffle_db
+python ./.github/workflows/s2ms_cluster.py update dbt_custom_db
+fi
 
 if [ "$CLUSTER_TYPE" = "ciab" ]; then
   DBT_HOST="127.0.0.1"

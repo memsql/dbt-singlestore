@@ -25,6 +25,7 @@ jobs:
 
     name: ${{ matrix.name }}
     runs-on: ubuntu-22.04
+
     env:
       CLUSTER_TYPE: ${{ matrix.cluster_type }}
       CIAB_IMAGE: ${{ matrix.ciab_image }}
@@ -41,10 +42,10 @@ jobs:
 
 
   test-jaffle-shop:
+    strategy: *dbt_singlestore_strategy
+
     name: ${{ matrix.name }} - Jaffle Shop
     runs-on: ubuntu-22.04
-
-    strategy: *dbt_singlestore_strategy
 
     env:
       CLUSTER_TYPE: ${{ matrix.cluster_type }}
