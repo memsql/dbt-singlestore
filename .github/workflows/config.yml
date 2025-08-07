@@ -58,11 +58,5 @@ jobs:
       - name: Setup build environment
         uses: ./.github/workflows/actions/setup
 
-      - name: Checkout jaffle_shop
-        uses: actions/checkout@v3
-        with:
-          repository: singlestore-labs/jaffle_shop
-          path: jaffle_shop
-
       - name: Run jaffle_shop test
         run: ./.github/workflows/run-jaffle-shop.sh
