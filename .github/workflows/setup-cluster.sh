@@ -13,11 +13,13 @@ terminate-s2ms-cluster() {
 }
 
 start-cluster-in-a-box() {
-  DEFAULT_IMAGE_NAME="${CIAB_IMAGE}"
-  IMAGE_NAME="${SINGLESTORE_IMAGE:-$DEFAULT_IMAGE_NAME}"
+  DEFAULT_SINGLESTORE_VERSION=""
+  VERSION="${SINGLESTORE_VERSION:-$DEFAULT_SINGLESTORE_VERSION}"
+  IMAGE_NAME="ghcr.io/singlestore-labs/singlestoredb-dev:0.2.51"
   CONTAINER_NAME="singlestore-integration"
   EXTERNAL_MASTER_PORT=3306
   EXTERNAL_LEAF_PORT=3307
+
 
   EXISTS=$(docker inspect ${CONTAINER_NAME} >/dev/null 2>&1 && echo 1 || echo 0)
 
@@ -33,8 +35,9 @@ start-cluster-in-a-box() {
   if [[ "${EXISTS}" -eq 0 ]]; then
     docker run -i --init \
           --name ${CONTAINER_NAME} \
-          -e LICENSE_KEY=${LICENSE_KEY} \
+          -e SINGLESTORE_LICENSE=${LICENSE_KEY} \
           -e ROOT_PASSWORD=${SQL_USER_PASSWORD} \
+          -e SINGLESTORE_VERSION=${VERSION} \
           -p $EXTERNAL_MASTER_PORT:3306 -p $EXTERNAL_LEAF_PORT:3307 \
           ${IMAGE_NAME}
   fi
