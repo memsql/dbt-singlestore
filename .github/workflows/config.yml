@@ -31,13 +31,13 @@ jobs:
         env:
           VERSIONS: ${{ needs.fetch-s2-versions.outputs.versions }}
         run: |
-          base='[{"name":"Managed Service connection test","cluster_type":"s2ms","ciab_image":"none"}]'
+          base='[{"name":"Managed Service connection test","cluster_type":"s2ms","singlestore_version":"none"}]'
 
           ciab_rows=$(jq -cn --argjson versions "$VERSIONS" '
             $versions | map({
               name: ("SingleStore " + . + " connection test"),
               cluster_type: "ciab",
-              ciab_image: ("singlestoredb-dev:" + .)
+              singlestore_version: (.)
             })
           ')
 
@@ -56,7 +56,7 @@ jobs:
 
     env:
       CLUSTER_TYPE: ${{ matrix.cluster_type }}
-      CIAB_IMAGE: ${{ matrix.ciab_image }}
+      SINGLESTORE_VERSION: ${{ matrix.singlestore_version }}
 
     steps:
       - name: Checkout repository
@@ -79,7 +79,7 @@ jobs:
 
     env:
       CLUSTER_TYPE: ${{ matrix.cluster_type }}
-      CIAB_IMAGE: ${{ matrix.ciab_image }}
+      SINGLESTORE_VERSION: ${{ matrix.singlestore_version }}
 
     steps:
       - name: Checkout repository
