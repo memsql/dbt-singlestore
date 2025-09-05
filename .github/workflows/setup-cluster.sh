@@ -33,7 +33,7 @@ start-cluster-in-a-box() {
   fi
 
   if [[ "${EXISTS}" -eq 0 ]]; then
-    docker run -i --init \
+    docker run -d --init \
           --name ${CONTAINER_NAME} \
           -e SINGLESTORE_LICENSE=${LICENSE_KEY} \
           -e ROOT_PASSWORD=${SQL_USER_PASSWORD} \
