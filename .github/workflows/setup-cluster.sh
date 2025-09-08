@@ -13,12 +13,14 @@ terminate-s2ms-cluster() {
 }
 
 start-cluster-in-a-box() {
-  DEFAULT_SINGLESTORE_VERSION=""
+  DEFAULT_SINGLESTORE_VERSION="8.9"
   VERSION="${SINGLESTORE_VERSION:-$DEFAULT_SINGLESTORE_VERSION}"
-  IMAGE_NAME="ghcr.io/singlestore-labs/singlestoredb-dev"
+  IMAGE_NAME="ghcr.io/singlestore-labs/singlestoredb-dev:latest"
   CONTAINER_NAME="singlestore-integration"
-  EXTERNAL_MASTER_PORT=3306
-  EXTERNAL_LEAF_PORT=3307
+
+  S2_MASTER_PORT=5506
+  S2_AGG_PORT_1=5507
+  S2_AGG_PORT_2=5508
 
 
   EXISTS=$(docker inspect ${CONTAINER_NAME} >/dev/null 2>&1 && echo 1 || echo 0)
@@ -33,12 +35,12 @@ start-cluster-in-a-box() {
   fi
 
   if [[ "${EXISTS}" -eq 0 ]]; then
-    docker run -d --init \
+    docker run -d \
           --name ${CONTAINER_NAME} \
           -e SINGLESTORE_LICENSE=${LICENSE_KEY} \
           -e ROOT_PASSWORD=${SQL_USER_PASSWORD} \
           -e SINGLESTORE_VERSION=${VERSION} \
-          -p $EXTERNAL_MASTER_PORT:3306 -p $EXTERNAL_LEAF_PORT:3307 \
+          -p ${S2_MASTER_PORT}:3306 -p ${S2_AGG_PORT_1}:3307 -p ${S2_AGG_PORT_2}:3308 \
           ${IMAGE_NAME}
   fi
 
@@ -47,7 +49,7 @@ start-cluster-in-a-box() {
   singlestore-wait-start() {
     echo -n "Waiting for SingleStore to start..."
     while true; do
-      if mysql -u root -h 127.0.0.1 -P $EXTERNAL_MASTER_PORT -p"${SQL_USER_PASSWORD}" -e "select 1" >/dev/null 2>/dev/null; then
+      if mysql -u root -h 127.0.0.1 -P $S2_MASTER_PORT -p"${SQL_USER_PASSWORD}" -e "select 1" >/dev/null 2>/dev/null; then
           break
       fi
       echo -n "."
@@ -64,16 +66,16 @@ start-cluster-in-a-box() {
   CURRENT_LEAF_IP=$(mysql -u root -h 127.0.0.1 -P 3306 -p"${SQL_USER_PASSWORD}" --batch -N -e 'SELECT HOST FROM INFORMATION_SCHEMA.LEAVES')
   if [[ ${CONTAINER_IP} != "${CURRENT_LEAF_IP}" ]]; then
     # remove leaf with current ip
-    mysql -u root -h 127.0.0.1 -P $EXTERNAL_MASTER_PORT -p"${SQL_USER_PASSWORD}" --batch -N -e "REMOVE LEAF '${CURRENT_LEAF_IP}':3307"
+    mysql -u root -h 127.0.0.1 -P $S2_MASTER_PORT -p"${SQL_USER_PASSWORD}" --batch -N -e "REMOVE LEAF '${CURRENT_LEAF_IP}':3307"
     # add leaf with correct ip
-    mysql -u root -h 127.0.0.1 -P $EXTERNAL_MASTER_PORT -p"${SQL_USER_PASSWORD}" --batch -N -e "ADD LEAF root:'${SQL_USER_PASSWORD}'@'${CONTAINER_IP}':3307"
+    mysql -u root -h 127.0.0.1 -P $S2_MASTER_PORT -p"${SQL_USER_PASSWORD}" --batch -N -e "ADD LEAF root:'${SQL_USER_PASSWORD}'@'${CONTAINER_IP}':3307"
   fi
 
-  mysql -u root -h 127.0.0.1 -P $EXTERNAL_MASTER_PORT -p"${SQL_USER_PASSWORD}" --batch -N -e "DROP DATABASE IF EXISTS dbt_test; CREATE DATABASE dbt_test"
-  mysql -u root -h 127.0.0.1 -P $EXTERNAL_MASTER_PORT -p"${SQL_USER_PASSWORD}" --batch -N -e "SET GLOBAL sql_mode = 'NO_AUTO_CREATE_USER'; CREATE USER user_1; CREATE USER user_2; CREATE USER user_3"
+  mysql -u root -h 127.0.0.1 -P $S2_MASTER_PORT -p"${SQL_USER_PASSWORD}" --batch -N -e "DROP DATABASE IF EXISTS dbt_test; CREATE DATABASE dbt_test"
+  mysql -u root -h 127.0.0.1 -P $S2_MASTER_PORT -p"${SQL_USER_PASSWORD}" --batch -N -e "SET GLOBAL sql_mode = 'NO_AUTO_CREATE_USER'; CREATE USER user_1; CREATE USER user_2; CREATE USER user_3"
 
   export S2_HOST=127.0.0.1
-  export S2_PORT=$EXTERNAL_MASTER_PORT
+  export S2_PORT=$S2_MASTER_PORT
   export S2_USER=root
   echo "Done!"
 }
