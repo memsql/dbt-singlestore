@@ -9,11 +9,12 @@ env:
 
 jobs:
   fetch-s2-versions:
+    name: Fetch SingleStore supported versions
     runs-on: ubuntu-latest
     outputs:
       versions: ${{ steps.get_versions.outputs.versions }}
     steps:
-      - name: Get supported versions of Singlestore
+      - name: Get supported versions of SingleStore
         id: get_versions
         uses: singlestore-labs/singlestore-supported-versions@main
 
