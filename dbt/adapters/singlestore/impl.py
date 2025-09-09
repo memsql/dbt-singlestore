@@ -145,8 +145,8 @@ class SingleStoreAdapter(SQLAdapter):
             database, name, schema, relation_type = row
 
             valid_values = {t.value for t in RelationType}
-            if isinstance(relation_type_raw, str) and relation_type_raw in valid_values:
-                rt = RelationType(relation_type_raw)
+            if isinstance(relation_type, str) and relation_type in valid_values:
+                rt = RelationType(relation_type)
             else:
                 logger.debug(f"Invalid value from singlestore__list_relations_without_caching({kwargs}): {relation_type}")
                 continue
