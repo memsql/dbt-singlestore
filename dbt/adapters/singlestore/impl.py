@@ -143,14 +143,19 @@ class SingleStoreAdapter(SQLAdapter):
                     f'got {len(row)} values, expected 4'
                 )
             database, name, schema, relation_type = row
-            if relation_type not in RelationType:
+
+            valid_values = {t.value for t in RelationType}
+            if isinstance(relation_type_raw, str) and relation_type_raw in valid_values:
+                rt = RelationType(relation_type_raw)
+            else:
                 logger.debug(f"Invalid value from singlestore__list_relations_without_caching({kwargs}): {relation_type}")
                 continue
+
             relation = self.Relation.create(
                 database=database,
                 schema=schema,
                 identifier=name,
-                type=relation_type
+                type=rt
             )
             relations.append(relation)
 
