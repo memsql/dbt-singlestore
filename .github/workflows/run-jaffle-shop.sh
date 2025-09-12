@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 source .env3/bin/activate
-source ./.github/workflows/setup-cluster.sh start $CLUSTER_TYPE $CIAB_IMAGE
-
+source ./.github/workflows/setup-cluster.sh start $CLUSTER_TYPE $SINGLESTORE_VERSION
 export S2_PASSWORD=$SQL_USER_PASSWORD  # project UI env-var reference
 WORKSPACE_ENDPOINT_FILE="WORKSPACE_ENDPOINT_FILE"
 
