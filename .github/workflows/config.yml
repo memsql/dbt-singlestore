@@ -19,6 +19,8 @@ jobs:
         uses: singlestore-labs/singlestore-supported-versions@main
         with:
           include_rc: "true"
+      - name: Show action output
+        run: echo "VERSIONS=${{ steps.get_versions.outputs.versions }}"
 
   build-matrix:
     name: Build test matrix
