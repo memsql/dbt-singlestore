@@ -18,7 +18,7 @@ jobs:
         id: get_versions
         uses: singlestore-labs/singlestore-supported-versions@main
         with:
-          include_rc: true
+          include_rc: "true"
 
   build-matrix:
     name: Build test matrix
