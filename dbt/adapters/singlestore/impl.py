@@ -11,6 +11,7 @@ from dbt.adapters.singlestore.relation import SingleStoreRelation
 from dbt.adapters.base.impl import ConstraintSupport
 from dbt.adapters.base.meta import available
 from dbt.adapters.capability import CapabilityDict, CapabilitySupport, Support, Capability
+from dbt.adapters.contracts.relation import RelationType
 from dbt.adapters.sql import SQLAdapter
 from dbt_common.contracts.constraints import ColumnLevelConstraint, ConstraintType, ModelLevelConstraint
 from dbt_common.dataclass_schema import dbtClassMixin, ValidationError
