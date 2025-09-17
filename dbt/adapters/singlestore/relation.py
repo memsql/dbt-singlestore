@@ -33,25 +33,25 @@ class SingleStoreRelation(BaseRelation):
             )
         return super().render()
 
-
+    def _norm(ts: str) -> str:
+        s = ts.replace('T', ' ').replace('Z', '')
+        s = re.sub(r'([+-]\d{2}:\d{2})$', '', s)   # drop timezone
+        return s[:19]                              # 'YYYY-MM-DD HH:MM:SS'
+    
     def _render_event_time_filtered(self, event_time_filter: EventTimeFilter) -> str:
         """
         Returns "" if start and end are both None
         """
         filter = ""
-
-        start_time = event_time_filter.start.replace(tzinfo=None)
-        end_time = event_time_filter.end.replace(tzinfo=None)
-
         if event_time_filter.start and event_time_filter.end:
-            filter = f"({event_time_filter.field_name} :> TIMESTAMP) >= '{start_time}' and ({event_time_filter.field_name} :> TIMESTAMP) < '{end_time}'"
+            filter = f"({event_time_filter.field_name} :> TIMESTAMP) >= '{_norm(event_time_filter.start)}' and ({event_time_filter.field_name} :> TIMESTAMP) < '{_norm(event_time_filter.end)}'"
         elif event_time_filter.start:
             filter = (
-                f"({event_time_filter.field_name} :> TIMESTAMP) >= '{start_time}'"
+                f"({event_time_filter.field_name} :> TIMESTAMP) >= '{_norm(event_time_filter.start)}'"
             )
         elif event_time_filter.end:
             filter = (
-                f"({event_time_filter.field_name} :> TIMESTAMP) < '{end_time}'"
+                f"({event_time_filter.field_name} :> TIMESTAMP) < '{_norm(event_time_filter.end)}'"
             )
 
         return filter
