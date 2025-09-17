@@ -15,7 +15,6 @@ terminate-s2ms-cluster() {
 start-cluster-in-a-box() {
   DEFAULT_SINGLESTORE_VERSION="8.9"
   VERSION="${SINGLESTORE_VERSION:-$DEFAULT_SINGLESTORE_VERSION}"
-  # TODO: update to using latest once new dev image is ready
   IMAGE_NAME="ghcr.io/singlestore-labs/singlestoredb-dev:latest"
   CONTAINER_NAME="singlestore-integration"
   EXTERNAL_MASTER_PORT=3306
