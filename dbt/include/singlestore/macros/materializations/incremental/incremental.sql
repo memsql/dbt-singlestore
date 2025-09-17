@@ -66,12 +66,12 @@
     {# Append microbatch window predicates for SingleStore #}
     {% if model.config.get("__dbt_internal_microbatch_event_time_start") -%}
       {% do incremental_predicates.append(
-        model.config.event_time ~ " >= CAST('" ~ model.config.__dbt_internal_microbatch_event_time_start ~ "' AS DATETIME)"
+        model.config.event_time ~ " >= ('" ~ model.config.__dbt_internal_microbatch_event_time_start ~ "' :> DATETIME)"
       ) %}
     {% endif %}
     {% if model.config.__dbt_internal_microbatch_event_time_end -%}
       {% do incremental_predicates.append(
-        model.config.event_time ~ " < CAST('" ~ model.config.__dbt_internal_microbatch_event_time_end ~ "' AS DATETIME)"
+        model.config.event_time ~ " < ('" ~ model.config.__dbt_internal_microbatch_event_time_end ~ "' :> DATETIME)"
       ) %}
     {% endif %}
     {% do arg_dict.update({'incremental_predicates': incremental_predicates}) %}
@@ -81,11 +81,10 @@
     START TRANSACTION;
 
       {# 1. Delete just the microbatch slice from target #}
-      delete from {{ target }}
-        where
+      delete from {{ target }} where (
         {%- for predicate in incremental_predicates %}
-                {%- if not loop.first %}and {% endif -%} {{ predicate }}
-        {%- endfor %};
+                {%- if not loop.first %} and {% endif -%} {{ predicate }}
+        {%- endfor %});
 
       {# 2. Insert the microbatch rows #}
       insert into {{ target }} ({{ dest_cols_csv }})
