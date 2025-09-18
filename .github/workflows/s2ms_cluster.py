@@ -11,7 +11,7 @@ S2MS_API_KEY = os.getenv("S2MS_API_KEY")  # project UI env-var reference
 
 WORKSPACE_GROUP_BASE_NAME = "dbt-connector-ci-test-cluster"
 WORKSPACE_NAME = "tests"
-AWS_US_WEST_REGION = "1c1de314-2cc0-4c74-bd54-5047ff90842e"
+
 AUTO_TERMINATE_MINUTES = 20
 WORKSPACE_ENDPOINT_FILE = "WORKSPACE_ENDPOINT_FILE"
 WORKSPACE_GROUP_ID_FILE = "WORKSPACE_GROUP_ID_FILE"
@@ -58,11 +58,16 @@ def retry(func):
 
 
 def create_workspace(workspace_manager):
+    for reg in workspace_manager.regions:
+        if 'US' in reg.name:
+            region = reg
+            break
+
     w_group_name = WORKSPACE_GROUP_BASE_NAME + "-" + uuid.uuid4().hex
     def create_workspace_group():
         return workspace_manager.create_workspace_group(
             name=w_group_name,
-            region=AWS_US_WEST_REGION,
+            region=region.id,
             firewall_ranges=["0.0.0.0/0"],
             admin_password=SQL_USER_PASSWORD,
             expires_at="60m"
@@ -73,7 +78,7 @@ def create_workspace(workspace_manager):
         f.write(workspace_group.id)
     print("Created workspace group {}".format(w_group_name))
 
-    workspace = workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00", wait_on_active=True, wait_timeout=600)
+    workspace = workspace_group.create_workspace(name=WORKSPACE_NAME, size="S-00", wait_on_active=True, wait_timeout=1200)
 
     with open(WORKSPACE_ENDPOINT_FILE, "w") as f:
         f.write(workspace.endpoint)

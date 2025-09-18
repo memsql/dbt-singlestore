@@ -2,51 +2,94 @@ name: dbt-singlestore
 
 on: [push]
 
-jobs:
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: "Managed Service connection test"
-            cluster_type: s2ms
-            ciab_image: none, because it's s2ms cluster
-          - name: "SingleStore 8.1 connection test"
-            cluster_type: ciab
-            ciab_image: singlestore/cluster-in-a-box:alma-8.1.32-e3d3cde6da-4.0.16-1.17.6
-          - name: "SingleStore 8.5 connection test"
-            cluster_type: ciab
-            ciab_image: singlestore/cluster-in-a-box:alma-8.5.22-fe61f40cd1-4.1.0-1.17.11
-          - name: "SingleStore 8.7 connection test"
-            cluster_type: ciab
-            ciab_image: singlestore/cluster-in-a-box:alma-8.7.12-483e5f8acb-4.1.0-1.17.15
+env:
+  LICENSE_KEY: ${{ secrets.LICENSE_KEY }}
+  SQL_USER_PASSWORD: ${{ secrets.SQL_USER_PASSWORD }}
+  S2MS_API_KEY: ${{ secrets.S2MS_API_KEY }}
 
+jobs:
+  fetch-s2-versions:
+    name: Fetch SingleStore supported versions
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.get_versions.outputs.versions }}
+    steps:
+      - name: Get supported versions of SingleStore
+        id: get_versions
+        uses: singlestore-labs/singlestore-supported-versions@main
+        with:
+          include_rc: true
+
+  build-matrix:
+    name: Build test matrix
+    runs-on: ubuntu-latest
+    needs: fetch-s2-versions
+    outputs:
+      matrix: ${{ steps.compose.outputs.matrix }}
+    steps:
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+      - name: Compose matrix JSON
+        id: compose
+        env:
+          VERSIONS: ${{ needs.fetch-s2-versions.outputs.versions }}
+        run: |
+          base='[{"name":"Managed Service connection test","cluster_type":"s2ms","singlestore_version":"none"}]'
+
+          ciab_rows=$(jq -cn --argjson versions "$VERSIONS" '
+            $versions | map({
+              name: ("SingleStore " + . + " connection test"),
+              cluster_type: "ciab",
+              singlestore_version: (.)
+            })
+          ')
+
+          include=$(jq -cn --argjson base "$base" --argjson extra "$ciab_rows" \
+            '{ include: ($base + $extra) }')
+
+          echo "matrix=$include" >> "$GITHUB_OUTPUT"
+
+  test:
     name: ${{ matrix.name }}
     runs-on: ubuntu-22.04
+    needs: build-matrix
+    strategy:
+      matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
+      fail-fast: false
+
     env:
       CLUSTER_TYPE: ${{ matrix.cluster_type }}
-      CIAB_IMAGE: ${{ matrix.ciab_image }}
-      LICENSE_KEY: ${{ secrets.LICENSE_KEY }}
-      SQL_USER_PASSWORD: ${{ secrets.SQL_USER_PASSWORD }}
-      S2MS_API_KEY: ${{ secrets.S2MS_API_KEY }}
+      SINGLESTORE_VERSION: ${{ matrix.singlestore_version }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y apt-transport-https
-          sudo apt-get update
-          sudo apt-get install mariadb-client-core-10.6 python3 python3-virtualenv
-
-      - name: Set up Python environment
-        run: |
-          virtualenv .env3 -p /usr/bin/python3
-          source .env3/bin/activate
-          pip install .
-          pip install -r dev_requirements.txt
+      - name: Setup build environment
+        uses: ./.github/workflows/actions/setup
 
       - name: Start SingleStore cluster and run integration tests
         run: ./.github/workflows/run-tests.sh
+
+
+  test-jaffle-shop:
+    name: ${{ matrix.name }} - Jaffle Shop
+    runs-on: ubuntu-22.04
+    needs: build-matrix
+    strategy:
+      matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
+      fail-fast: false
+
+    env:
+      CLUSTER_TYPE: ${{ matrix.cluster_type }}
+      SINGLESTORE_VERSION: ${{ matrix.singlestore_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup build environment
+        uses: ./.github/workflows/actions/setup
+
+      - name: Run jaffle_shop test
+        run: ./.github/workflows/run-jaffle-shop.sh

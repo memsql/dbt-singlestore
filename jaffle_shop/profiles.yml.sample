@@ -1,0 +1,35 @@
+
+default:
+  outputs:
+    dev:
+      type: singlestore
+      host: 127.0.0.1
+      port: 3306
+      user: root
+      password: p
+      database: testdb
+  target: dev
+
+test:
+  outputs:
+    dev:
+      type: singlestore
+      host: 127.0.0.1
+      port: 3306
+      user: root
+      password: p
+      database: dbt_test
+      schema: pm
+  target: dev
+
+jaffle_shop:
+  outputs:
+    dev:
+      type: singlestore
+      host: 127.0.0.1
+      port: 3306
+      user: root
+      password: p
+      database: jaffle_db
+      schema: pm_jaffle
+  target: dev

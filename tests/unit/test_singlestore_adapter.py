@@ -1,11 +1,14 @@
 import os
+import pytest
 import unittest
 
 from dbt.adapters.singlestore import (
     SingleStoreCredentials,
     SingleStoreConnectionManager)
 from dbt.adapters.contracts.connection import Connection
+from dbt.adapters.contracts.relation import RelationType
 from dbt.adapters.singlestore import __version__
+from dbt.adapters.singlestore.relation import SingleStoreRelation
 
 
 class SingleStoreConnectionManagerTest(unittest.TestCase):
@@ -42,3 +45,20 @@ class SingleStoreConnectionManagerTest(unittest.TestCase):
 
         assert set(expected_attributes.keys()).issubset(actual_attributes.keys())
         assert set(expected_attributes.values()).issubset(actual_attributes.values())
+
+
+def test_skips_invalid_relation_types(monkeypatch, adapter):
+    def fake_execute_macro(*args, **kwargs):
+        return [
+            ("db", "orders", "db", "table"),         # valid
+            ("db", "v_customers", "db", "view"),     # valid
+            ("db", "sys_view", "db", "SYSTEM VIEW"), # invalid, should skip
+            ("db", "weird", "db", ""),               # invalid, should skip
+        ]
+    monkeypatch.setattr(adapter, "execute_macro", fake_execute_macro)
+
+    schema_rel = SingleStoreRelation.create(database="db", schema="db", identifier=None)
+    rels = adapter.list_relations_without_caching(schema_rel)
+
+    assert {r.identifier for r in rels} == {"orders", "v_customers"}
+    assert all(isinstance(r.type, RelationType) for r in rels)
