@@ -22,5 +22,10 @@ setup(
         "dbt-core>=1.8",
         "singlestoredb==1.15.4",
         "dataclasses_json>=0.5.6"
-    ]
+    ],
+    entry_points={
+        "dbt.adapters": [
+            "singlestore = dbt.adapters.singlestore:Plugin",
+        ],
+    },
 )

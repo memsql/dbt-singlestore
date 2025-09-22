@@ -57,7 +57,9 @@
 {% endmacro %}
 
 
-{% macro singlestore__get_incremental_microbatch_sql(arg_dict) %}
+{% macro singlestore__microbatch_impl(arg_dict) %}
+    {% do exceptions.raise_compiler_error('HIT-SINGLESORE-MICROBATCH-IMPL') %}
+    CREATE TABLE LOLA;
     {%- set target = arg_dict["target_relation"] -%}
     {%- set source = arg_dict["temp_relation"] -%}
     {%- set dest_columns = arg_dict["dest_columns"] -%}
@@ -99,4 +101,14 @@
         from {{ source }}
 
     COMMIT;
+{% endmacro %}
+
+
+{% macro singlestore__get_incremental_microbatch_sql(arg_dict) %}
+  {{ return(singlestore__microbatch_impl(arg_dict)) }}
+{% endmacro %}
+
+
+{% macro dbt__get_incremental_microbatch_sql(arg_dict) %}
+  {{ return(singlestore__microbatch_impl(arg_dict)) }}
 {% endmacro %}
