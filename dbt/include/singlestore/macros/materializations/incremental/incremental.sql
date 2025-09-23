@@ -81,20 +81,18 @@
     {% if model.config.get("__dbt_internal_microbatch_event_time_start") -%}
     {% set _start = singlestore__to_naive_datetime(model.config.__dbt_internal_microbatch_event_time_start) %}
       {% do incremental_predicates.append(
-        model.config.event_time ~ " >= ('" ~ _start ~ "' :> DATETIME)"
+        model.config.event_time ~ " >= ('" ~ _start ~ "' :> TIMESTAMP)"
       ) %}
     {% endif %}
     {% if model.config.__dbt_internal_microbatch_event_time_end -%}
     {% set _end = singlestore__to_naive_datetime(model.config.__dbt_internal_microbatch_event_time_end) %}
       {% do incremental_predicates.append(
-        model.config.event_time ~ " < ('" ~ _end ~ "' :> DATETIME)"
+        model.config.event_time ~ " < ('" ~ _end ~ "' :> TIMESTAMP)"
       ) %}
     {% endif %}
     {% do arg_dict.update({'incremental_predicates': incremental_predicates}) %}
 
     {%- set dest_cols_csv = get_quoted_csv(dest_columns | map(attribute="name")) -%}
-
-    CREATE TABLE IF NOT EXISTS {{ target }} LIKE {{ source }};
 
     START TRANSACTION;
 
