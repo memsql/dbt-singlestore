@@ -3,7 +3,12 @@
        set {{ target }}.dbt_valid_to = dbt_internal_source.dbt_valid_to
      where dbt_internal_source.dbt_scd_id = {{ target }}.dbt_scd_id
        and dbt_internal_source.dbt_change_type = 'update'
+      {% if config.get("dbt_valid_to_current") %}
+       and ( {{ target }}.dbt_valid_to = {{ config.get('dbt_valid_to_current') }} or
+            {{ target }}.dbt_valid_to is null)
+     {% else %}
        and {{ target }}.dbt_valid_to is null
+     {% endif %}
 {% endmacro %}
 
 
