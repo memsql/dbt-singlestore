@@ -9,9 +9,9 @@
         where
             {% if config.get('dbt_valid_to_current') %}
                 {# Check for either dbt_valid_to_current OR null, in order to correctly update records with nulls #}
-                ( {{ dbt_valid_to }} = {{ config.get('dbt_valid_to_current') }} or {{ dbt_valid_to }} is null)
+                ( dbt_valid_to = ( {{ config.get('dbt_valid_to_current') }} :> datetime ) or dbt_valid_to is null)
             {% else %}
-                {{ dbt_valid_to }} is null
+                dbt_valid_to is null
             {% endif %}
     ),
     deletes_source_data as (
@@ -44,9 +44,9 @@
         where
             {% if config.get('dbt_valid_to_current') %}
                 {# Check for either dbt_valid_to_current OR null, in order to correctly update records with nulls #}
-                ( {{ dbt_valid_to }} = {{ config.get('dbt_valid_to_current') }} or {{ dbt_valid_to }} is null)
+                ( dbt_valid_to = ( {{ config.get('dbt_valid_to_current') }} :> datetime ) or dbt_valid_to is null)
             {% else %}
-                {{ dbt_valid_to }} is null
+                dbt_valid_to is null
             {% endif %}
     ),
     updates_source_data as (
@@ -78,9 +78,9 @@
         where
             {% if config.get('dbt_valid_to_current') %}
                 {# Check for either dbt_valid_to_current OR null, in order to correctly update records with nulls #}
-                ( {{ dbt_valid_to }} = {{ config.get('dbt_valid_to_current') }} or {{ dbt_valid_to }} is null)
+                ( dbt_valid_to = ( {{ config.get('dbt_valid_to_current') }} :> datetime ) or dbt_valid_to is null)
             {% else %}
-                {{ dbt_valid_to }} is null
+                dbt_valid_to is null
             {% endif %}
     ),
     insertions_source_data as (
@@ -89,7 +89,7 @@
             {{ strategy.unique_key }} as dbt_unique_key,
             {{ strategy.updated_at }} as dbt_updated_at,
             {{ strategy.updated_at }} as dbt_valid_from,
-            {{ get_dbt_valid_to_current(strategy) }},
+            {{ singlestore__get_dbt_valid_to_current(strategy) }},
             {{ strategy.scd_id }} as dbt_scd_id
         from snapshot_query
     )
@@ -136,8 +136,10 @@
 {% endmacro %}
 
 
-{% macro singlestore__get_dbt_valid_to_current(strategy) %}
+{% macro singlestore__get_dbt_valid_to_current(strategy, columns = None) %}
   {% set dbt_valid_to_current = config.get('dbt_valid_to_current') or "null" %}
-  coalesce(nullif({{ strategy.updated_at }}, {{ strategy.updated_at }}), {{dbt_valid_to_current}})
-  as {{ dbt_valid_to }}
+  coalesce(
+    nullif({{ strategy.updated_at }}, {{ strategy.updated_at }}), 
+    ({{ dbt_valid_to_current }}) :> datetime
+  ) as dbt_valid_to
 {% endmacro %}
