@@ -1,4 +1,6 @@
 {% macro singlestore__snapshot_staging_table_deletes(strategy, source_sql, target_relation) -%}
+    {% set columns = config.get('snapshot_table_column_names') or get_snapshot_table_column_names() %}
+
     with snapshot_query as (
         {{ source_sql }}
     ),
@@ -9,9 +11,9 @@
         where
             {% if config.get('dbt_valid_to_current') %}
                 {# Check for either dbt_valid_to_current OR null, in order to correctly update records with nulls #}
-                ( dbt_valid_to = ( {{ config.get('dbt_valid_to_current') }} :> datetime ) or dbt_valid_to is null)
+                ( {{ columns.dbt_valid_to }} = ( {{ config.get('dbt_valid_to_current') }} :> datetime ) or {{ columns.dbt_valid_to }} is null)
             {% else %}
-                dbt_valid_to is null
+                {{ columns.dbt_valid_to }} is null
             {% endif %}
     ),
     deletes_source_data as (
@@ -23,10 +25,10 @@
     select
         'delete' as dbt_change_type,
         source_data.*,
-        {{ snapshot_get_time() }} as dbt_valid_from,
-        {{ snapshot_get_time() }} as dbt_updated_at,
-        {{ snapshot_get_time() }} as dbt_valid_to,
-        snapshotted_data.dbt_scd_id
+        {{ snapshot_get_time() }} as {{ columns.dbt_valid_from }},
+        {{ snapshot_get_time() }} as {{ columns.dbt_updated_at }},
+        {{ snapshot_get_time() }} as {{ columns.dbt_valid_to }},
+        snapshotted_data.{{ columns.dbt_scd_id }}
 
     from snapshotted_data
     left join deletes_source_data as source_data on snapshotted_data.dbt_unique_key = source_data.dbt_unique_key
@@ -35,6 +37,8 @@
 
 
 {% macro singlestore__snapshot_staging_table_updates(strategy, source_sql, target_relation) %}
+    {% set columns = config.get('snapshot_table_column_names') or get_snapshot_table_column_names() %}
+
     with snapshot_query as (
         {{ source_sql }}
     ),
@@ -44,24 +48,24 @@
         where
             {% if config.get('dbt_valid_to_current') %}
                 {# Check for either dbt_valid_to_current OR null, in order to correctly update records with nulls #}
-                ( dbt_valid_to = ( {{ config.get('dbt_valid_to_current') }} :> datetime ) or dbt_valid_to is null)
+                ( {{ columns.dbt_valid_to }} = ( {{ config.get('dbt_valid_to_current') }} :> datetime ) or {{ columns.dbt_valid_to }} is null)
             {% else %}
-                dbt_valid_to is null
+                {{ columns.dbt_valid_to }} is null
             {% endif %}
     ),
     updates_source_data as (
         select
             *,
             {{ strategy.unique_key }} as dbt_unique_key,
-            {{ strategy.updated_at }} as dbt_updated_at,
-            {{ strategy.updated_at }} as dbt_valid_from,
-            {{ strategy.updated_at }} as dbt_valid_to
+            {{ strategy.updated_at }} as {{ columns.dbt_updated_at }},
+            {{ strategy.updated_at }} as {{ columns.dbt_valid_from }},
+            {{ strategy.updated_at }} as {{ columns.dbt_valid_to }}
         from snapshot_query
     )
     select
         'update' as dbt_change_type,
         source_data.*,
-        snapshotted_data.dbt_scd_id
+        snapshotted_data.{{ columns.dbt_scd_id }}
     from updates_source_data as source_data
     join snapshotted_data on snapshotted_data.dbt_unique_key = source_data.dbt_unique_key
     where ({{ strategy.row_changed }})
@@ -69,6 +73,8 @@
 
 
 {% macro singlestore__snapshot_staging_table_insertions(strategy, source_sql, target_relation) %}
+    {% set columns = config.get('snapshot_table_column_names') or get_snapshot_table_column_names() %}
+
     with snapshot_query as (
         {{ source_sql }}
     ),
@@ -78,19 +84,19 @@
         where
             {% if config.get('dbt_valid_to_current') %}
                 {# Check for either dbt_valid_to_current OR null, in order to correctly update records with nulls #}
-                ( dbt_valid_to = ( {{ config.get('dbt_valid_to_current') }} :> datetime ) or dbt_valid_to is null)
+                ( {{ columns.dbt_valid_to }} = ( {{ config.get('dbt_valid_to_current') }} :> datetime ) or {{ columns.dbt_valid_to }} is null)
             {% else %}
-                dbt_valid_to is null
+                {{ columns.dbt_valid_to }} is null
             {% endif %}
     ),
     insertions_source_data as (
         select
             *,
             {{ strategy.unique_key }} as dbt_unique_key,
-            {{ strategy.updated_at }} as dbt_updated_at,
-            {{ strategy.updated_at }} as dbt_valid_from,
-            {{ singlestore__get_dbt_valid_to_current(strategy) }},
-            {{ strategy.scd_id }} as dbt_scd_id
+            {{ strategy.updated_at }} as {{ columns.dbt_updated_at }},
+            {{ strategy.updated_at }} as {{ columns.dbt_valid_from }},
+            {{ singlestore__get_dbt_valid_to_current(strategy, columns) }},
+            {{ strategy.scd_id }} as {{ columns.dbt_scd_id }}
         from snapshot_query
     )
     select
@@ -136,10 +142,29 @@
 {% endmacro %}
 
 
-{% macro singlestore__get_dbt_valid_to_current(strategy, columns = None) %}
+{% macro singlestore__build_snapshot_table(strategy, sql) %}
+    {% set columns = config.get('snapshot_table_column_names') or get_snapshot_table_column_names() %}
+
+    select *,
+        {{ strategy.scd_id }} as {{ columns.dbt_scd_id }},
+        {{ strategy.updated_at }} as {{ columns.dbt_updated_at }},
+        {{ strategy.updated_at }} as {{ columns.dbt_valid_from }},
+        {{ singlestore__get_dbt_valid_to_current(strategy, columns) }}
+      {%- if strategy.hard_deletes == 'new_record' -%}
+        , 'False' as {{ columns.dbt_is_deleted }}
+      {% endif -%}
+    from (
+        {{ sql }}
+    ) sbq
+
+{% endmacro %}
+
+
+{% macro singlestore__get_dbt_valid_to_current(strategy, columns) %}
   {% set dbt_valid_to_current = config.get('dbt_valid_to_current') or "null" %}
-  coalesce(
+  (coalesce(
     nullif({{ strategy.updated_at }}, {{ strategy.updated_at }}), 
-    ({{ dbt_valid_to_current }}) :> datetime
-  ) as dbt_valid_to
+    ({{ dbt_valid_to_current }}) :> datetime)
+    :> datetime)
+  as {{ columns.dbt_valid_to }}
 {% endmacro %}

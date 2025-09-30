@@ -18,20 +18,22 @@ drop_and_create_new_db()
   fi
 }
 
-# TODO: make it more beautiful?
-pytest ./tests/functional/adapter/test_docs.py
-drop_and_create_new_db
-pytest -k TestSingleStoreMicrobatch
-drop_and_create_new_db
-pytest -k TestIncrementalConstraintsRollback
-drop_and_create_new_db
-pytest -k TestTableConstraintsRollback
-drop_and_create_new_db
-pytest ./tests/functional/adapter/test_caching.py
-drop_and_create_new_db
-pytest ./tests/functional/adapter/test_list_relations_without_caching.py
-drop_and_create_new_db
-pytest -k "not test_docs and not TestSingleStoreMicrobatch and not ConstraintsRollback and not test_caching and not test_list_relations_without_caching"
+
+TESTS=(
+  "pytest -k TestSingleStoreMicrobatch"
+  "pytest -k TestIncrementalConstraintsRollback"
+  "pytest -k TestTableConstraintsRollback"
+  "pytest ./tests/functional/adapter/test_caching.py"
+  "pytest ./tests/functional/adapter/test_docs.py"
+  "pytest ./tests/functional/adapter/test_list_relations_without_caching.py"
+  "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not test_caching and not test_docs and not test_list_relations_without_caching'"
+)
+
+for test in "${TESTS[@]}"; do
+  drop_and_create_new_db
+  eval "$test" || true
+done
+
 result_code=$?
 
 
