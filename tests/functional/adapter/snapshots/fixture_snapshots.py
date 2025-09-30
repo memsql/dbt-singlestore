@@ -117,3 +117,55 @@ snapshots:
           dbt_scd_id: test_scd_id
           dbt_updated_at: test_updated_at
 """
+
+invalidate_sql = """
+-- update records 10 - 20. Change email and updated_at field
+UPDATE seed
+SET
+    updated_at = DATE_ADD(updated_at, INTERVAL 1 HOUR),
+    email = CASE
+              WHEN id = 20 THEN 'pfoxj@creativecommons.org'
+              ELSE CONCAT('new_', email)
+            END
+WHERE id BETWEEN 10 AND 20;
+
+-- invalidate records 10 - 20
+UPDATE snapshot_expected
+SET
+    TEST_VALID_TO = DATE_ADD(updated_at, INTERVAL 1 HOUR)
+WHERE id BETWEEN 10 AND 20;
+"""
+
+update_with_current_sql = """
+-- insert v2 of the 11 - 21 records
+
+insert into snapshot_expected (
+    id,
+    first_name,
+    last_name,
+    email,
+    gender,
+    ip_address,
+    updated_at,
+    test_valid_from,
+    TEST_VALID_TO,
+    test_updated_at,
+    test_scd_id
+)
+
+select
+    id,
+    first_name,
+    last_name,
+    email,
+    gender,
+    ip_address,
+    updated_at,
+    -- fields added by snapshotting
+    updated_at as test_valid_from,
+    ('2099-12-31' :> TIMESTAMP) as TEST_VALID_TO,
+    updated_at as test_updated_at,
+    md5(concat(id, '-', first_name, '|', (updated_at :> TEXT))) as test_scd_id
+from seed
+where id >= 10 and id <= 20;
+"""

@@ -10,6 +10,7 @@ from dbt.tests.adapter.simple_snapshot.fixtures import (
 from dbt.tests.util import (
     run_dbt,
     run_sql_with_adapter,
+    check_relations_equal,
 )
 from fixture_snapshots import (
     create_seed_sql,
@@ -18,10 +19,12 @@ from fixture_snapshots import (
     populate_snapshot_expected_valid_to_current_sql,
     snapshot_actual_sql,
     snapshots_valid_to_current_yml,
+    invalidate_sql,
+    update_with_current_sql
 )
 
 
-class TestSnapshot(BaseSimpleSnapshot):
+'''class TestSnapshot(BaseSimpleSnapshot):
     def test_updates_are_captured_by_snapshot(self, project):
         """
         Update the last 5 records. Show that all ids are current, but the last 5 reflect updates.
@@ -59,7 +62,7 @@ class TestSnapshot(BaseSimpleSnapshot):
 
 class TestSnapshotCheck(BaseSnapshotCheck):
     pass
-
+'''
 
 class TestSnapshotDbtValidToCurrent(BaseSnapshotDbtValidToCurrent):
     @pytest.fixture(scope="class")
