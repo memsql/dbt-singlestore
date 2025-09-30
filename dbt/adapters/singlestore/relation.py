@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 
-from dbt.adapters.base.relation import BaseRelation, Policy
+from dbt.adapters.base.relation import BaseRelation, Policy, EventTimeFilter
 from dbt_common.exceptions import DbtRuntimeError
 
 
@@ -31,3 +32,26 @@ class SingleStoreRelation(BaseRelation):
                 "but only one can be set"
             )
         return super().render()
+
+
+    def _render_event_time_filtered(self, event_time_filter: EventTimeFilter) -> str:
+        """
+        Returns "" if start and end are both None
+        """
+        filter = ""
+
+        start_time = event_time_filter.start.replace(tzinfo=None)
+        end_time = event_time_filter.end.replace(tzinfo=None)
+
+        if event_time_filter.start and event_time_filter.end:
+            filter = f"({event_time_filter.field_name} :> TIMESTAMP) >= '{start_time}' and ({event_time_filter.field_name} :> TIMESTAMP) < '{end_time}'"
+        elif event_time_filter.start:
+            filter = (
+                f"({event_time_filter.field_name} :> TIMESTAMP) >= '{start_time}'"
+            )
+        elif event_time_filter.end:
+            filter = (
+                f"({event_time_filter.field_name} :> TIMESTAMP) < '{end_time}'"
+            )
+
+        return filter
