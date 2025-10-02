@@ -24,7 +24,7 @@ from fixture_snapshots import (
 )
 
 
-'''class TestSnapshot(BaseSimpleSnapshot):
+class TestSnapshot(BaseSimpleSnapshot):
     def test_updates_are_captured_by_snapshot(self, project):
         """
         Update the last 5 records. Show that all ids are current, but the last 5 reflect updates.
@@ -62,8 +62,8 @@ from fixture_snapshots import (
 
 class TestSnapshotCheck(BaseSnapshotCheck):
     pass
-'''
 
+'''
 class TestSnapshotDbtValidToCurrent(BaseSnapshotDbtValidToCurrent):
     @pytest.fixture(scope="class")
     def snapshots(self):
@@ -111,4 +111,4 @@ class TestSnapshotDbtValidToCurrent(BaseSnapshotDbtValidToCurrent):
         assert updated_snapshot[20][2] == datetime.datetime(2099, 12, 31, 0, 0)
 
         check_relations_equal(project.adapter, ["snapshot_actual", "snapshot_expected"])
-    pass
+    pass'''
