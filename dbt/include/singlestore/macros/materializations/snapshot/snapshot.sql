@@ -1,6 +1,4 @@
 {% materialization snapshot, adapter='singlestore' %}
-  {%- set config = model['config'] -%}
-
   {%- set target_table = model.get('alias', model.get('name')) -%}
 
   {%- set strategy_name = config.get('strategy') -%}

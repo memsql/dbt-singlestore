@@ -1,6 +1,4 @@
-{% macro singlestore__snapshot_staging_table_deletes(strategy, source_sql, target_relation) -%}
-    {% set columns = config.get('snapshot_table_column_names') or get_snapshot_table_column_names() %}
-
+{% macro singlestore__snapshot_staging_table_deletes(strategy, source_sql, target_relation, columns) -%}
     with snapshot_query as (
         {{ source_sql }}
     ),
@@ -36,9 +34,7 @@
 {%- endmacro %}
 
 
-{% macro singlestore__snapshot_staging_table_updates(strategy, source_sql, target_relation) %}
-    {% set columns = config.get('snapshot_table_column_names') or get_snapshot_table_column_names() %}
-
+{% macro singlestore__snapshot_staging_table_updates(strategy, source_sql, target_relation, columns) %}
     with snapshot_query as (
         {{ source_sql }}
     ),
@@ -72,9 +68,7 @@
 {%- endmacro %}
 
 
-{% macro singlestore__snapshot_staging_table_insertions(strategy, source_sql, target_relation) %}
-    {% set columns = config.get('snapshot_table_column_names') or get_snapshot_table_column_names() %}
-
+{% macro singlestore__snapshot_staging_table_insertions(strategy, source_sql, target_relation, columns) %}
     with snapshot_query as (
         {{ source_sql }}
     ),
@@ -119,20 +113,22 @@
 
 
 {% macro singlestore__build_snapshot_staging_table(strategy, sql, target_relation) %}
+    {% set columns = config.get('snapshot_table_column_names') or get_snapshot_table_column_names() %}
+    {% do log('SNAPSHOT columns: ' ~ columns|tojson, info=True) %}
     {% set tmp_relation = make_temp_relation(target_relation) -%}
 
-    {% set select_inserts = singlestore__snapshot_staging_table_insertions(strategy, sql, target_relation) -%}
+    {% set select_inserts = singlestore__snapshot_staging_table_insertions(strategy, sql, target_relation, columns) -%}
     {% call statement('create_snapshot_with_insertions') %}
         {{ create_table_as(True, tmp_relation, select_inserts) }}
     {% endcall %}
 
-    {% set select_updates = singlestore__snapshot_staging_table_updates(strategy, sql, target_relation) -%}
+    {% set select_updates = singlestore__snapshot_staging_table_updates(strategy, sql, target_relation, columns) -%}
     {% call statement('insert_updates_to_snapshot') %}
         {{ singlestore__insert_select(tmp_relation, select_updates) }}
     {% endcall %}
 
     {%- if strategy.invalidate_hard_deletes %}
-        {% set select_deletes = singlestore__snapshot_staging_table_deletes(strategy, sql, target_relation) -%}
+        {% set select_deletes = singlestore__snapshot_staging_table_deletes(strategy, sql, target_relation, columns) -%}
         {% call statement('insert_deletes_to_snapshot') %}
             {{ singlestore__insert_select(tmp_relation, select_deletes) }}
         {% endcall %}
