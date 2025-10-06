@@ -309,3 +309,27 @@ class TestSnapshotNewRecordTimestampMode:
         assert len(results) == 1
         check_result = project.run_sql(_delete_check_sql, fetch="all")
         assert len(check_result) == 4
+
+
+_snapshots_check_yml = """
+snapshots:
+  - name: snapshot_actual
+    config:
+      strategy: check
+      check_cols: all
+      hard_deletes: new_record
+"""
+
+_ref_snapshot_check_sql = """
+select * from {{ ref('snapshot_actual') }}
+"""
+
+
+class TestSnapshotNewRecordCheckMode(TestSnapshotNewRecordTimestampMode):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {
+            "snapshots.yml": _snapshots_check_yml,
+            "ref_snapshot.sql": _ref_snapshot_check_sql,
+        }
+    pass

@@ -3,8 +3,7 @@ import datetime
 import pytest
 
 from dbt.tests.adapter.simple_snapshot.test_snapshot import BaseSnapshotCheck, BaseSimpleSnapshot
-from dbt.tests.adapter.simple_snapshot.new_record_check_mode import BaseSnapshotNewRecordCheckMode
-from dbt.tests.adapter.simple_snapshot.new_record_timestamp_mode import BaseSnapshotNewRecordTimestampMode ##
+from dbt.tests.adapter.simple_snapshot.test_ephemeral_snapshot_hard_deletes import BaseSnapshotEphemeralHardDeletes
 from dbt.tests.adapter.simple_snapshot.test_various_configs import BaseSnapshotDbtValidToCurrent
 from dbt.tests.adapter.simple_snapshot.fixtures import (
     ref_snapshot_sql,
@@ -66,11 +65,42 @@ class TestSnapshotCheck(BaseSnapshotCheck):
     pass
 
 
-class TestSnapshotNewRecordTimestampMode(BaseSnapshotNewRecordTimestampMode):
-    import pytest
+# Source table creation statement
+_source_create_sql = """
+create table {database}.src_customers (
+    id INTEGER,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    email VARCHAR(50),
+    updated_at TIMESTAMP
+);
+"""
 
+# Initial data for source table
+_source_insert_sql = """
+insert into {database}.src_customers (id, first_name, last_name, email, updated_at) values
+(1, 'John', 'Doe', 'john.doe@example.com', '2023-01-01 10:00:00'),
+(2, 'Jane', 'Smith', 'jane.smith@example.com', '2023-01-02 11:00:00'),
+(3, 'Bob', 'Johnson', 'bob.johnson@example.com', '2023-01-03 12:00:00');
+"""
 
-class TestSnapshotNewRecordCheckMode(BaseSnapshotNewRecordCheckMode):
+# SQL to add a dummy column to source table (simulating schema change)
+_source_alter_sql = """
+alter table {database}.src_customers add column dummy_column VARCHAR(50) default 'dummy_value';
+"""
+
+class TestSnapshotEphemeralHardDeletes(BaseSnapshotEphemeralHardDeletes):
+    @pytest.fixture(scope="class")
+    def source_create_sql(self):
+        return _source_create_sql
+
+    @pytest.fixture(scope="class")
+    def source_insert_sql(self):
+        return _source_insert_sql
+
+    @pytest.fixture(scope="class")
+    def source_alter_sql(self):
+        return _source_alter_sql
     pass
 
 
