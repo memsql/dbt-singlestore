@@ -21,16 +21,30 @@
         from snapshot_query
     )
     select
-        'delete' as dbt_change_type,
-        source_data.*,
-        {{ snapshot_get_time() }} as {{ columns.dbt_valid_from }},
-        {{ snapshot_get_time() }} as {{ columns.dbt_updated_at }},
-        {{ snapshot_get_time() }} as {{ columns.dbt_valid_to }},
-        snapshotted_data.{{ columns.dbt_scd_id }}
+            'delete' as dbt_change_type,
+            source_data.*,
+            {{ snapshot_get_time() }} as {{ columns.dbt_valid_from }},
+            {{ snapshot_get_time() }} as {{ columns.dbt_updated_at }},
+            {{ snapshot_get_time() }} as {{ columns.dbt_valid_to }},
+            snapshotted_data.{{ columns.dbt_scd_id }}
+        {%- if strategy.hard_deletes == 'new_record' -%}
+            , snapshotted_data.{{ columns.dbt_is_deleted }}
+        {%- endif %}
 
     from snapshotted_data
     left join deletes_source_data as source_data on snapshotted_data.dbt_unique_key = source_data.dbt_unique_key
     where source_data.dbt_unique_key is null
+    {%- if strategy.hard_deletes == 'new_record' %}
+      and not (
+        snapshotted_data.{{ columns.dbt_is_deleted }} = 'True'
+        and
+        {% if config.get('dbt_valid_to_current') -%}
+            snapshotted_data.{{ columns.dbt_valid_to }} = ( {{ config.get('dbt_valid_to_current') }} :> datetime )
+        {%- else -%}
+            snapshotted_data.{{ columns.dbt_valid_to }} is null
+        {%- endif %}
+      )
+    {%- endif %}
 {%- endmacro %}
 
 
@@ -59,12 +73,18 @@
         from snapshot_query
     )
     select
-        'update' as dbt_change_type,
-        source_data.*,
-        snapshotted_data.{{ columns.dbt_scd_id }}
+            'update' as dbt_change_type,
+            source_data.*,
+            snapshotted_data.{{ columns.dbt_scd_id }}
+        {%- if strategy.hard_deletes == 'new_record' -%}
+            , snapshotted_data.{{ columns.dbt_is_deleted }}
+        {%- endif %}
     from updates_source_data as source_data
     join snapshotted_data on snapshotted_data.dbt_unique_key = source_data.dbt_unique_key
     where ({{ strategy.row_changed }})
+    {%- if strategy.hard_deletes == 'new_record' -%}
+        or snapshotted_data.{{ columns.dbt_is_deleted }} = 'True'
+    {%- endif -%}
 {%- endmacro %}
 
 
@@ -94,16 +114,93 @@
         from snapshot_query
     )
     select
-        'insert' as dbt_change_type,
-        source_data.*
+            'insert' as dbt_change_type,
+            source_data.*
+        {%- if strategy.hard_deletes == 'new_record' -%}
+            ,'False' as {{ columns.dbt_is_deleted }}
+        {%- endif %}
     from insertions_source_data as source_data
     left outer join snapshotted_data on snapshotted_data.dbt_unique_key = source_data.dbt_unique_key
     where snapshotted_data.dbt_unique_key is null
        or (
             snapshotted_data.dbt_unique_key is not null
             and ({{ strategy.row_changed }})
+            {%- if strategy.hard_deletes == 'new_record' -%}
+                or snapshotted_data.{{ columns.dbt_is_deleted }} = 'True'
+            {%- endif -%}
        )
 {% endmacro %}
+
+
+{% macro singlestore__snapshot_staging_table_deletion_records(strategy, source_sql, target_relation, columns) -%}
+    {# Fresh SCD id for the new 'deleted' record #}
+    {% set new_scd_id = snapshot_hash_arguments([columns.dbt_scd_id, snapshot_get_time()]) %}
+
+    {# Column schemas for safe, ordered projection #}
+    {% set snapshotted_cols = get_list_of_column_names(get_columns_in_relation(target_relation)) %}
+    {% set source_sql_cols = get_column_schema_from_query(source_sql) %}
+
+    with snapshot_query as (
+        {{ source_sql }}
+    ),
+    snapshotted_data as (
+        select *,
+               {{ strategy.unique_key }} as dbt_unique_key
+        from {{ target_relation }}
+        where
+            {% if config.get('dbt_valid_to_current') %}
+                ( {{ columns.dbt_valid_to }} = ( {{ config.get('dbt_valid_to_current') }} :> datetime )
+                  or {{ columns.dbt_valid_to }} is null )
+            {% else %}
+                {{ columns.dbt_valid_to }} is null
+            {% endif %}
+    ),
+    deletes_source_data as (
+        select *,
+               {{ strategy.unique_key }} as dbt_unique_key
+        from snapshot_query
+    )
+    select
+        'insert' as dbt_change_type,
+
+        {%- for col in source_sql_cols -%}
+            {%- if col.name in snapshotted_cols -%}
+                snapshotted_data.{{ adapter.quote(col.column) }},
+            {%- else -%}
+                NULL as {{ adapter.quote(col.column) }},
+            {%- endif -%}
+        {%- endfor -%}
+
+        {%- if strategy.unique_key | is_list -%}
+            {%- for key in strategy.unique_key -%}
+                snapshotted_data.{{ key }} as dbt_unique_key_{{ loop.index }},
+            {%- endfor -%}
+        {%- else -%}
+            snapshotted_data.dbt_unique_key as dbt_unique_key,
+        {%- endif -%}
+
+        {{ snapshot_get_time() }} as {{ columns.dbt_updated_at }},
+        {{ snapshot_get_time() }} as {{ columns.dbt_valid_from }},
+        snapshotted_data.{{ columns.dbt_valid_to }} as {{ columns.dbt_valid_to }},
+        {{ new_scd_id }} as {{ columns.dbt_scd_id }},
+        'True' as {{ columns.dbt_is_deleted }}
+
+    from snapshotted_data
+    left join deletes_source_data as source_data
+      on snapshotted_data.dbt_unique_key = source_data.dbt_unique_key
+
+    {# Only when key is missing in source, and avoid duplicate open 'deleted' rows #}
+    where source_data.dbt_unique_key is null
+      and not (
+        snapshotted_data.{{ columns.dbt_is_deleted }} = 'True'
+        and
+        {% if config.get('dbt_valid_to_current') -%}
+            snapshotted_data.{{ columns.dbt_valid_to }} = ( {{ config.get('dbt_valid_to_current') }} :> datetime )
+        {%- else -%}
+            snapshotted_data.{{ columns.dbt_valid_to }} is null
+        {%- endif %}
+      )
+{%- endmacro %}
 
 
 {% macro singlestore__insert_select(relation, select_query) %}
@@ -114,7 +211,6 @@
 
 {% macro singlestore__build_snapshot_staging_table(strategy, sql, target_relation) %}
     {% set columns = config.get('snapshot_table_column_names') or get_snapshot_table_column_names() %}
-    {% do log('SNAPSHOT columns: ' ~ columns|tojson, info=True) %}
     {% set tmp_relation = make_temp_relation(target_relation) -%}
 
     {% set select_inserts = singlestore__snapshot_staging_table_insertions(strategy, sql, target_relation, columns) -%}
@@ -127,10 +223,17 @@
         {{ singlestore__insert_select(tmp_relation, select_updates) }}
     {% endcall %}
 
-    {%- if strategy.invalidate_hard_deletes %}
+    {%- if strategy.hard_deletes == 'invalidate' or strategy.hard_deletes == 'new_record' %}
         {% set select_deletes = singlestore__snapshot_staging_table_deletes(strategy, sql, target_relation, columns) -%}
         {% call statement('insert_deletes_to_snapshot') %}
             {{ singlestore__insert_select(tmp_relation, select_deletes) }}
+        {% endcall %}
+    {%- endif %}
+
+    {%- if strategy.hard_deletes == 'new_record' %}
+        {% set select_deletion_records = singlestore__snapshot_staging_table_deletion_records(strategy, sql, target_relation, columns) -%}
+        {% call statement('insert_deletion_records_to_snapshot') %}
+            {{ singlestore__insert_select(tmp_relation, select_deletion_records) }}
         {% endcall %}
     {%- endif %}
 

@@ -38,7 +38,9 @@
 
   {% else %}
 
-      {{ adapter.valid_snapshot_target(target_relation) }}
+      {% set columns = config.get("snapshot_table_column_names") or get_snapshot_table_column_names() %}
+
+      {{ adapter.assert_valid_snapshot_target_given_strategy(target_relation, columns, strategy) }}
 
       {% set staging_table = singlestore__build_snapshot_staging_table(strategy, sql, target_relation) %}
 
