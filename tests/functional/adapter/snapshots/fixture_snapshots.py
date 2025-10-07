@@ -30,7 +30,6 @@ create table snapshot_expected (
 );
 """
 
-
 seed_insert_sql = """
 -- seed inserts
 --  use the same email for two users to verify that duplicated check_cols values
@@ -56,6 +55,38 @@ insert into seed (id, first_name, last_name, email, gender, ip_address, updated_
 (18, 'Anna', 'Riley', 'arileyh@nasa.gov', 'Female', '253.31.108.22', '2015-12-11 04:34:27'),
 (19, 'Sarah', 'Knight', 'sknighti@foxnews.com', 'Female', '222.220.3.177', '2016-09-26 00:49:06'),
 (20, 'Phyllis', 'Fox', null, 'Female', '163.191.232.95', '2016-08-21 10:35:19');
+"""
+
+populate_snapshot_expected_sql = """
+-- populate snapshot table
+insert into snapshot_expected (
+    id,
+    first_name,
+    last_name,
+    email,
+    gender,
+    ip_address,
+    updated_at,
+    test_valid_from,
+    TEST_VALID_TO,
+    test_updated_at,
+    test_scd_id
+)
+
+select
+    id,
+    first_name,
+    last_name,
+    email,
+    gender,
+    ip_address,
+    updated_at,
+    -- fields added by snapshotting
+    updated_at as test_valid_from,
+    NULL as TEST_VALID_TO,
+    updated_at as test_updated_at,
+    md5(concat(id, '-', first_name, '|', (updated_at :> TEXT))) as test_scd_id
+from seed;
 """
 
 populate_snapshot_expected_valid_to_current_sql = """
@@ -134,6 +165,40 @@ UPDATE snapshot_expected
 SET
     test_valid_to = DATE_ADD(updated_at, INTERVAL 1 HOUR)
 WHERE id BETWEEN 10 AND 20;
+"""
+
+update_sql = """
+-- insert v2 of the 11 - 21 records
+
+insert into snapshot_expected (
+    id,
+    first_name,
+    last_name,
+    email,
+    gender,
+    ip_address,
+    updated_at,
+    test_valid_from,
+    TEST_VALID_TO,
+    test_updated_at,
+    test_scd_id
+)
+
+select
+    id,
+    first_name,
+    last_name,
+    email,
+    gender,
+    ip_address,
+    updated_at,
+    -- fields added by snapshotting
+    updated_at as test_valid_from,
+    NULL as TEST_VALID_TO,
+    updated_at as test_updated_at,
+    md5(concat(id, '-', first_name, '|', (updated_at :> TEXT))) as test_scd_id
+from seed
+where id between 10 and 20;
 """
 
 update_with_current_sql = """

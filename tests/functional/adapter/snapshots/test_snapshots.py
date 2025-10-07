@@ -1,12 +1,14 @@
 import datetime
-
+import importlib
 import pytest
 
 from dbt.tests.adapter.simple_snapshot.test_snapshot import BaseSnapshotCheck, BaseSimpleSnapshot
 from dbt.tests.adapter.simple_snapshot.test_ephemeral_snapshot_hard_deletes import BaseSnapshotEphemeralHardDeletes
-from dbt.tests.adapter.simple_snapshot.test_various_configs import BaseSnapshotDbtValidToCurrent
-from dbt.tests.adapter.simple_snapshot.fixtures import (
-    ref_snapshot_sql,
+from dbt.tests.adapter.simple_snapshot.test_various_configs import (
+    BaseSnapshotDbtValidToCurrent,
+    BaseSnapshotColumnNamesFromDbtProject,
+    BaseSnapshotColumnNames,
+    BaseSnapshotInvalidColumnNames
 )
 from dbt.tests.util import (
     run_dbt,
@@ -18,9 +20,11 @@ from fixture_snapshots import (
     create_snapshot_expected_sql,
     seed_insert_sql,
     populate_snapshot_expected_valid_to_current_sql,
+    populate_snapshot_expected_sql,
     snapshot_actual_sql,
     snapshots_valid_to_current_yml,
     invalidate_sql,
+    update_sql,
     update_with_current_sql
 )
 
@@ -89,6 +93,7 @@ _source_alter_sql = """
 alter table {database}.src_customers add column dummy_column VARCHAR(50) default 'dummy_value';
 """
 
+
 class TestSnapshotEphemeralHardDeletes(BaseSnapshotEphemeralHardDeletes):
     @pytest.fixture(scope="class")
     def source_create_sql(self):
@@ -101,6 +106,57 @@ class TestSnapshotEphemeralHardDeletes(BaseSnapshotEphemeralHardDeletes):
     @pytest.fixture(scope="class")
     def source_alter_sql(self):
         return _source_alter_sql
+    pass
+
+
+class TestSnapshotColumnNamesFromDbtProject(BaseSnapshotColumnNamesFromDbtProject):
+    @pytest.fixture(autouse=True, scope="class")
+    def _patch_sql_globals(self, request):
+        base_mod = importlib.import_module(BaseSnapshotColumnNames.__module__)
+
+        mp = pytest.MonkeyPatch()
+        mp.setattr(base_mod, "snapshot_actual_sql", snapshot_actual_sql, raising=False)
+        mp.setattr(base_mod, "create_seed_sql", create_seed_sql, raising=False)
+        mp.setattr(base_mod, "create_snapshot_expected_sql", create_snapshot_expected_sql, raising=False)
+        mp.setattr(base_mod, "seed_insert_sql", seed_insert_sql, raising=False)
+        mp.setattr(base_mod, "populate_snapshot_expected_sql", populate_snapshot_expected_sql, raising=False)
+        mp.setattr(base_mod, "invalidate_sql", invalidate_sql, raising=False)
+        mp.setattr(base_mod, "update_sql", update_sql, raising=False)
+        request.addfinalizer(mp.undo) 
+    pass
+
+
+class TestSnapshotColumnNames(BaseSnapshotColumnNames):
+    @pytest.fixture(autouse=True, scope="class")
+    def _patch_sql_globals(self, request):
+        base_mod = importlib.import_module(BaseSnapshotColumnNames.__module__)
+
+        mp = pytest.MonkeyPatch()
+        mp.setattr(base_mod, "snapshot_actual_sql", snapshot_actual_sql, raising=False)
+        mp.setattr(base_mod, "create_seed_sql", create_seed_sql, raising=False)
+        mp.setattr(base_mod, "create_snapshot_expected_sql", create_snapshot_expected_sql, raising=False)
+        mp.setattr(base_mod, "seed_insert_sql", seed_insert_sql, raising=False)
+        mp.setattr(base_mod, "populate_snapshot_expected_sql", populate_snapshot_expected_sql, raising=False)
+        mp.setattr(base_mod, "invalidate_sql", invalidate_sql, raising=False)
+        mp.setattr(base_mod, "update_sql", update_sql, raising=False)
+        request.addfinalizer(mp.undo) 
+    pass
+
+
+class TestSnapshotInvalidColumnNames(BaseSnapshotInvalidColumnNames):
+    @pytest.fixture(autouse=True, scope="class")
+    def _patch_sql_globals(self, request):
+        base_mod = importlib.import_module(BaseSnapshotColumnNames.__module__)
+
+        mp = pytest.MonkeyPatch()
+        mp.setattr(base_mod, "snapshot_actual_sql", snapshot_actual_sql, raising=False)
+        mp.setattr(base_mod, "create_seed_sql", create_seed_sql, raising=False)
+        mp.setattr(base_mod, "create_snapshot_expected_sql", create_snapshot_expected_sql, raising=False)
+        mp.setattr(base_mod, "seed_insert_sql", seed_insert_sql, raising=False)
+        mp.setattr(base_mod, "populate_snapshot_expected_sql", populate_snapshot_expected_sql, raising=False)
+        mp.setattr(base_mod, "invalidate_sql", invalidate_sql, raising=False)
+        mp.setattr(base_mod, "update_sql", update_sql, raising=False)
+        request.addfinalizer(mp.undo) 
     pass
 
 

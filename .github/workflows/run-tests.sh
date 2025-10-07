@@ -25,11 +25,14 @@ TESTS=(
   "pytest -k TestTableConstraintsRollback"
   "pytest -k TestSnapshotNewRecordTimestampMode"
   "pytest -k TestSnapshotNewRecordCheckMode"
+  "pytest -k TestSnapshotColumnNames"
+  "pytest -k TestSnapshotColumnNamesFromDbtProject"
+  "pytest -k TestSnapshotInvalidColumnNames"
   "pytest ./tests/functional/adapter/test_caching.py"
   "pytest ./tests/functional/adapter/test_docs.py"
   "pytest ./tests/functional/adapter/test_list_relations_without_caching.py"
   "pytest ./tests/functional/adapter/snapshot/test_snapshots.py"
-  "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not SnapshotNewRecord
+  "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not TestSnapshot
               and not test_caching and not test_docs and not test_list_relations_without_caching and not test_snapshots'"
 )
 
