@@ -8,7 +8,8 @@ from dbt.tests.adapter.simple_snapshot.test_various_configs import (
     BaseSnapshotDbtValidToCurrent,
     BaseSnapshotColumnNamesFromDbtProject,
     BaseSnapshotColumnNames,
-    BaseSnapshotInvalidColumnNames
+    BaseSnapshotInvalidColumnNames,
+    BaseSnapshotMultiUniqueKey,
 )
 from dbt.tests.util import (
     run_dbt,
@@ -25,7 +26,14 @@ from fixture_snapshots import (
     snapshots_valid_to_current_yml,
     invalidate_sql,
     update_sql,
-    update_with_current_sql
+    update_with_current_sql,
+    model_seed_sql,
+    create_multi_key_seed_sql,
+    create_multi_key_snapshot_expected_sql,
+    seed_multi_key_insert_sql,
+    populate_multi_key_snapshot_expected_sql,
+    invalidate_multi_key_sql,
+    update_multi_key_sql,
 )
 
 
@@ -209,3 +217,20 @@ class TestSnapshotDbtValidToCurrent(BaseSnapshotDbtValidToCurrent):
 
         check_relations_equal(project.adapter, ["snapshot_actual", "snapshot_expected"])
     pass'''
+
+
+class TestSnapshotMultiUniqueKey(BaseSnapshotMultiUniqueKey):
+    @pytest.fixture(autouse=True, scope="class")
+    def _patch_sql_globals(self, request):
+        base_mod = importlib.import_module(BaseSnapshotColumnNames.__module__)
+
+        mp = pytest.MonkeyPatch()
+        mp.setattr(base_mod, "model_seed_sql", model_seed_sql, raising=False)
+        mp.setattr(base_mod, "create_multi_key_seed_sql", create_multi_key_seed_sql, raising=False)
+        mp.setattr(base_mod, "create_multi_key_snapshot_expected_sql", create_multi_key_snapshot_expected_sql, raising=False)
+        mp.setattr(base_mod, "seed_multi_key_insert_sql", seed_multi_key_insert_sql, raising=False)
+        mp.setattr(base_mod, "populate_multi_key_snapshot_expected_sql", populate_multi_key_snapshot_expected_sql, raising=False)
+        mp.setattr(base_mod, "invalidate_multi_key_sql", invalidate_multi_key_sql, raising=False)
+        mp.setattr(base_mod, "update_multi_key_sql", update_multi_key_sql, raising=False)
+        request.addfinalizer(mp.undo) 
+    pass
