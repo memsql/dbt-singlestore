@@ -168,18 +168,10 @@ class TestSnapshotInvalidColumnNames(BaseSnapshotInvalidColumnNames):
     pass
 
 
-'''
 class TestSnapshotDbtValidToCurrent(BaseSnapshotDbtValidToCurrent):
     @pytest.fixture(scope="class")
     def snapshots(self):
         return {"snapshot.sql": snapshot_actual_sql}
-
-    @pytest.fixture(scope="class")
-    def models(self):
-        return {
-            "snapshots.yml": snapshots_valid_to_current_yml,
-            "ref_snapshot.sql": ref_snapshot_sql,
-        }
 
     def test_valid_to_current(self, project):
         project.run_sql(create_seed_sql)
@@ -192,7 +184,7 @@ class TestSnapshotDbtValidToCurrent(BaseSnapshotDbtValidToCurrent):
 
         original_snapshot = run_sql_with_adapter(
             project.adapter,
-            "select id, test_scd_id, test_valid_to from snapshot_actual",
+            "select id, test_scd_id, test_valid_to from snapshot_actual order by id, test_valid_to",
             "all",
         )
         assert original_snapshot[0][2] == datetime.datetime(2099, 12, 31, 0, 0)
@@ -206,7 +198,7 @@ class TestSnapshotDbtValidToCurrent(BaseSnapshotDbtValidToCurrent):
 
         updated_snapshot = run_sql_with_adapter(
             project.adapter,
-            "select id, test_scd_id, test_valid_to from snapshot_actual",
+            "select id, test_scd_id, test_valid_to from snapshot_actual order by id, test_valid_to",
             "all",
         )
         assert updated_snapshot[0][2] == datetime.datetime(2099, 12, 31, 0, 0)
@@ -216,7 +208,8 @@ class TestSnapshotDbtValidToCurrent(BaseSnapshotDbtValidToCurrent):
         assert updated_snapshot[20][2] == datetime.datetime(2099, 12, 31, 0, 0)
 
         check_relations_equal(project.adapter, ["snapshot_actual", "snapshot_expected"])
-    pass'''
+    pass
+
 
 
 class TestSnapshotMultiUniqueKey(BaseSnapshotMultiUniqueKey):

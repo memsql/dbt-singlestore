@@ -24,7 +24,7 @@ create table snapshot_expected (
     -- snapshotting fields
     updated_at TIMESTAMP,
     test_valid_from TIMESTAMP,
-    test_valid_to   TIMESTAMP,
+    TEST_VALID_TO   DATETIME,
     test_scd_id     TEXT,
     test_updated_at TIMESTAMP
 );
@@ -100,7 +100,7 @@ insert into snapshot_expected (
     ip_address,
     updated_at,
     test_valid_from,
-    test_valid_to,
+    TEST_VALID_TO,
     test_updated_at,
     test_scd_id
 )
@@ -115,7 +115,7 @@ select
     updated_at,
     -- fields added by snapshotting
     updated_at as test_valid_from,
-    ('2099-12-31' :> TIMESTAMP) as test_valid_to,
+    ('2099-12-31' :> DATETIME) as TEST_VALID_TO,
     updated_at as test_updated_at,
     md5(concat(id, '-', first_name, '|', (updated_at :> TEXT))) as test_scd_id
 from seed;
@@ -143,7 +143,7 @@ snapshots:
       updated_at: updated_at
       dbt_valid_to_current: "'2099-12-31 00:00:00'"
       snapshot_meta_column_names:
-          dbt_valid_to: test_valid_to
+          dbt_valid_to: TEST_VALID_TO
           dbt_valid_from: test_valid_from
           dbt_scd_id: test_scd_id
           dbt_updated_at: test_updated_at
@@ -163,7 +163,7 @@ WHERE id BETWEEN 10 AND 20;
 -- invalidate records 10 - 20
 UPDATE snapshot_expected
 SET
-    test_valid_to = DATE_ADD(updated_at, INTERVAL 1 HOUR)
+    TEST_VALID_TO = DATE_ADD(updated_at, INTERVAL 1 HOUR)
 WHERE id BETWEEN 10 AND 20;
 """
 
@@ -213,7 +213,7 @@ insert into snapshot_expected (
     ip_address,
     updated_at,
     test_valid_from,
-    test_valid_to,
+    TEST_VALID_TO,
     test_updated_at,
     test_scd_id
 )
@@ -228,7 +228,7 @@ select
     updated_at,
     -- fields added by snapshotting
     updated_at as test_valid_from,
-    ('2099-12-31' :> TIMESTAMP) as test_valid_to,
+    ('2099-12-31' :> DATETIME) as TEST_VALID_TO,
     updated_at as test_updated_at,
     md5(concat(id, '-', first_name, '|', (updated_at :> TEXT))) as test_scd_id
 from seed
@@ -263,7 +263,7 @@ create table snapshot_expected (
     -- snapshotting fields
     updated_at TIMESTAMP,
     test_valid_from TIMESTAMP,
-    TEST_VALID_TO   TIMESTAMP,
+    TEST_VALID_TO   DATETIME,
     test_scd_id     TEXT,
     test_updated_at TIMESTAMP
 );
