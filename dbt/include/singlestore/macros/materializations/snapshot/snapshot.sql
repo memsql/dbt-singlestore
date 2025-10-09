@@ -47,7 +47,7 @@
       -- this may no-op if the database does not require column expansion
       {% do adapter.expand_target_column_types(from_relation=staging_table,
                                                to_relation=target_relation) %}
-      
+
       {% set remove_columns = ['dbt_change_type', 'DBT_CHANGE_TYPE', 'dbt_unique_key', 'DBT_UNIQUE_KEY'] %}
       {% if unique_key | is_list %}
           {% for key in strategy.unique_key %}

@@ -7,7 +7,6 @@
         from {{ target_relation }}
         where
             {% if config.get('dbt_valid_to_current') %}
-                {# Check for either dbt_valid_to_current OR null, in order to correctly update records with nulls #}
                 ( {{ columns.dbt_valid_to }} = ( {{ config.get('dbt_valid_to_current') }} :> datetime ) or {{ columns.dbt_valid_to }} is null)
             {% else %}
                 {{ columns.dbt_valid_to }} is null
@@ -30,8 +29,8 @@
 
     from snapshotted_data
     left join deletes_source_data as source_data
-        on {{ unique_key_join_on(strategy.unique_key, "snapshotted_data", "source_data") }}   {# CHANGED: support list unique_key #}
-    where {{ unique_key_is_null(strategy.unique_key, "source_data") }}  
+        on {{ unique_key_join_on(strategy.unique_key, "snapshotted_data", "source_data") }}
+    where {{ unique_key_is_null(strategy.unique_key, "source_data") }}
     {%- if strategy.hard_deletes == 'new_record' %}
       and not (
         snapshotted_data.{{ columns.dbt_is_deleted }} = 'True'
@@ -55,7 +54,6 @@
           from {{ target_relation }}
         where
             {% if config.get('dbt_valid_to_current') %}
-                {# Check for either dbt_valid_to_current OR null, in order to correctly update records with nulls #}
                 ( {{ columns.dbt_valid_to }} = ( {{ config.get('dbt_valid_to_current') }} :> datetime ) or {{ columns.dbt_valid_to }} is null)
             {% else %}
                 {{ columns.dbt_valid_to }} is null
@@ -77,7 +75,7 @@
         {%- endif %}
     from updates_source_data as source_data
     join snapshotted_data
-        on {{ unique_key_join_on(strategy.unique_key, "snapshotted_data", "source_data") }} 
+        on {{ unique_key_join_on(strategy.unique_key, "snapshotted_data", "source_data") }}
     where ({{ strategy.row_changed }})
     {%- if strategy.hard_deletes == 'new_record' -%}
         or snapshotted_data.{{ columns.dbt_is_deleted }} = 'True'
@@ -94,7 +92,6 @@
           from {{ target_relation }}
         where
             {% if config.get('dbt_valid_to_current') %}
-                {# Check for either dbt_valid_to_current OR null, in order to correctly update records with nulls #}
                 ( {{ columns.dbt_valid_to }} = ( {{ config.get('dbt_valid_to_current') }} :> datetime ) or {{ columns.dbt_valid_to }} is null)
             {% else %}
                 {{ columns.dbt_valid_to }} is null
@@ -256,7 +253,7 @@
 {% macro singlestore__get_dbt_valid_to_current(strategy, columns) %}
   {% set dbt_valid_to_current = config.get('dbt_valid_to_current') or "null" %}
   (coalesce(
-    nullif({{ strategy.updated_at }}, {{ strategy.updated_at }}), 
+    nullif({{ strategy.updated_at }}, {{ strategy.updated_at }}),
     ({{ dbt_valid_to_current }}) :> datetime)
     :> datetime)
   as {{ columns.dbt_valid_to }}

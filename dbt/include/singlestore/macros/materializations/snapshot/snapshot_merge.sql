@@ -1,9 +1,9 @@
 {% macro singlestore__snapshot_merge_sql_update(target, source, insert_cols) -%}
   {%- set columns = config.get("snapshot_table_column_names") or get_snapshot_table_column_names() -%}
 
-  update {{ target }}, 
+  update {{ target }},
                       (
-                        select 
+                        select
                           {{ columns.dbt_scd_id }} as dbt_scd_id,
                           dbt_change_type,
                           ( {{ columns.dbt_valid_to }} :> datetime ) as dbt_valid_to

@@ -104,7 +104,7 @@ _invalidate_sql_statements = [
     """-- Update records 11 - 21. Change email and updated_at field.
 update seed set
     updated_at = DATE_ADD(updated_at, INTERVAL 1 HOUR),
-    email      =  case 
+    email      =  case
                     when id = 20 then 'pfoxj@creativecommons.org'
                     else CONCAT('new_', email)
                   end
