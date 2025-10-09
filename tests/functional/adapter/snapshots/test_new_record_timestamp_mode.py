@@ -1,6 +1,9 @@
 import pytest
+
 from dbt.tests.util import check_relations_equal, run_dbt
 from dbt.tests.adapter.simple_snapshot.new_record_timestamp_mode import BaseSnapshotNewRecordTimestampMode
+from tests.utils.sql_patch_helpers import SqlGlobalOverrideMixin
+
 
 _seed_new_record_mode_statements = [
     """create table {database}.seed (
@@ -97,20 +100,6 @@ _snapshot_actual_sql = """
 {% endsnapshot %}
 """
 
-_snapshots_yml = """
-snapshots:
-  - name: snapshot_actual
-    config:
-      strategy: timestamp
-      updated_at: updated_at
-      hard_deletes: new_record
-"""
-
-_ref_snapshot_sql = """
-select * from {{ ref('snapshot_actual') }}
-"""
-
-
 _invalidate_sql_statements = [
     """-- Update records 11 - 21. Change email and updated_at field.
 update seed set
@@ -188,127 +177,19 @@ select dbt_valid_from, dbt_valid_to, dbt_scd_id, dbt_is_deleted from snapshot_ac
 """
 
 
-class TestSnapshotNewRecordTimestampMode:
-    @pytest.fixture(scope="class")
-    def snapshots(self):
-        return {"snapshot.sql": _snapshot_actual_sql}
-
-    @pytest.fixture(scope="class")
-    def models(self):
-        return {
-            "snapshots.yml": _snapshots_yml,
-            "ref_snapshot.sql": _ref_snapshot_sql,
-        }
-
-    @pytest.fixture(scope="class")
-    def seed_new_record_mode_statements(self):
-        return _seed_new_record_mode_statements
-
-    @pytest.fixture(scope="class")
-    def invalidate_sql_statements(self):
-        return _invalidate_sql_statements
-
-    @pytest.fixture(scope="class")
-    def update_sql(self):
-        return _update_sql
-
-    @pytest.fixture(scope="class")
-    def delete_sql(self):
-        return _delete_sql
-
-    @pytest.fixture(scope="class")
-    def reinsert_sql(self):
-        return _reinsert_sql
-
-    @pytest.fixture(scope="class")
-    def reinsert_check_sql(self):
-        return _reinsert_check_sql
-
-    def test_snapshot_new_record_mode(
-        self,
-        project,
-        seed_new_record_mode_statements,
-        invalidate_sql_statements,
-        update_sql,
-        delete_sql,
-        reinsert_sql,
-        reinsert_check_sql,
-    ):
-        for stmt in seed_new_record_mode_statements:
-            project.run_sql(stmt)
-
-        results = run_dbt(["snapshot"])
-        assert len(results) == 1
-
-        for stmt in invalidate_sql_statements:
-            project.run_sql(stmt)
-
-        project.run_sql(update_sql)
-
-        results = run_dbt(["snapshot"])
-        assert len(results) == 1
-
-        check_relations_equal(project.adapter, ["snapshot_actual", "snapshot_expected"])
-
-        project.run_sql(delete_sql)
-
-        results = run_dbt(["snapshot"])
-        assert len(results) == 1
-
-        check_result = project.run_sql(_delete_check_sql, fetch="all")
-        valid_to = 0
-        scd_id = 1
-        is_deleted = 2
-        assert len(check_result) == 2
-        assert (
-            sum(
-                [
-                    1
-                    for c in check_result
-                    if c[valid_to] is None and c[scd_id] is not None and c[is_deleted] == "True"
-                ]
-            )
-            == 1
-        )
-        assert (
-            sum(
-                [
-                    1
-                    for c in check_result
-                    if c[valid_to] is not None
-                    and c[scd_id] is not None
-                    and c[is_deleted] == "False"
-                ]
-            )
-            == 1
-        )
-        assert check_result[0][scd_id] != check_result[1][scd_id]
-
-        # run snapshot with the same source data; neither insert nor update should happen
-        run_dbt(["snapshot"])
-        assert len(results) == 1
-        check_result = project.run_sql(_delete_check_sql, fetch="all")
-        assert len(check_result) == 2
-
-        # insert the record back and run the snapshot again; update and insert expected
-        project.run_sql(reinsert_sql)
-        results = run_dbt(["snapshot"])
-        assert len(results) == 1
-        check_result = project.run_sql(reinsert_check_sql, fetch="all")
-        assert len(check_result) == 3
-
-        # delete it once again and run the snapshot; update and insert expected
-        project.run_sql(delete_sql)
-        results = run_dbt(["snapshot"])
-        assert len(results) == 1
-        check_result = project.run_sql(_delete_check_sql, fetch="all")
-        assert len(check_result) == 4
-
-        # run snapshot with the same source data; neither insert nor update should happen
-        results = run_dbt(["snapshot"])
-        assert len(results) == 1
-        check_result = project.run_sql(_delete_check_sql, fetch="all")
-        assert len(check_result) == 4
+class TestSnapshotNewRecordTimestampMode(SqlGlobalOverrideMixin, BaseSnapshotNewRecordTimestampMode):
+    BASE_TEST_CLASS = BaseSnapshotNewRecordTimestampMode
+    SQL_GLOBAL_OVERRIDES = {
+        "_snapshot_actual_sql": _snapshot_actual_sql,
+        "_seed_new_record_mode_statements": _seed_new_record_mode_statements,
+        "_invalidate_sql_statements": _invalidate_sql_statements,
+        "_update_sql": _update_sql,
+        "_delete_sql": _delete_sql,
+        "_delete_check_sql": _delete_check_sql,
+        "_reinsert_sql": _reinsert_sql,
+        "_reinsert_check_sql": _reinsert_check_sql,
+    }
+    pass
 
 
 _snapshots_check_yml = """

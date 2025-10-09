@@ -35,6 +35,7 @@ from fixture_snapshots import (
     invalidate_multi_key_sql,
     update_multi_key_sql,
 )
+from tests.utils.sql_patch_helpers import SqlGlobalOverrideMixin
 
 
 class TestSnapshot(BaseSimpleSnapshot):
@@ -77,97 +78,35 @@ class TestSnapshotCheck(BaseSnapshotCheck):
     pass
 
 
-# Source table creation statement
-_source_create_sql = """
-create table {database}.src_customers (
-    id INTEGER,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    email VARCHAR(50),
-    updated_at TIMESTAMP
-);
-"""
+COLUMN_NAMES_TESTS_OVERRIDES = {
+    "snapshot_actual_sql": snapshot_actual_sql,
+    "create_seed_sql": create_seed_sql,
+    "create_snapshot_expected_sql": create_snapshot_expected_sql,
+    "seed_insert_sql": seed_insert_sql,
+    "populate_snapshot_expected_sql": populate_snapshot_expected_sql,
+    "invalidate_sql": invalidate_sql,
+    "update_sql": update_sql,
+}
 
-# Initial data for source table
-_source_insert_sql = """
-insert into {database}.src_customers (id, first_name, last_name, email, updated_at) values
-(1, 'John', 'Doe', 'john.doe@example.com', '2023-01-01 10:00:00'),
-(2, 'Jane', 'Smith', 'jane.smith@example.com', '2023-01-02 11:00:00'),
-(3, 'Bob', 'Johnson', 'bob.johnson@example.com', '2023-01-03 12:00:00');
-"""
-
-# SQL to add a dummy column to source table (simulating schema change)
-_source_alter_sql = """
-alter table {database}.src_customers add column dummy_column VARCHAR(50) default 'dummy_value';
-"""
-
-
-class TestSnapshotEphemeralHardDeletes(BaseSnapshotEphemeralHardDeletes):
-    @pytest.fixture(scope="class")
-    def source_create_sql(self):
-        return _source_create_sql
-
-    @pytest.fixture(scope="class")
-    def source_insert_sql(self):
-        return _source_insert_sql
-
-    @pytest.fixture(scope="class")
-    def source_alter_sql(self):
-        return _source_alter_sql
+class TestSnapshotColumnNames(SqlGlobalOverrideMixin, BaseSnapshotColumnNames):
+    BASE_TEST_CLASS = BaseSnapshotColumnNames
+    SQL_GLOBAL_OVERRIDES = COLUMN_NAMES_TESTS_OVERRIDES
     pass
 
 
-class TestSnapshotColumnNamesFromDbtProject(BaseSnapshotColumnNamesFromDbtProject):
-    @pytest.fixture(autouse=True, scope="class")
-    def _patch_sql_globals(self, request):
-        base_mod = importlib.import_module(BaseSnapshotColumnNames.__module__)
-
-        mp = pytest.MonkeyPatch()
-        mp.setattr(base_mod, "snapshot_actual_sql", snapshot_actual_sql, raising=False)
-        mp.setattr(base_mod, "create_seed_sql", create_seed_sql, raising=False)
-        mp.setattr(base_mod, "create_snapshot_expected_sql", create_snapshot_expected_sql, raising=False)
-        mp.setattr(base_mod, "seed_insert_sql", seed_insert_sql, raising=False)
-        mp.setattr(base_mod, "populate_snapshot_expected_sql", populate_snapshot_expected_sql, raising=False)
-        mp.setattr(base_mod, "invalidate_sql", invalidate_sql, raising=False)
-        mp.setattr(base_mod, "update_sql", update_sql, raising=False)
-        request.addfinalizer(mp.undo) 
+class TestSnapshotColumnNamesFromDbtProject(SqlGlobalOverrideMixin, BaseSnapshotColumnNamesFromDbtProject):
+    BASE_TEST_CLASS = BaseSnapshotColumnNamesFromDbtProject
+    SQL_GLOBAL_OVERRIDES = COLUMN_NAMES_TESTS_OVERRIDES
     pass
 
 
-class TestSnapshotColumnNames(BaseSnapshotColumnNames):
-    @pytest.fixture(autouse=True, scope="class")
-    def _patch_sql_globals(self, request):
-        base_mod = importlib.import_module(BaseSnapshotColumnNames.__module__)
-
-        mp = pytest.MonkeyPatch()
-        mp.setattr(base_mod, "snapshot_actual_sql", snapshot_actual_sql, raising=False)
-        mp.setattr(base_mod, "create_seed_sql", create_seed_sql, raising=False)
-        mp.setattr(base_mod, "create_snapshot_expected_sql", create_snapshot_expected_sql, raising=False)
-        mp.setattr(base_mod, "seed_insert_sql", seed_insert_sql, raising=False)
-        mp.setattr(base_mod, "populate_snapshot_expected_sql", populate_snapshot_expected_sql, raising=False)
-        mp.setattr(base_mod, "invalidate_sql", invalidate_sql, raising=False)
-        mp.setattr(base_mod, "update_sql", update_sql, raising=False)
-        request.addfinalizer(mp.undo) 
+class TestSnapshotInvalidColumnNames(SqlGlobalOverrideMixin, BaseSnapshotInvalidColumnNames):
+    BASE_TEST_CLASS = BaseSnapshotInvalidColumnNames
+    SQL_GLOBAL_OVERRIDES = COLUMN_NAMES_TESTS_OVERRIDES
     pass
 
 
-class TestSnapshotInvalidColumnNames(BaseSnapshotInvalidColumnNames):
-    @pytest.fixture(autouse=True, scope="class")
-    def _patch_sql_globals(self, request):
-        base_mod = importlib.import_module(BaseSnapshotColumnNames.__module__)
-
-        mp = pytest.MonkeyPatch()
-        mp.setattr(base_mod, "snapshot_actual_sql", snapshot_actual_sql, raising=False)
-        mp.setattr(base_mod, "create_seed_sql", create_seed_sql, raising=False)
-        mp.setattr(base_mod, "create_snapshot_expected_sql", create_snapshot_expected_sql, raising=False)
-        mp.setattr(base_mod, "seed_insert_sql", seed_insert_sql, raising=False)
-        mp.setattr(base_mod, "populate_snapshot_expected_sql", populate_snapshot_expected_sql, raising=False)
-        mp.setattr(base_mod, "invalidate_sql", invalidate_sql, raising=False)
-        mp.setattr(base_mod, "update_sql", update_sql, raising=False)
-        request.addfinalizer(mp.undo) 
-    pass
-
-
+# overriding the whole tests due to differences in syntax
 class TestSnapshotDbtValidToCurrent(BaseSnapshotDbtValidToCurrent):
     @pytest.fixture(scope="class")
     def snapshots(self):
@@ -211,19 +150,46 @@ class TestSnapshotDbtValidToCurrent(BaseSnapshotDbtValidToCurrent):
     pass
 
 
+_source_create_sql = """
+create table {database}.src_customers (
+    id INTEGER,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    email VARCHAR(50),
+    updated_at TIMESTAMP
+);
+"""
 
-class TestSnapshotMultiUniqueKey(BaseSnapshotMultiUniqueKey):
-    @pytest.fixture(autouse=True, scope="class")
-    def _patch_sql_globals(self, request):
-        base_mod = importlib.import_module(BaseSnapshotColumnNames.__module__)
+_source_insert_sql = """
+insert into {database}.src_customers (id, first_name, last_name, email, updated_at) values
+(1, 'John', 'Doe', 'john.doe@example.com', '2023-01-01 10:00:00'),
+(2, 'Jane', 'Smith', 'jane.smith@example.com', '2023-01-02 11:00:00'),
+(3, 'Bob', 'Johnson', 'bob.johnson@example.com', '2023-01-03 12:00:00');
+"""
 
-        mp = pytest.MonkeyPatch()
-        mp.setattr(base_mod, "model_seed_sql", model_seed_sql, raising=False)
-        mp.setattr(base_mod, "create_multi_key_seed_sql", create_multi_key_seed_sql, raising=False)
-        mp.setattr(base_mod, "create_multi_key_snapshot_expected_sql", create_multi_key_snapshot_expected_sql, raising=False)
-        mp.setattr(base_mod, "seed_multi_key_insert_sql", seed_multi_key_insert_sql, raising=False)
-        mp.setattr(base_mod, "populate_multi_key_snapshot_expected_sql", populate_multi_key_snapshot_expected_sql, raising=False)
-        mp.setattr(base_mod, "invalidate_multi_key_sql", invalidate_multi_key_sql, raising=False)
-        mp.setattr(base_mod, "update_multi_key_sql", update_multi_key_sql, raising=False)
-        request.addfinalizer(mp.undo) 
+_source_alter_sql = """
+alter table {database}.src_customers add column dummy_column VARCHAR(50) default 'dummy_value';
+"""
+
+class TestSnapshotEphemeralHardDeletes(SqlGlobalOverrideMixin, BaseSnapshotEphemeralHardDeletes):
+    BASE_TEST_CLASS = BaseSnapshotEphemeralHardDeletes
+    SQL_GLOBAL_OVERRIDES = {
+        "_source_create_sql": _source_create_sql,
+        "_source_insert_sql": _source_insert_sql,
+        "_source_alter_sql": _source_alter_sql,
+    }
+    pass
+
+
+class TestSnapshotMultiUniqueKey(SqlGlobalOverrideMixin, BaseSnapshotMultiUniqueKey):
+    BASE_TEST_CLASS = BaseSnapshotMultiUniqueKey
+    SQL_GLOBAL_OVERRIDES = {
+        "model_seed_sql": model_seed_sql,
+        "create_multi_key_seed_sql": create_multi_key_seed_sql,
+        "create_multi_key_snapshot_expected_sql": create_multi_key_snapshot_expected_sql,
+        "seed_multi_key_insert_sql": seed_multi_key_insert_sql,
+        "populate_multi_key_snapshot_expected_sql": populate_multi_key_snapshot_expected_sql,
+        "invalidate_multi_key_sql": invalidate_multi_key_sql,
+        "update_multi_key_sql": update_multi_key_sql,
+    }
     pass

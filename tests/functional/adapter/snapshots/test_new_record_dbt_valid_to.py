@@ -6,6 +6,8 @@ from dbt.tests.adapter.simple_snapshot.new_record_dbt_valid_to_current import (
 )
 
 from dbt.tests.util import run_dbt
+from tests.utils.sql_patch_helpers import SqlGlobalOverrideMixin
+
 
 _seed_new_record_mode_statements = [
     "create table {database}.seed (id INTEGER, first_name VARCHAR(50));",
@@ -28,15 +30,13 @@ select dbt_scd_id from snapshot_actual where id = 1 and dbt_is_deleted = 'True'
 """
 
 
-class TestSnapshotNewRecordDbtValidToCurrent(BaseSnapshotNewRecordDbtValidToCurrent):
-    @pytest.fixture(autouse=True, scope="class")
-    def _patch_sql_globals(self, request):
-        base_mod = importlib.import_module(BaseSnapshotNewRecordDbtValidToCurrent.__module__)
-
-        mp = pytest.MonkeyPatch()
-        mp.setattr(base_mod, "_seed_new_record_mode_statements", _seed_new_record_mode_statements, raising=False)
-        mp.setattr(base_mod, "_snapshot_actual_sql", _snapshot_actual_sql, raising=False)
-        mp.setattr(base_mod, "_delete_sql", _delete_sql, raising=False)
-        mp.setattr(base_mod, "_delete_check_sql", _delete_check_sql, raising=False)
-        request.addfinalizer(mp.undo) 
+class TestSnapshotNewRecordDbtValidToCurrent(SqlGlobalOverrideMixin, BaseSnapshotNewRecordDbtValidToCurrent):
+    BASE_TEST_CLASS = BaseSnapshotNewRecordDbtValidToCurrent
+    SQL_GLOBAL_OVERRIDES = {
+        "_seed_new_record_mode_statements": _seed_new_record_mode_statements,
+        "_snapshot_actual_sql": _snapshot_actual_sql,
+        "_delete_sql": _delete_sql,
+        "_delete_check_sql": _delete_check_sql,
+    }
     pass
+
