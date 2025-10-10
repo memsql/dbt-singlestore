@@ -250,4 +250,5 @@ class SingleStoreAdapter(SQLAdapter):
             )
 
     def valid_incremental_strategies(self):
-        return ["delete+insert", "append"]
+        return ["delete+insert", "append", "microbatch"]
+
