@@ -23,10 +23,20 @@ TESTS=(
   "pytest -k TestSingleStoreMicrobatch"
   "pytest -k TestIncrementalConstraintsRollback"
   "pytest -k TestTableConstraintsRollback"
+  "pytest -k TestSnapshotNewRecordTimestampMode"
+  "pytest -k TestSnapshotNewRecordCheckMode"
+  "pytest -k TestSnapshotColumnNames"
+  "pytest -k TestSnapshotColumnNamesFromDbtProject"
+  "pytest -k TestSnapshotInvalidColumnNames"
+  "pytest -k TestSnapshotMultiUniqueKey"
+  "pytest -k TestSnapshotDbtValidToCurrent"
+  "pytest -k TestSnapshotNewRecordDbtValidToCurrent"
   "pytest ./tests/functional/adapter/test_caching.py"
   "pytest ./tests/functional/adapter/test_docs.py"
   "pytest ./tests/functional/adapter/test_list_relations_without_caching.py"
-  "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not test_caching and not test_docs and not test_list_relations_without_caching'"
+  "pytest ./tests/functional/adapter/snapshot/test_snapshots.py"
+  "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not TestSnapshot
+              and not test_caching and not test_docs and not test_list_relations_without_caching and not test_snapshots'"
 )
 
 for test in "${TESTS[@]}"; do
