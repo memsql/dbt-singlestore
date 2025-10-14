@@ -26,9 +26,9 @@ TESTS=(
 
   "pytest -k TestSnapshotNewRecordTimestampMode"
   "pytest -k TestSnapshotNewRecordCheckMode"
-  # Use nodeids (not `-k`) to avoid substring collisions: -k TestSnapshotColumnNames` also matches `TestSnapshotColumnNamesFromDbtProject`
-  "pytest ./tests/functional/adapter/snapshot/test_snapshots.py::TestSnapshotColumnNames"
-  "pytest ./tests/functional/adapter/snapshot/test_snapshots.py::TestSnapshotColumnNamesFromDbtProject"
+  # Use nodeids (not `-k`) to avoid substring collisions: -k TestSnapshotColumnNames` also matches `TestSnapshotColumnNamesFromDbtProject`po
+  "pytest ./tests/functional/adapter/snapshots/test_snapshots.py::TestSnapshotColumnNames"
+  "pytest ./tests/functional/adapter/snapshots/test_snapshots.py::TestSnapshotColumnNamesFromDbtProject"
   "pytest -k TestSnapshotInvalidColumnNames"
   "pytest -k TestSnapshotMultiUniqueKey"
   "pytest -k TestSnapshotDbtValidToCurrent"
@@ -39,7 +39,7 @@ TESTS=(
   "pytest ./tests/functional/adapter/test_list_relations_without_caching.py"
 
   # Run the remainder of test_snapshots.py, excluding the suites that are run above
-  "pytest ./tests/functional/adapter/snapshot/test_snapshots.py -k 'not TestSnapshotColumnNames and not TestSnapshotColumnNamesFromDbtProject and not TestSnapshotInvalidColumnNames and not TestSnapshotMultiUniqueKey and not TestSnapshotDbtValidToCurrent'"
+  "pytest ./tests/functional/adapter/snapshots/test_snapshots.py -k 'not TestSnapshotColumnNames and not TestSnapshotColumnNamesFromDbtProject and not TestSnapshotInvalidColumnNames and not TestSnapshotMultiUniqueKey and not TestSnapshotDbtValidToCurrent'"
 
   # Run everything else except what’s already run separately
   "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not TestSnapshot
