@@ -23,14 +23,17 @@ TESTS=(
   "pytest -k TestSingleStoreMicrobatch"
   "pytest -k TestIncrementalConstraintsRollback"
   "pytest -k TestTableConstraintsRollback"
+
   "pytest -k TestSnapshotNewRecordTimestampMode"
   "pytest -k TestSnapshotNewRecordCheckMode"
-  "pytest -k TestSnapshotColumnNames"
-  "pytest -k TestSnapshotColumnNamesFromDbtProject"
+  # Use nodeids (not `-k`) to avoid substring collisions: -k TestSnapshotColumnNames` also matches `TestSnapshotColumnNamesFromDbtProject`
+  "pytest ./tests/functional/adapter/snapshot/test_snapshots.py::TestSnapshotColumnNames"
+  "pytest ./tests/functional/adapter/snapshot/test_snapshots.py::TestSnapshotColumnNamesFromDbtProject"
   "pytest -k TestSnapshotInvalidColumnNames"
   "pytest -k TestSnapshotMultiUniqueKey"
   "pytest -k TestSnapshotDbtValidToCurrent"
   "pytest -k TestSnapshotNewRecordDbtValidToCurrent"
+
   "pytest ./tests/functional/adapter/test_caching.py"
   "pytest ./tests/functional/adapter/test_docs.py"
   "pytest ./tests/functional/adapter/test_list_relations_without_caching.py"
