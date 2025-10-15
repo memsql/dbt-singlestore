@@ -56,9 +56,24 @@ Singlestore | dbt-core | pytest-dbt-adapter
 7.6.6       | 1.0.1    | 0.6.0
 7.5.12      | 1.0.1    | 0.6.0
 
-To use this adapter, SingleStore must be upgraded to the version 7.5 or newer.
+To use this adapter, SingleStore must be upgraded to the version 8.5 or newer.
 
 ## Changelog
+
+### 1.9.0
+- Added microbatch incremental strategy support
+- Introduced snapshot improvements:
+    - Enable setting a datetime value for `dbt_valid_to` for current records instead of `NULL`
+    - Enable `hard_deletes` config to add a metadata column if a record has been deleted
+    - Allow customizing names of metadata fields
+    - Enable `unique_key` as a list
+
+### 1.8.3
+- Resolved the issue with backup views
+
+### 1.8.2
+- Fixed logic and import in get_credentials function
+- Fixed invalid imports
 
 ### 1.8.1
 - Fix view definition retrieval in replace_view_definition macro
