@@ -26,7 +26,7 @@ TESTS=(
 
   "pytest -k TestSnapshotNewRecordTimestampMode"
   "pytest -k TestSnapshotNewRecordCheckMode"
-  # Use nodeids (not `-k`) to avoid substring collisions: -k TestSnapshotColumnNames` also matches `TestSnapshotColumnNamesFromDbtProject`po
+  # Use nodeids (not `-k`) to avoid substring collisions: -k TestSnapshotColumnNames also matches `TestSnapshotColumnNamesFromDbtProject`
   "pytest ./tests/functional/adapter/snapshots/test_snapshots.py::TestSnapshotColumnNames"
   "pytest ./tests/functional/adapter/snapshots/test_snapshots.py::TestSnapshotColumnNamesFromDbtProject"
   "pytest -k TestSnapshotInvalidColumnNames"
