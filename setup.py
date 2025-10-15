@@ -20,7 +20,7 @@ setup(
     install_requires=[
         "dbt-adapters>=1.0.0, <2.0.0",
         "dbt-core>=1.8",
-        "singlestoredb==1.15.4",
+        "singlestoredb==1.15.8",
         "dataclasses_json>=0.5.6"
     ],
     entry_points={

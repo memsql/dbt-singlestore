@@ -38,7 +38,7 @@ In order to get the file structure for this repository, the following commands h
 virtualenv ~/.env3 -p /usr/bin/python3;
 source ~/.env3/bin/activate;
 pip install dbt-core dbt-postgres;
-pip install singlestoredb=1.2.0;
+pip install singlestoredb=1.15.8;
 cd <PATH_TO_DBT_CORE>/core/scripts;
 python create_adapter_plugins.py --sql --title-case=SingleStore ~/github.com/ singlestore;
 mv  ~/github.com/singlestore ~/github.com/dbt-singlestore;
