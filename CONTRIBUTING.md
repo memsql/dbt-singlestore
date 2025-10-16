@@ -1,0 +1,3 @@
+## Contribution Process
+
+We’re thrilled you’re considering a contribution to our adapter! To keep reviews fast and smooth, please open a PR that includes: a clear description of the problem and why it matters; a minimal, reproducible showcase (config, models, snapshot or SQL snippets, and expected/actual behavior); a concise explanation of your proposed solution; the code changes themselves; and new or updated tests that prove the fix/feature works and won’t regress. Please also ensure the change is backward-compatible, follows our coding style and formatting, includes relevant documentation updates, and passes the full test suite locally. Thanks for helping us make the adapter better for everyone! :)
