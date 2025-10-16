@@ -39,10 +39,16 @@ Models            | Custom schema     | Limited*   | Yes
 
 ## Testing and supported versions
 
-Default dbt [test suite](tests/test_basic.py) is used to check the adapter functionality. [Development](Development.md) overview has a section "Run tests" which contains instructions on running the tests. Currently, the tests have been successfully run for the following product versions:
+Default dbt tests and jaffle_shop project are used to check the adapter functionality. [Development](Development.md) overview has a section "Run tests" which contains instructions on running the tests. Currently, the tests have been successfully run for the following product versions:
 
-Singlestore | dbt-core | dbt-tests-adapter
+SingleStore  | dbt-core  | dbt-adapters
 -------------|-----------|-------------------
+9.0.9        | 1.10.13   | 1.17.2
+8.9.10       | 1.10.13   | 1.17.2
+
+SingleStore  | dbt-core  | dbt-tests-adapter
+-------------|-----------|-------------------
+8.5.16       | 1.7.15    | 1.7.15
 8.5.16       | 1.6.13    | 1.6.13
 8.1.1        | 1.6.0     | 1.6.0
 8.1.1        | 1.5.0     | 1.5.0
@@ -50,7 +56,7 @@ Singlestore | dbt-core | dbt-tests-adapter
 8.1.1        | 1.3.0     | 1.3.0
 7.8.29       | 1.2.2     | 1.2.2
 
-Singlestore | dbt-core | pytest-dbt-adapter
+SingleStore | dbt-core | pytest-dbt-adapter
 ------------|----------|-------------------
 7.8.3       | 1.1.1    | 0.6.0
 7.6.6       | 1.0.1    | 0.6.0
