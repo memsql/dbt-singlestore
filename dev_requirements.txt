@@ -6,5 +6,5 @@ git+https://github.com/dbt-labs/dbt-adapters.git#subdirectory=dbt-tests-adapter
 pytest==7.3.1
 pytest-dotenv==0.5.2
 pytz==2023.3
-singlestoredb==1.2.0
+singlestoredb==1.15.8
 

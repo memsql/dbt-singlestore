@@ -18,24 +18,44 @@ drop_and_create_new_db()
   fi
 }
 
-
+# Run these suites separately to avoid table name collisions. SingleStore doesn't support schemas, and several tests share table names, so isolating them prevents cross-test interference.
 TESTS=(
   "pytest -k TestSingleStoreMicrobatch"
   "pytest -k TestIncrementalConstraintsRollback"
   "pytest -k TestTableConstraintsRollback"
+
+  "pytest -k TestSnapshotNewRecordTimestampMode"
+  "pytest -k TestSnapshotNewRecordCheckMode"
+  # Use nodeids (not `-k`) to avoid substring collisions: -k TestSnapshotColumnNames also matches `TestSnapshotColumnNamesFromDbtProject`
+  "pytest ./tests/functional/adapter/snapshots/test_snapshots.py::TestSnapshotColumnNames"
+  "pytest ./tests/functional/adapter/snapshots/test_snapshots.py::TestSnapshotColumnNamesFromDbtProject"
+  "pytest -k TestSnapshotInvalidColumnNames"
+  "pytest -k TestSnapshotMultiUniqueKey"
+  "pytest -k TestSnapshotDbtValidToCurrent"
+  "pytest -k TestSnapshotNewRecordDbtValidToCurrent"
+
   "pytest ./tests/functional/adapter/test_caching.py"
   "pytest ./tests/functional/adapter/test_docs.py"
   "pytest ./tests/functional/adapter/test_list_relations_without_caching.py"
-  "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not test_caching and not test_docs and not test_list_relations_without_caching'"
+
+  # Run the remainder of test_snapshots.py, excluding the suites that are run above
+  "pytest ./tests/functional/adapter/snapshots/test_snapshots.py -k 'not TestSnapshotColumnNames and not TestSnapshotColumnNamesFromDbtProject and not TestSnapshotInvalidColumnNames and not TestSnapshotMultiUniqueKey and not TestSnapshotDbtValidToCurrent'"
+
+  # Run everything else except what’s already run separately
+  "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not TestSnapshot
+              and not test_caching and not test_docs and not test_list_relations_without_caching and not test_snapshots'"
 )
+
+result_code=0
 
 for test in "${TESTS[@]}"; do
   drop_and_create_new_db
-  eval "$test" || true
+  eval $test
+  rc=$?
+  if [ $rc -ne 0 ] && [ $result_code -eq 0 ]; then
+    result_code=$rc
+  fi
 done
-
-result_code=$?
-
 
 ./.github/workflows/setup-cluster.sh terminate $CLUSTER_TYPE
 exit $result_code
