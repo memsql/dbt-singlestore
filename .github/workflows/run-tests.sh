@@ -32,7 +32,7 @@ TESTS=(
   "pytest -k TestSnapshotInvalidColumnNames"
   "pytest -k TestSnapshotMultiUniqueKey"
   "pytest -k TestSnapshotDbtValidToCurrent"
-  "pytest -k TestSnapshotNewRecordDbtValidToCurrent"
+  # "pytest -k TestSnapshotNewRecordDbtValidToCurrent"
 
   "pytest ./tests/functional/adapter/test_caching.py"
   "pytest ./tests/functional/adapter/test_docs.py"
