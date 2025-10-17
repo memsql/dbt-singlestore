@@ -41,15 +41,12 @@ Models            | Custom schema     | Limited*   | Yes
 
 Default dbt tests and jaffle_shop project are used to check the adapter functionality. [Development](Development.md) overview has a section "Run tests" which contains instructions on running the tests. Currently, the tests have been successfully run for the following product versions:
 
-SingleStore  | dbt-core  | dbt-adapters
--------------|-----------|-------------------
-9.0.9        | 1.10.13   | 1.17.2
-8.9.10       | 1.10.13   | 1.17.2
-8.7.43       | 1.9.9     | 1.17.0
-8.7.43       | 1.8.13    | 1.17.2
-
 SingleStore  | dbt-core  | dbt-tests-adapter
 -------------|-----------|-------------------
+9.0.9        | 1.10.13   | 1.19.1
+8.9.10       | 1.10.13   | 1.19.1
+8.7.43       | 1.9.9     | 1.17.0
+8.7.43       | 1.8.13    | 1.11.0
 8.5.16       | 1.7.15    | 1.7.15
 8.5.16       | 1.6.13    | 1.6.13
 8.1.1        | 1.6.0     | 1.6.0
