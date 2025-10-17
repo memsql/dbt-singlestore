@@ -45,6 +45,8 @@ SingleStore  | dbt-core  | dbt-adapters
 -------------|-----------|-------------------
 9.0.9        | 1.10.13   | 1.17.2
 8.9.10       | 1.10.13   | 1.17.2
+8.7.43       | 1.9.9     | 1.17.0
+8.7.43       | 1.8.13    | 1.17.2
 
 SingleStore  | dbt-core  | dbt-tests-adapter
 -------------|-----------|-------------------
@@ -131,10 +133,6 @@ To use this adapter, SingleStore must be upgraded to the version 8.5 or newer.
 - [Fixed]((https://github.com/memsql/dbt-singlestore/issues/6)) failing materialization with `unique_key`.
 - [Fixed](https://github.com/memsql/dbt-singlestore/issues/7) changing a column's data type during incremental materialization.
 - [Added support](https://github.com/memsql/dbt-singlestore/issues/5) for `primary_key`, `sort_key`, `shard_key`, `unique_table_key`, `charset`, `collation`, `storage_type`, `indexes` options for creating SingleStore tables in `table` materialization.
-
-## Contribution Process
-
-We’re thrilled you’re considering a contribution to our adapter! To keep reviews fast and smooth, please open a PR that includes: a clear description of the problem and why it matters; a minimal, reproducible showcase (config, models, snapshot or SQL snippets, and expected/actual behavior); a concise explanation of your proposed solution; the code changes themselves; and new or updated tests that prove the fix/feature works and won’t regress. Please also ensure the change is backward-compatible, follows our coding style and formatting, includes relevant documentation updates, and passes the full test suite locally. Thanks for helping us make the adapter better for everyone! :)
 
 ## Contributors
 
