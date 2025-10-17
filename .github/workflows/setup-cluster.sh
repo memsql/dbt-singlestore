@@ -47,7 +47,7 @@ start-cluster-in-a-box() {
   singlestore-wait-start() {
     echo -n "Waiting for SingleStore to start..."
     while true; do
-      if mysql -u root -h 127.0.0.1 -P $EXTERNAL_MASTER_PORT -p"${SQL_USER_PASSWORD}" -e "select 1" >/dev/null 2>/dev/null; then
+      if mysql -u root -h 127.0.0.1 -P $EXTERNAL_MASTER_PORT -p"${SQL_USER_PASSWORD}" -e "select @@memsql_version" 2>/dev/null; then
           break
       fi
       echo -n "."
