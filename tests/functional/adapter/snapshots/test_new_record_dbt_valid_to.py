@@ -39,4 +39,3 @@ class TestSnapshotNewRecordDbtValidToCurrent(SqlGlobalOverrideMixin, BaseSnapsho
         "_delete_check_sql": _delete_check_sql,
     }
     pass
-
