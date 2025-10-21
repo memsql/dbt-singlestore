@@ -1,60 +1,78 @@
 from dbt.tests.adapter.basic.test_base import BaseSimpleMaterializations
-from dbt.tests.adapter.basic.test_singular_tests import BaseSingularTests
-from dbt.tests.adapter.basic.test_singular_tests_ephemeral import BaseSingularTestsEphemeral
 from dbt.tests.adapter.basic.test_empty import BaseEmpty
 from dbt.tests.adapter.basic.test_ephemeral import BaseEphemeral
-from dbt.tests.adapter.basic.test_incremental import BaseIncremental
 from dbt.tests.adapter.basic.test_generic_tests import BaseGenericTests
+from dbt.tests.adapter.basic.test_incremental import BaseIncremental, BaseIncrementalNotSchemaChange
+from dbt.tests.adapter.basic.test_singular_tests import BaseSingularTests
+from dbt.tests.adapter.basic.test_singular_tests_ephemeral import BaseSingularTestsEphemeral
 from dbt.tests.adapter.basic.test_snapshot_check_cols import BaseSnapshotCheckCols
 from dbt.tests.adapter.basic.test_snapshot_timestamp import BaseSnapshotTimestamp
+from dbt.tests.adapter.basic.test_table_materialization import BaseTableMaterialization
 from dbt.tests.adapter.basic.test_validate_connection import BaseValidateConnection
-from dbt.tests.adapter.basic.test_incremental import BaseIncrementalNotSchemaChange
-from dbt.tests.adapter.basic.test_ephemeral import BaseEphemeral
+from tests.utils.sql_patch_helpers import SqlGlobalOverrideMixin
 
 
-class TestSimpleMaterializationsMyAdapter(BaseSimpleMaterializations):
+class TestSimpleMaterializationsSingleStore(BaseSimpleMaterializations):
     pass
 
 
-class TestSingularTestsMyAdapter(BaseSingularTests):
+class TestEmptySingleStore(BaseEmpty):
     pass
 
 
-class TestSingularTestsEphemeralMyAdapter(BaseSingularTestsEphemeral):
+class TestEphemeralSingleStore(BaseEphemeral):
     pass
 
 
-class TestEmptyMyAdapter(BaseEmpty):
+class TestGenericTestsSingleStore(BaseGenericTests):
     pass
 
 
-class TestEphemeralMyAdapter(BaseEphemeral):
+class TestIncrementalSingleStore(BaseIncremental):
     pass
 
 
-class TestIncrementalMyAdapter(BaseIncremental):
+class TestBaseIncrementalNotSchemaChangeSingleStore(BaseIncrementalNotSchemaChange):
     pass
 
 
-class TestGenericTestsMyAdapter(BaseGenericTests):
+class TestSingularTestsSingleStore(BaseSingularTests):
     pass
 
 
-class TestSnapshotCheckColsMyAdapter(BaseSnapshotCheckCols):
+class TestSingularTestsEphemeralSingleStore(BaseSingularTestsEphemeral):
     pass
 
 
-class TestSnapshotTimestampMyAdapter(BaseSnapshotTimestamp):
+class TestSnapshotCheckColsSingleStore(BaseSnapshotCheckCols):
     pass
 
 
-class TestValidateConnection(BaseValidateConnection):
+class TestSnapshotTimestampSingleStore(BaseSnapshotTimestamp):
     pass
 
 
-class TestIncrementalNotSchemaChange(BaseIncrementalNotSchemaChange):
+model_sql = """
+{{
+  config(
+    materialized = "table",
+    sort = 'first_name',
+    dist = 'first_name'
+  )
+}}
+
+select * from seed
+"""
+
+
+class TestTableMaterializationSingleStore(SqlGlobalOverrideMixin, BaseTableMaterialization):
+    BASE_TEST_CLASS = BaseTableMaterialization
+    SQL_GLOBAL_OVERRIDES = {
+        "model_sql": model_sql,
+    }
     pass
 
 
-class TestEphemeral(BaseEphemeral):
+class TestValidateConnectionSingleStore(BaseValidateConnection):
     pass
+
