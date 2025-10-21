@@ -52,6 +52,7 @@ class TestSnapshotTimestampSingleStore(BaseSnapshotTimestamp):
     pass
 
 
+# we don't support custom schema in models in a way dbt expects, so we override this model
 model_sql = """
 {{
   config(
