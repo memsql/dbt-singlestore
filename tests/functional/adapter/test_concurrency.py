@@ -7,13 +7,8 @@ from dbt.tests.util import (
     write_file,
     run_dbt_and_capture
 )
-from dbt.tests.adapter.concurrency.test_concurrency import (
-    BaseConcurrency,
-    seeds__update_csv,
-    models__dep_sql,
-    models__view_with_conflicting_cascade_sql,
-    models__skip_sql
-)
+from dbt.tests.adapter.concurrency.test_concurrency import BaseConcurrency
+from tests.utils.sql_patch_helpers import SqlGlobalOverrideMixin
 
 
 # Previously, SELECT-command was trying to access this.schema, but
@@ -63,15 +58,13 @@ select * from seed
 """
 
 
-class TestConcurrency(BaseConcurrency):
-    @pytest.fixture(scope="class")
-    def models(self):
-        return {
-            "invalid.sql": models__invalid_sql,
-            "table_a.sql": models__table_a_sql,
-            "table_b.sql": models__table_b_sql,
-            "view_model.sql": models__view_model_sql,
-            "dep.sql": models__dep_sql,
-            "view_with_conflicting_cascade.sql": models__view_with_conflicting_cascade_sql,
-            "skip.sql": models__skip_sql,
-        }
+class TestConcurrency(SqlGlobalOverrideMixin, BaseConcurrency):
+    BASE_TEST_CLASS = BaseConcurrency
+    SQL_GLOBAL_OVERRIDES = {
+        "models__invalid_sql": models__invalid_sql,
+        "models__table_a_sql": models__table_a_sql,
+        "models__table_b_sql": models__table_b_sql,
+        "models__view_model_sql": models__view_model_sql,
+    }
+    pass
+
