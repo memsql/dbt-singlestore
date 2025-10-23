@@ -35,6 +35,7 @@ TESTS=(
   "pytest -k TestSnapshotNewRecordDbtValidToCurrent"
 
   "pytest ./tests/functional/adapter/test_caching.py"
+  "pytest ./tests/functional/adapter/catalog/test_relation_types.py"
   "pytest ./tests/functional/adapter/test_docs.py"
   "pytest ./tests/functional/adapter/test_list_relations_without_caching.py"
 
@@ -43,7 +44,7 @@ TESTS=(
 
   # Run everything else except what’s already run separately
   "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not TestSnapshot
-              and not test_caching and not test_docs and not test_list_relations_without_caching and not test_snapshots'"
+              and not test_caching and not test_relation_type and not test_docs and not test_list_relations_without_caching and not test_snapshots'"
 )
 
 result_code=0
