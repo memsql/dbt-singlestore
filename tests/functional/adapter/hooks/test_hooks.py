@@ -1,15 +1,17 @@
+from pathlib import Path
+import os
 import pytest
 from dbt.tests.adapter.hooks.test_model_hooks import (
     BasePrePostModelHooks,
     BaseHookRefs,
     BasePrePostModelHooksOnSeeds,
     BaseHooksRefsOnSeeds,
-    #BasePrePostModelHooksOnSeedsPlusPrefixed,
-    #BasePrePostModelHooksOnSeedsPlusPrefixedWhitespace,
-    #BasePrePostModelHooksOnSnapshots,
-    #BasePrePostModelHooksInConfig,
-    #BasePrePostModelHooksInConfigWithCount,
-    #BasePrePostModelHooksInConfigKwargs,
+    BasePrePostModelHooksOnSeedsPlusPrefixed,
+    BasePrePostModelHooksOnSeedsPlusPrefixedWhitespace,
+    BasePrePostModelHooksOnSnapshots,
+    BasePrePostModelHooksInConfig,
+    BasePrePostModelHooksInConfigWithCount,
+    BasePrePostModelHooksInConfigKwargs,
     BasePrePostSnapshotHooksInConfigKwargs,
     BaseDuplicateHooksInConfigs,
 )
@@ -18,10 +20,13 @@ from dbt.tests.adapter.hooks.test_run_hooks import (
     BaseAfterRunHooks,
 )
 from fixtures import (
+    macros__before_and_after,
+    models__hooks_configured,
+    models__hooks_kwargs,
+    models__hooks_error,
     models__hooked,
 )
 from dbt.tests.adapter.hooks import fixtures
-from tests.utils.sql_patch_helpers import SqlGlobalOverrideMixin
 
 
 MODEL_PRE_HOOK = """
@@ -249,30 +254,58 @@ class TestHooksRefsOnSeeds(BaseHooksRefsOnSeeds):
     pass
 
 
-#class TestPrePostModelHooksOnSeedsPlusPrefixed(BasePrePostModelHooksOnSeedsPlusPrefixed):
-#    pass
+class TestPrePostModelHooksOnSeedsPlusPrefixed(BasePrePostModelHooksOnSeedsPlusPrefixed):
+    pass
 
 
-#class TestPrePostModelHooksOnSeedsPlusPrefixedWhitespace(
-#    BasePrePostModelHooksOnSeedsPlusPrefixedWhitespace
-#):
-#    pass
+class TestPrePostModelHooksOnSeedsPlusPrefixedWhitespace(BasePrePostModelHooksOnSeedsPlusPrefixedWhitespace):
+    pass
 
 
-#class TestPrePostModelHooksOnSnapshots(BasePrePostModelHooksOnSnapshots):
-#    pass
+class TestPrePostModelHooksOnSnapshots(BasePrePostModelHooksOnSnapshots):
+    pass
 
 
-#class TestPrePostModelHooksInConfig(BasePrePostModelHooksInConfig):
-#    pass
+class TestPrePostModelHooksInConfig(SingleStoreBaseTestPrePost, BasePrePostModelHooksInConfig):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {"hooks.sql": models__hooks_configured}
+    pass
 
 
-#class TestPrePostModelHooksInConfigWithCount(BasePrePostModelHooksInConfigWithCount):
-#    pass
+class TestPrePostModelHooksInConfigWithCount(SingleStoreBaseTestPrePost, BasePrePostModelHooksInConfigWithCount):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {"hooks.sql": models__hooks_configured}
+
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            "models": {
+                "test": {
+                    "pre-hook": [
+                        # inside transaction (runs second)
+                        MODEL_PRE_HOOK,
+                        # outside transaction (runs first)
+                        {"sql": "select 1 as noop", "transaction": False},
+                    ],
+                    "post-hook": [
+                        # outside transaction (runs second)
+                        {"sql": "select 1 as noop", "transaction": False},
+                        # inside transaction (runs first)
+                        MODEL_POST_HOOK,
+                    ],
+                }
+            }
+        }
+    pass
 
 
-#class TestPrePostModelHooksInConfigKwargs(BasePrePostModelHooksInConfigKwargs):
-#    pass
+class TestPrePostModelHooksInConfigKwargs(SingleStoreBaseTestPrePost, BasePrePostModelHooksInConfigKwargs):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {"hooks.sql": models__hooks_kwargs}
+    pass
 
 
 class TestPrePostSnapshotHooksInConfigKwargs(BasePrePostSnapshotHooksInConfigKwargs):
@@ -280,10 +313,110 @@ class TestPrePostSnapshotHooksInConfigKwargs(BasePrePostSnapshotHooksInConfigKwa
 
 
 class TestDuplicateHooksInConfigs(BaseDuplicateHooksInConfigs):
+    @pytest.fixture(scope="class")
+    def models(self):
+        return {"hooks.sql": models__hooks_error}
     pass
 
 
 class TestPrePostRunHooks(BasePrePostRunHooks):
+    @pytest.fixture(scope="function")
+    def setUp(self, project):
+        project.run_sql_file(project.test_data_dir / Path("seed_run.sql"))
+        project.run_sql(f"drop table if exists used_schemas")
+        project.run_sql(f"drop table if exists db_schemas")
+        os.environ["TERM_TEST"] = "TESTING"
+    
+    @pytest.fixture(scope="class")
+    def macros(self):
+        return {
+            "hook.sql": fixtures.macros__hook,
+            "before-and-after.sql": macros__before_and_after,
+        }
+    
+    @pytest.fixture(scope="class")
+    def project_config_update(self):
+        return {
+            # The create and drop table statements here validate that these hooks run
+            # in the same order that they are defined. Drop before create is an error.
+            # Also check that the table does not exist below.
+            "on-run-start": [
+                "{{ custom_run_hook('start', target, run_started_at, invocation_id) }}",
+                "create table start_hook_order_test ( id int )",
+                "drop table start_hook_order_test",
+                "{{ log(env_var('TERM_TEST'), info=True) }}",
+            ],
+            "on-run-end": [
+                "{{ custom_run_hook('end', target, run_started_at, invocation_id) }}",
+                "create table end_hook_order_test ( id int )",
+                "drop table end_hook_order_test",
+                "create table used_schemas ( used_schema text )",
+                "insert into used_schemas (used_schema) values {% for schema in schemas %}( '{{ schema }}' ){% if not loop.last %},{% endif %}{% endfor %}",
+                "create table db_schemas ( db text, used_schema text )",
+                "insert into db_schemas (db, used_schema) values {% for db, schema in database_schemas %}('{{ db }}', '{{ schema }}' ){% if not loop.last %},{% endif %}{% endfor %}",
+            ],
+            "seeds": {
+                "quote_columns": False,
+            },
+        }
+
+    def get_ctx_vars(self, state, project):
+        fields = [
+            "test_state",
+            "target_dbname",
+            "target_host",
+            "target_name",
+            "target_schema",
+            "target_threads",
+            "target_type",
+            "target_user",
+            "target_pass",
+            "run_started_at",
+            "invocation_id",
+            "thread_id",
+        ]
+        field_list = ", ".join([f"`{f}`" for f in fields])
+        query = f"select {field_list} from on_run_hook where test_state = '{state}'"
+
+        vals = project.run_sql(query, fetch="all")
+        assert len(vals) != 0, "nothing inserted into on_run_hook table"
+        assert len(vals) == 1, "too many rows in hooks table"
+        ctx = dict([(k, v) for (k, v) in zip(fields, vals[0])])
+
+        return ctx
+
+    def assert_used_schemas(self, project):
+        schemas_query = "select * from used_schemas"
+        results = project.run_sql(schemas_query, fetch="all")
+        assert len(results) == 1
+        assert results[0][0] == project.test_schema
+
+        db_schemas_query = "select * from db_schemas"
+        results = project.run_sql(db_schemas_query, fetch="all")
+        assert len(results) == 1
+        assert results[0][0] == project.database
+        assert results[0][1] == project.test_schema
+
+    def check_hooks(self, state, project, host):
+        ctx = self.get_ctx_vars(state, project)
+
+        assert ctx["test_state"] == state
+        assert ctx["target_dbname"] == "dbt_test"
+        assert ctx["target_host"] == host
+        assert ctx["target_name"] == "default"
+        assert ctx["target_schema"] == project.test_schema
+        assert ctx["target_threads"] == 1
+        assert ctx["target_type"] == "singlestore"
+        assert ctx["target_user"] == "root"
+        assert ctx["target_pass"] == ""
+
+        assert (
+            ctx["run_started_at"] is not None and len(ctx["run_started_at"]) > 0
+        ), "run_started_at was not set"
+        assert (
+            ctx["invocation_id"] is not None and len(ctx["invocation_id"]) > 0
+        ), "invocation_id was not set"
+        assert ctx["thread_id"].startswith("Thread-") or ctx["thread_id"] == "MainThread"
     pass
 
 
