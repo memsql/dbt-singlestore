@@ -32,17 +32,6 @@
     {%- endif -%}
 {% endmacro %}
 
-{% macro singlestore__get_empty_subquery_sql(select_sql, select_sql_header=none) %}
-    {%- if select_sql_header is not none -%}
-    {{ select_sql_header }}
-    {%- endif -%}
-    (
-        {{ select_sql }}
-        where false
-        limit 0
-    )
-{% endmacro %}
-
 {%- macro singlestore__get_table_columns_and_constraints(create_definition_str, undefined_shard_key) -%}
   {# loop through user_provided_columns to create DDL with data types and constraints #}
     {%- set raw_column_constraints = adapter.render_raw_columns_constraints(raw_columns=model['columns']) -%}
