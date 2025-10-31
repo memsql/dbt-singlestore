@@ -19,10 +19,7 @@ from dbt.tests.adapter.grants.test_invalid_grants import (
     invalid_privilege_table_model_schema_yml
 )
 from dbt.tests.adapter.grants.test_seed_grants import BaseSeedGrants
-from dbt.tests.adapter.grants.test_snapshot_grants import (
-    BaseSnapshotGrants,
-    snapshot_schema_yml
-)
+from dbt.tests.adapter.grants.test_snapshot_grants import BaseSnapshotGrants
 
 
 class TestModelGrants(BaseModelGrants):
@@ -101,12 +98,10 @@ my_snapshot_sql = """
 
 
 class TestSnapshotGrants(BaseSnapshotGrants):
-    @pytest.fixture(scope="class")
-    def snapshots(self):
-        return {
-            "my_snapshot.sql": my_snapshot_sql,
-            "schema.yml": self.interpolate_name_overrides(snapshot_schema_yml),
-        }
+    BASE_TEST_CLASS = BaseSnapshotGrants
+    SQL_GLOBAL_OVERRIDES = {
+        "my_snapshot_sql": my_snapshot_sql,
+    }
     pass
 
 

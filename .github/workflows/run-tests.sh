@@ -35,15 +35,19 @@ TESTS=(
   "pytest -k TestSnapshotNewRecordDbtValidToCurrent"
 
   "pytest ./tests/functional/adapter/test_caching.py"
+  "pytest ./tests/functional/adapter/catalog/test_relation_types.py"
   "pytest ./tests/functional/adapter/test_docs.py"
+  "pytest ./tests/functional/adapter/test_ephemeral.py"
   "pytest ./tests/functional/adapter/test_list_relations_without_caching.py"
+  "pytest ./tests/functional/adapter/hooks/test_hooks.py"
 
   # Run the remainder of test_snapshots.py, excluding the suites that are run above
   "pytest ./tests/functional/adapter/snapshots/test_snapshots.py -k 'not TestSnapshotColumnNames and not TestSnapshotColumnNamesFromDbtProject and not TestSnapshotInvalidColumnNames and not TestSnapshotMultiUniqueKey and not TestSnapshotDbtValidToCurrent'"
 
   # Run everything else except what’s already run separately
   "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not TestSnapshot
-              and not test_caching and not test_docs and not test_list_relations_without_caching and not test_snapshots'"
+              and not test_caching and not test_relation_type and not test_docs and not test_ephemeral
+              and not test_list_relations_without_caching and not test_snapshots and not test_hooks'"
 )
 
 result_code=0

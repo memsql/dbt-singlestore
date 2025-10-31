@@ -10,6 +10,8 @@ from dbt.tests.adapter.constraints.test_constraints import (
     BaseIncrementalConstraintsRollback,
     BaseModelConstraintsRuntimeEnforcement,
     BaseConstraintQuotedColumn,
+    BaseTableContractSqlHeader,
+    BaseIncrementalContractSqlHeader,
 )
 
 from dbt.tests.adapter.constraints.fixtures import (
@@ -197,6 +199,7 @@ class TestConstraintQuotedColumn(BaseConstraintQuotedColumn):
             "my_model.sql": my_model_with_quoted_column_name_sql,
             "constraints_schema.yml": model_quoted_column_schema_yml,
         }
+
     @pytest.fixture(scope="class")
     def expected_sql(self):
         return """

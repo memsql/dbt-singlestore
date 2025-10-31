@@ -24,3 +24,4 @@ class SingleStoreColumn(Column):
 
     def __repr__(self) -> str:
         return f"<SingleStoreColumn {self.name} ({self.data_type})>"
+

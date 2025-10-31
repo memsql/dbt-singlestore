@@ -172,8 +172,8 @@
        {% set database = result[0][0] -%}
     {% endif -%}
     {% call statement('list_relations_without_caching', fetch_result=True) -%}
-        /* list_relations_without_caching for relation */
-        /* database: {{ schema_relation.database }}, schema: {{ schema_relation.schema }}, name: {{ schema_relation.identifier }} */
+        -- list_relations_without_caching for relation
+        -- database: {{ schema_relation.database }}, schema: {{ schema_relation.schema }}, name: {{ schema_relation.identifier }}
         select
             table_schema as "database",
             table_name as "name",
