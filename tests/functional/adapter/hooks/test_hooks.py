@@ -326,14 +326,14 @@ class TestPrePostRunHooks(BasePrePostRunHooks):
         project.run_sql(f"drop table if exists used_schemas")
         project.run_sql(f"drop table if exists db_schemas")
         os.environ["TERM_TEST"] = "TESTING"
-    
+
     @pytest.fixture(scope="class")
     def macros(self):
         return {
             "hook.sql": fixtures.macros__hook,
             "before-and-after.sql": macros__before_and_after,
         }
-    
+
     @pytest.fixture(scope="class")
     def project_config_update(self):
         return {
