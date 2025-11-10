@@ -18,9 +18,6 @@ from dbt.tests.adapter.simple_seed.test_seed import (
     BaseSeedSpecificFormats,
     BaseTestEmptySeed,
 )
-from dbt.tests.adapter.simple_seed.test_seed_type_override import (
-    BaseSimpleSeedColumnOverride,
-)
 from dbt.tests.util import run_dbt
 
 
@@ -605,8 +602,4 @@ class TestSeedSpecificFormats(BaseSeedSpecificFormats):
 
 
 class TestEmptySeed(BaseTestEmptySeed):
-    pass
-
-# failing
-class TestSimpleSeedColumnOverride(BaseSimpleSeedColumnOverride):
     pass
