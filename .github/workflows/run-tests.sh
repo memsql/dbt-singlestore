@@ -21,6 +21,7 @@ drop_and_create_new_db()
 # Run these suites separately to avoid table name collisions. SingleStore doesn't support schemas, and several tests share table names, so isolating them prevents cross-test interference.
 TESTS=(
   "pytest -k TestSingleStoreMicrobatch"
+
   "pytest -k TestIncrementalConstraintsRollback"
   "pytest -k TestTableConstraintsRollback"
 
@@ -33,6 +34,21 @@ TESTS=(
   "pytest -k TestSnapshotMultiUniqueKey"
   "pytest -k TestSnapshotDbtValidToCurrent"
   "pytest -k TestSnapshotNewRecordDbtValidToCurrent"
+
+  "pytest -k TestBasicSeedTests"
+  "pytest -k TestSeedConfigFullRefreshOn"
+  "pytest -k TestSeedConfigFullRefreshOff"
+  "pytest -k TestSeedCustomSchema"
+  "pytest -k TestSeedWithUniqueDelimiter"
+  "pytest -k TestSeedWithWrongDelimiter"
+  "pytest -k TestSeedWithEmptyDelimiter"
+  "pytest -k TestSeedParsing"
+  "pytest -k TestSimpleSeedWithBOM"
+  "pytest -k TestSimpleSeedEnabledViaConfig"
+  "pytest -k TestSeedSpecificFormats"
+  "pytest -k TestEmptySeed"
+  "pytest -k TestSimpleSeedColumnOverride"
+
 
   "pytest ./tests/functional/adapter/test_caching.py"
   "pytest ./tests/functional/adapter/catalog/test_relation_types.py"
@@ -47,7 +63,8 @@ TESTS=(
   # Run everything else except what’s already run separately
   "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not TestSnapshot
               and not test_caching and not test_relation_type and not test_docs and not test_ephemeral
-              and not test_list_relations_without_caching and not test_snapshots and not test_hooks'"
+              and not test_list_relations_without_caching and not test_snapshots and not test_hooks
+              and not test_simple_seed'"
 )
 
 result_code=0
