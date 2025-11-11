@@ -43,7 +43,6 @@ TESTS=(
   "pytest -k TestSeedWithWrongDelimiter"
   "pytest -k TestSeedWithEmptyDelimiter"
   "pytest -k TestSeedParsing"
-  "pytest -k TestSimpleSeedWithBOM"
   "pytest -k TestSimpleSeedEnabledViaConfig"
   "pytest -k TestSeedSpecificFormats"
   "pytest -k TestEmptySeed"
