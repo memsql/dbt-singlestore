@@ -4,6 +4,6 @@ from dbt.tests.adapter.empty.test_empty import BaseTestEmpty, BaseTestEmptyInlin
 class TestSingleStoreEmpty(BaseTestEmpty):
     pass
 
-#dbt-core generates `(subquery) _dbt_limit_subq_* as alias`, which is invalid in SingleStore
-#class TestSingleStoreEmptyInlineSourceRef(BaseTestEmptyInlineSourceRef):
-#    pass
+
+class TestSingleStoreEmptyInlineSourceRef(BaseTestEmptyInlineSourceRef):
+    pass

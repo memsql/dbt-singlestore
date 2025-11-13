@@ -130,7 +130,7 @@
     {% endif %}
     {{ charset_definition_str }}
     as
-        {{ compiled_code }}
+        {{ singlestore__strip_db_limit_aliases(compiled_code) }}
 {% endmacro %}
 
 
@@ -264,6 +264,43 @@
     {% endcall %}
 {% endmacro %}
 
+
+{% macro singlestore__strip_db_limit_aliases(sql) -%}
+    {# Recursively remove occurrences of:
+        "... ) _dbt_limit_subq_<name> as <final_alias>"
+        which produce invalid "double alias" SQL in SingleStore.
+    #}
+    {%- set token = '_dbt_limit_subq_' -%}
+
+    {%- if token not in sql -%}
+    {{ return(sql) }}
+    {%- endif -%}
+
+    {%- set pos = sql.find(token) -%}
+    {%- if pos == -1 -%}
+    {{ return(sql) }}
+    {%- endif -%}
+
+    {# find a preceding space (start of intermediate alias) #}
+    {%- set alias_start = sql.rfind(' ', 0, pos) -%}
+    {%- if alias_start == -1 -%}
+    {{ return(sql) }}
+    {%- endif -%}
+
+    {# find " as " following the intermediate alias #}
+    {%- set as_pos = sql.find(' as ', pos) -%}
+    {%- if as_pos == -1 -%}
+    {{ return(sql) }}
+    {%- endif -%}
+
+    {# keep everything after " as " (including potential trailing SQL) #}
+    {%- set final_alias_and_rest = sql[as_pos + 4:] -%}
+    {%- set new_sql = sql[:alias_start] ~ ' as ' ~ final_alias_and_rest -%}
+
+    {# recurse to remove any further occurrences #}
+    {{ return(singlestore__strip_db_limit_aliases(new_sql)) }}
+{%- endmacro %}
+
  
 {% macro singlestore__create_view_as(relation, sql) -%}
     {%- set sql_header = config.get('sql_header', none) -%}
@@ -272,8 +309,9 @@
     {%- if contract_config.enforced -%}
         {{ get_assert_columns_equivalent(sql) }}
     {%- endif %}
+    {%- set out_sql = singlestore__strip_db_limit_aliases(sql) -%}
     create view {{ relation }} as
-        {{ sql }}
+        {{ out_sql }}
 {%- endmacro %}
 
 
