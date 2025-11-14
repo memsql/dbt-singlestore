@@ -62,7 +62,7 @@ TESTS=(
   "pytest -k TestPrePostModelHooksOnSnapshots"
   "pytest -k TestPrePostSnapshotHooksInConfigKwargs"
   # Run the remainder of test_hooks.py, excluding the suites that are run above
-  "pytest ./tests/functional/adapter/hooks/test_hooks.py -k 'notTestPrePostModelHooksOnSeedsPlusPrefixed and not TestPrePostModelHooksOnSnapshots and not TestPrePostSnapshotHooksInConfigKwargs'"
+  "pytest ./tests/functional/adapter/hooks/test_hooks.py -k 'not TestPrePostModelHooksOnSeedsPlusPrefixed and not TestPrePostModelHooksOnSnapshots and not TestPrePostSnapshotHooksInConfigKwargs'"
 
   # Run everything else except what’s already run separately
   "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not TestSnapshot
