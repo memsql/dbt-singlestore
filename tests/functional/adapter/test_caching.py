@@ -22,10 +22,6 @@ select 1 as id
 class TestCachingLowerCaseModel(BaseCachingLowercaseModel):
     pass
 
-# TODO double-check this one
-#class TestCachingUppercaseModel(BaseCachingUppercaseModel):
-#    pass
-
 
 class TestCachingSelectedSchemaOnly(SqlGlobalOverrideMixin, BaseCachingSelectedSchemaOnly):
     BASE_TEST_CLASS = BaseCachingSelectedSchemaOnly

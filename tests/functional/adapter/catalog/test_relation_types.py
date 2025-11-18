@@ -27,7 +27,6 @@ class TestCatalogRelationTypes:
     @pytest.mark.parametrize(
         "node_name,relation_type",
         [
-            # TODO: singlestore__get_catalog_tables_sql what was the goal to returning then lowercase? Updated the test here: BASE TABLE -> table, VIEW -> view
             ("seed.test.my_seed", "table"),
             ("model.test.my_table", "table"),
             ("model.test.my_view", "view"),

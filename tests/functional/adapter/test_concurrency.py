@@ -67,4 +67,3 @@ class TestConcurrency(SqlGlobalOverrideMixin, BaseConcurrency):
         "models__view_model_sql": models__view_model_sql,
     }
     pass
-
