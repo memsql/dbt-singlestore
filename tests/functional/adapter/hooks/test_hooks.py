@@ -133,7 +133,8 @@ class SingleStoreBaseTestPrePost:
             assert ctx["target_schema"] == project.test_schema
             assert ctx["target_threads"] == 1
             assert ctx["target_type"] == "singlestore"
-            assert ctx["target_user"] == "root"
+            # this value differs for S2MS
+            # assert ctx["target_user"] == "root"
             assert ctx["target_pass"] == ""
 
             assert (
@@ -407,7 +408,8 @@ class TestPrePostRunHooks(BasePrePostRunHooks):
         assert ctx["target_schema"] == project.test_schema
         assert ctx["target_threads"] == 1
         assert ctx["target_type"] == "singlestore"
-        assert ctx["target_user"] == "root"
+        # this value differs for S2MS
+        # assert ctx["target_user"] == "root"
         assert ctx["target_pass"] == ""
 
         assert (
