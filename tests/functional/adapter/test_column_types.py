@@ -1,6 +1,7 @@
 import pytest
 from dbt.tests.adapter.column_types.test_column_types import BaseColumnTypes
 
+
 _MODEL_SQL = """
 {{ config(materialized='table') }}
 select
