@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from pathlib import Path
 from setuptools import find_namespace_packages, setup
 
 package_name = "dbt-singlestore"
@@ -6,11 +7,15 @@ package_name = "dbt-singlestore"
 package_version = "1.9.1"
 description = """The SingleStore adapter plugin for dbt"""
 
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
+
 setup(
     name=package_name,
     version=package_version,
     description=description,
-    long_description=description,
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author="SingleStore Inc.",
     author_email="support@singlestore.com",
     url="https://github.com/memsql/dbt-singlestore",
