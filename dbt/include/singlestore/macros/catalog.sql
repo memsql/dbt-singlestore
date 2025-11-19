@@ -93,6 +93,7 @@
     UPPER({{ field }}) = UPPER('{{ value }}')
 {% endmacro %}
 
+
 {% macro singlestore__get_catalog_relations_where_clause_sql(relations) -%}
     where (
         {%- for relation in relations -%}

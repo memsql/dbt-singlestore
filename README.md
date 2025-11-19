@@ -65,6 +65,9 @@ To use this adapter, SingleStore must be upgraded to the version 8.5 or newer.
 
 ## Changelog
 
+### 1.9.1
+- Added extensive new adapter tests for hooks, catalogs, aliases, column types, query comments, simple seeds, and other core dbt behaviors
+
 ### 1.9.0
 - Added microbatch incremental strategy support
 - Introduced snapshot improvements:

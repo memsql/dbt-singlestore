@@ -1,5 +1,28 @@
-{% macro singlestore__get_incremental_append_sql(get_incremental_append_sql) %}
-    {% do return (default__get_incremental_append_sql(get_incremental_append_sql)) %}
+{% macro singlestore__get_incremental_append_sql(arg_dict) %}
+    {{ default__get_incremental_append_sql(arg_dict) }}
+{% endmacro %}
+
+
+{% macro singlestore__validate_unique_key_columns(unique_key, dest_columns) %}
+    {%- set dest_col_names = dest_columns | map(attribute='name') | list -%}
+
+    {%- if unique_key %}
+        {# normalize unique_key to a list #}
+        {%- if unique_key is sequence and unique_key is not string -%}
+            {%- set keys = unique_key -%}
+        {%- else -%}
+            {%- set keys = [unique_key] -%}
+        {%- endif -%}
+
+        {%- for k in keys %}
+            {%- if k not in dest_col_names %}
+                {{ exceptions.raise_compiler_error(
+                    "Incremental model unique_key '" ~ k ~ "' not found in model columns: "
+                    ~ dest_col_names | join(', ')
+                ) }}
+            {%- endif %}
+        {%- endfor %}
+    {%- endif %}
 {% endmacro %}
 
 
@@ -113,4 +136,14 @@
         from {{ source }}
 
     COMMIT;
+{% endmacro %}
+
+
+{% macro singlestore__get_incremental_default_sql(arg_dict) %}
+  {% if arg_dict["unique_key"] %}
+    {{ singlestore__validate_unique_key_columns(arg_dict["unique_key"], arg_dict["dest_columns"]) }}
+    {{ default__get_incremental_delete_insert_sql(arg_dict) }}
+  {% else %}
+    {{ default__get_incremental_append_sql(arg_dict) }}
+  {% endif %}
 {% endmacro %}
