@@ -1,6 +1,8 @@
 name: dbt-singlestore
 
-on: [push]
+on:
+  push:
+  workflow_call:
 
 env:
   LICENSE_KEY: ${{ secrets.LICENSE_KEY }}
