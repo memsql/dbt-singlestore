@@ -2,6 +2,11 @@ name: dbt-singlestore
 
 on:
   push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '*'
+  pull_request:
   workflow_call:
 
 env:
