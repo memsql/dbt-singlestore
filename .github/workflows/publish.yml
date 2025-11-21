@@ -36,9 +36,9 @@ jobs:
       - name: Publish PyPI package
         env:
           TWINE_USERNAME: __token__
-          # TWINE_PASSWORD: "${{ secrets.PYPI_TOKEN }}"
-          TWINE_PASSWORD: "${{ secrets.TEST_PYPI_TOKEN }}" # can be used to test releases,
+          TWINE_PASSWORD: "${{ secrets.PYPI_TOKEN }}"
+          # TWINE_PASSWORD: "${{ secrets.TEST_PYPI_TOKEN }}" # can be used to test releases,
           # `--repository testpypi` must be added to `twine upload` command in order to use test PyPi
         run: |
           ls ./dist/*
-          twine upload --repository testpypi --verbose ./dist/*
+          twine upload --verbose ./dist/*
