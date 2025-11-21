@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - '**'
+    pull_request:
     tags-ignore:
       - '*'
   workflow_call:
