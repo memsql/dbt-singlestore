@@ -1,0 +1,44 @@
+name: Release dbt-singlestore
+
+on:
+  push:
+    tags:
+        - 'v*'
+
+jobs:
+  run-tests:
+    uses: ./.github/workflows/testing.yml
+    secrets: inherit
+
+  build-and-publish:
+    name: Build and Publish to PyPI
+    needs: run-tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine --upgrade
+
+      - name: Build package
+        run: |
+          python -m build
+
+      - name: Publish PyPI package
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: "${{ secrets.PYPI_TOKEN }}"
+          # TWINE_PASSWORD: "${{ secrets.TEST_PYPI_TOKEN }}" # can be used to test releases,
+          # `--repository testpypi` must be added to `twine upload` command in order to use test PyPi
+        run: |
+          ls ./dist/*
+          twine upload --verbose ./dist/*

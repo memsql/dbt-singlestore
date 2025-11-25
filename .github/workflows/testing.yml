@@ -1,6 +1,11 @@
 name: dbt-singlestore
 
-on: [push]
+on:
+  push:
+    pull_request:
+    tags-ignore:
+      - '*'
+  workflow_call:
 
 env:
   LICENSE_KEY: ${{ secrets.LICENSE_KEY }}
