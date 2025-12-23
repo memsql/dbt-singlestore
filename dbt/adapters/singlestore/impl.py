@@ -1,4 +1,5 @@
 import agate
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from functools import partial
@@ -249,5 +250,11 @@ class SingleStoreAdapter(SQLAdapter):
                 f'Got an unexpected location value of "{location}"'
             )
 
+    # This is used by the test suite
+    @available
+    def run_sql_for_tests(self, sql, fetch, conn=None):
+        patched = re.sub(r'\bILIKE\b', 'LIKE', sql, flags=re.IGNORECASE)
+        return super().run_sql_for_tests(patched, fetch, conn)
+
     def valid_incremental_strategies(self):
-        return ["delete+insert", "append"]
+        return ["delete+insert", "append", "microbatch"]

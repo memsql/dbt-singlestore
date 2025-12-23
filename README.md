@@ -1,6 +1,41 @@
+<p align="center">
+    <img
+        src="https://raw.githubusercontent.com/dbt-labs/dbt/ec7dee39f793aa4f7dd3dae37282cc87664813e4/etc/dbt-logo-full.svg"
+        alt="dbt logo"
+        width="500"
+    />
+</p>
+
+<p align="center">
+    <a href="https://pypi.org/project/dbt-singlestore/">
+        <img src="https://badge.fury.io/py/dbt-singlestore.svg" />
+    </a>
+    <a target="_blank" href="https://pypi.org/project/dbt-singlestore/" style="background:none">
+        <img src="https://img.shields.io/pypi/pyversions/dbt-singlestore">
+    </a>
+    <a href="https://github.com/psf/black">
+        <img src="https://img.shields.io/badge/code%20style-black-000000.svg" />
+    </a>
+    <a href="https://github.com/python/mypy">
+        <img src="https://www.mypy-lang.org/static/mypy_badge.svg" />
+    </a>
+    <a href="https://pepy.tech/project/dbt-singlestore">
+        <img src="https://static.pepy.tech/badge/dbt-singlestore/month" />
+    </a>
+</p>
+
+
+# dbt
+
+**[dbt](https://www.getdbt.com/)** enables data analysts and engineers to transform their data using the same practices that software engineers use to build applications.
+
+dbt is the T in ELT. Organize, cleanse, denormalize, filter, rename, and pre-aggregate the raw data in your warehouse so that it's ready for analysis.
+
+
 # dbt-singlestore
 
-[dbt](https://www.getdbt.com/) adapter for [SingleStore](https://www.singlestore.com/).
+`dbt-singlestore` enables dbt to work with [SingleStore](https://www.singlestore.com/).
+For more information on using dbt with SingleStore, consult [the docs](https://docs.getdbt.com/docs/core/connect-data-platform/singlestore-setup).
 
 ## Installation
 
@@ -39,10 +74,15 @@ Models            | Custom schema     | Limited*   | Yes
 
 ## Testing and supported versions
 
-Default dbt [test suite](tests/test_basic.py) is used to check the adapter functionality. [Development](Development.md) overview has a section "Run tests" which contains instructions on running the tests. Currently, the tests have been successfully run for the following product versions:
+Default dbt tests and jaffle_shop project are used to check the adapter functionality. [Development](Development.md) overview has a section "Run tests" which contains instructions on running the tests. Currently, the tests have been successfully run for the following product versions:
 
-Singlestore | dbt-core | dbt-tests-adapter
+SingleStore  | dbt-core  | dbt-tests-adapter
 -------------|-----------|-------------------
+9.0.9        | 1.10.13   | 1.19.1
+8.9.10       | 1.10.13   | 1.19.1
+8.7.43       | 1.9.9     | 1.17.0
+8.7.43       | 1.8.13    | 1.11.0
+8.5.16       | 1.7.15    | 1.7.15
 8.5.16       | 1.6.13    | 1.6.13
 8.1.1        | 1.6.0     | 1.6.0
 8.1.1        | 1.5.0     | 1.5.0
@@ -50,67 +90,18 @@ Singlestore | dbt-core | dbt-tests-adapter
 8.1.1        | 1.3.0     | 1.3.0
 7.8.29       | 1.2.2     | 1.2.2
 
-Singlestore | dbt-core | pytest-dbt-adapter
+SingleStore | dbt-core | pytest-dbt-adapter
 ------------|----------|-------------------
 7.8.3       | 1.1.1    | 0.6.0
 7.6.6       | 1.0.1    | 0.6.0
 7.5.12      | 1.0.1    | 0.6.0
 
-To use this adapter, SingleStore must be upgraded to the version 7.5 or newer.
-
-## Changelog
-
-### 1.8.1
-- Fix view definition retrieval in replace_view_definition macro
-
-### 1.8.0
-- Decoupled dependency on dbt-core
-- dbt unit testing support
-
-### 1.7.1
-- Resolved issue with delete + insert incremental strategy
-
-### 1.7
-- Added metadata freshness check support
-- Resolved issue with sort keys and rowstore temporary tables
-- Added new tests
-
-### 1.6.1
-- Updated singlestoredb connector version
-
-### 1.6
-- Added new tests
-- Added new incremental tests and `append` incremental strategy support
-
-### 1.5
-- Added `model contracts` support (`check` and `foreign` keys constraints aren't supported)
-- Modified `create_table_as` to use column ordering subquery
-
-### 1.4.1
-- Switched from pymysql connector to singlestoredb
-- Implemented `cancel()` function in SingleStoreConnectionManager class
-- Added support of connection attributes
-
-### 1.4
-- Consolidated timestamp functions & macros
-- Tested against Python 3.11
-- Replaced deprecated exception functions
-- Added support of the `delete+insert` incremental strategy + new tests for incremental predicates
-
-### 1.3
-- Added tests introduced in dbt 1.3.0
-
-### 1.2.2
-- Implemented connection retry logic
-- Fixed index name possibly starting with 0 which is not allowed in SingleStore
-- Added support for grants config
-- Implemented utils macros and added tests
-
-### 1.1.2
-- [Fixed]((https://github.com/memsql/dbt-singlestore/issues/6)) failing materialization with `unique_key`.
-- [Fixed](https://github.com/memsql/dbt-singlestore/issues/7) changing a column's data type during incremental materialization.
-- [Added support](https://github.com/memsql/dbt-singlestore/issues/5) for `primary_key`, `sort_key`, `shard_key`, `unique_table_key`, `charset`, `collation`, `storage_type`, `indexes` options for creating SingleStore tables in `table` materialization.
+To use this adapter, SingleStore must be upgraded to the version 8.5 or newer.
 
 ## Contributors
 
-We thank [Doug Beatty](https://github.com/dbeatty10) who build an adpater for mysql which has been used to build an initial version of this adapter.
+We thank [Doug Beatty](https://github.com/dbeatty10) who build an adapter for mysql which has been used to build an initial version of this adapter.
+
+## Contribute
+
+- Want to help us build `dbt-singlestore`? Check out the [Contributing Guide](CONTRIBUTING.md).

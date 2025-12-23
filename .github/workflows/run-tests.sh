@@ -18,18 +18,71 @@ drop_and_create_new_db()
   fi
 }
 
-pytest ./tests/functional/adapter/test_docs.py
-drop_and_create_new_db
-pytest -k TestIncrementalConstraintsRollback
-drop_and_create_new_db
-pytest -k TestTableConstraintsRollback
-drop_and_create_new_db
-pytest ./tests/functional/adapter/test_caching.py
-drop_and_create_new_db
-pytest ./tests/functional/adapter/test_list_relations_without_caching.py
-drop_and_create_new_db
-pytest -k "not test_docs and not ConstraintsRollback and not test_caching and not test_list_relations_without_caching"
-result_code=$?
+# Run these suites separately to avoid table name collisions. SingleStore doesn't support schemas, and several tests share table names, so isolating them prevents cross-test interference.
+TESTS=(
+  "pytest -k TestSingleStoreMicrobatch"
+
+  "pytest -k TestIncrementalConstraintsRollback"
+  "pytest -k TestTableConstraintsRollback"
+
+  "pytest -k TestSnapshotNewRecordTimestampMode"
+  "pytest -k TestSnapshotNewRecordCheckMode"
+  # Use nodeids (not `-k`) to avoid substring collisions: -k TestSnapshotColumnNames also matches `TestSnapshotColumnNamesFromDbtProject`
+  "pytest ./tests/functional/adapter/snapshots/test_snapshots.py::TestSnapshotColumnNames"
+  "pytest ./tests/functional/adapter/snapshots/test_snapshots.py::TestSnapshotColumnNamesFromDbtProject"
+  "pytest -k TestSnapshotInvalidColumnNames"
+  "pytest -k TestSnapshotMultiUniqueKey"
+  "pytest -k TestSnapshotDbtValidToCurrent"
+  "pytest -k TestSnapshotNewRecordDbtValidToCurrent"
+  # Run the remainder of test_snapshots.py, excluding the suites that are run above
+  "pytest ./tests/functional/adapter/snapshots/test_snapshots.py -k 'not TestSnapshotColumnNames and not TestSnapshotColumnNamesFromDbtProject and not TestSnapshotInvalidColumnNames and not TestSnapshotMultiUniqueKey and not TestSnapshotDbtValidToCurrent'"
+
+  "pytest -k TestBasicSeedTests"
+  "pytest -k TestSeedConfigFullRefreshOn"
+  "pytest -k TestSeedConfigFullRefreshOff"
+  "pytest -k TestSeedCustomSchema"
+  "pytest -k TestSeedWithUniqueDelimiter"
+  "pytest -k TestSeedWithWrongDelimiter"
+  "pytest -k TestSeedWithEmptyDelimiter"
+  "pytest -k TestSeedParsing"
+  "pytest -k TestSimpleSeedEnabledViaConfig"
+  "pytest -k TestSeedSpecificFormats"
+  "pytest -k TestEmptySeed"
+  "pytest -k TestSimpleSeedColumnOverride"
+
+
+  "pytest ./tests/functional/adapter/test_caching.py"
+  "pytest ./tests/functional/adapter/catalog/test_relation_types.py"
+  "pytest ./tests/functional/adapter/test_docs.py"
+  "pytest ./tests/functional/adapter/test_ephemeral.py"
+  "pytest ./tests/functional/adapter/test_list_relations_without_caching.py"
+
+  "pytest ./tests/functional/adapter/hooks/test_hooks.py::TestPrePostModelHooksOnSeedsPlusPrefixed"
+  "pytest ./tests/functional/adapter/hooks/test_hooks.py::TestPrePostModelHooksOnSeedsPlusPrefixedWhitespace"
+  "pytest -k TestPrePostModelHooksOnSnapshots"
+  "pytest -k TestPrePostSnapshotHooksInConfigKwargs"
+  # Run the remainder of test_hooks.py, excluding the suites that are run above
+  "pytest ./tests/functional/adapter/hooks/test_hooks.py -k 'not TestPrePostModelHooksOnSeedsPlusPrefixed and not TestPrePostModelHooksOnSnapshots and not TestPrePostSnapshotHooksInConfigKwargs'"
+
+  "pytest ./tests/functional/adapter/test_simple_copy.py"
+
+  # Run everything else except what’s already run separately
+  "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not TestSnapshot
+              and not test_caching and not test_relation_type and not test_docs and not test_ephemeral
+              and not test_list_relations_without_caching and not test_snapshots and not test_hooks
+              and not test_simple_seed and not test_simple_copy'"
+)
+
+result_code=0
+
+for test in "${TESTS[@]}"; do
+  drop_and_create_new_db
+  eval $test
+  rc=$?
+  if [ $rc -ne 0 ] && [ $result_code -eq 0 ]; then
+    result_code=$rc
+  fi
+done
 
 ./.github/workflows/setup-cluster.sh terminate $CLUSTER_TYPE
 exit $result_code
