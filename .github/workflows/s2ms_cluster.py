@@ -70,7 +70,7 @@ def create_workspace(workspace_manager):
             region=region.id,
             firewall_ranges=["0.0.0.0/0"],
             admin_password=SQL_USER_PASSWORD,
-            expires_at="60m"
+            expires_at="80m"
         )
     workspace_group = retry(create_workspace_group)
 
