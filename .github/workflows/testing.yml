@@ -1,11 +1,14 @@
 name: dbt-singlestore
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
   push:
-    pull_request:
+    branches: [main]
     tags-ignore:
       - '*'
   workflow_call:
+  workflow_dispatch:
 
 env:
   LICENSE_KEY: ${{ secrets.LICENSE_KEY }}
