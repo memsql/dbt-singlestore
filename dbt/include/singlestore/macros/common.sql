@@ -43,6 +43,12 @@
     {%- set collation = config.get('collation', none) -%} {# COLLATE collation #}
     {%- set contract_config = config.get('contract') -%}
 
+    {%- if reference and (shard_key | length) -%}
+        {%- do exceptions.raise_compiler_error(
+            "`shard_key` cannot be used with `reference=true` because reference tables are not sharded."
+        ) -%}
+    {%- endif -%}
+
     {%- set create_definition_list = [] %}
     {%- set contract_defined_primary = False %}
     {%- set contract_defined_unique = False %}
@@ -122,6 +128,11 @@
     {% endif -%}
 
     {% if reference -%}
+        {%- if 'temporary' in storage_type -%}
+            {%- do exceptions.raise_compiler_error(
+                "`reference=true` isn't compatible with operations that create temporary tables."
+            ) -%}
+        {%- endif -%}
         {% set storage_type = storage_type ~ ' reference ' -%}
     {% endif -%}
 
