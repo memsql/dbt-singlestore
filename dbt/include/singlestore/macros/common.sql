@@ -133,7 +133,11 @@
                 "`reference=true` isn't compatible with operations that create temporary tables."
             ) -%}
         {%- endif -%}
-        {% set storage_type = storage_type ~ ' reference ' -%}
+        {%- if storage_type -%}
+            {% set storage_type = storage_type ~ ' reference' -%}
+        {%- else -%}
+            {% set storage_type = 'reference' -%}
+        {%- endif -%}
     {% endif -%}
 
     create {{ storage_type }} table

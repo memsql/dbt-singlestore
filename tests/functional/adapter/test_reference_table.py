@@ -1,5 +1,4 @@
 import pytest
-import os
 from dbt.tests.util import run_dbt, run_dbt_and_capture
 
 pytest_plugins = ["dbt.tests.fixtures.project"]
