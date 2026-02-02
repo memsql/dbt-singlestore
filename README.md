@@ -72,6 +72,53 @@ Models            | Custom schema     | Limited*   | Yes
 
 * SSL connection would be automatically established by dbt-singlestore for SingleStore users created with 'Require SSL' flag.
 
+## SingleStore-specific table options
+
+### Reference tables
+
+SingleStore supports **REFERENCE** tables, which are replicated across the cluster and are useful for small/dimension tables that are frequently joined.
+
+To create a **REFERENCE** table from a dbt model, set `reference=true` on a `table` materialization:
+
+```sql
+{{
+    config(
+        materialized='table',
+        reference=true,
+    )
+}}
+
+select ...
+```
+
+When `reference=true` (default `false`), the adapter generates `CREATE REFERENCE TABLE ...` rather than a regular `CREATE TABLE ...`
+
+### Rowstore reference tables
+
+If you want a rowstore reference table, set `storage_type='rowstore'`:
+
+```sql
+{{
+    config(
+        materialized='table',
+        reference=true,
+        storage_type='rowstore',
+    )
+}}
+
+select ...
+```
+
+This maps to `CREATE ROWSTORE REFERENCE TABLE ...`
+
+### Restrictions / validation
+
+To match SingleStore semantics, `dbt-singlestore` enforces:
+
+- No `shard_key` with `reference=true` — reference tables don’t use sharding; compilation fails if both are set.
+
+- No `temporary=true` with `reference=true` — SingleStore does not support temporary reference tables; compilation fails if both are set.
+
 ## Testing and supported versions
 
 Default dbt tests and jaffle_shop project are used to check the adapter functionality. [Development](Development.md) overview has a section "Run tests" which contains instructions on running the tests. Currently, the tests have been successfully run for the following product versions:
