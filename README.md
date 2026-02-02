@@ -91,7 +91,7 @@ To create a **REFERENCE** table from a dbt model, set `reference=true` on a `tab
 select ...
 ```
 
-When `reference=true` (default `false`), the adapter generates `CREATE REFERENCE TABLE ...` rather than a regular `CREATE TABLE ...` .
+When `reference=true` (default `false`), the adapter generates `CREATE REFERENCE TABLE ...` rather than a regular `CREATE TABLE ...`
 
 ### Rowstore reference tables
 
@@ -109,7 +109,7 @@ If you want a rowstore reference table, set `storage_type='rowstore'`:
 select ...
 ```
 
-This maps to `CREATE ROWSTORE REFERENCE TABLE ....`
+This maps to `CREATE ROWSTORE REFERENCE TABLE ...`
 
 ### Restrictions / validation
 
