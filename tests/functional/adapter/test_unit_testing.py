@@ -62,3 +62,53 @@ class TestSingleStoreUnitTestingVarcharFixtureNoTruncation(
             ),
             "schema.yml": _length_test_yml,
         }
+
+
+# Direct unit test for the singlestore__translate_safe_cast_type helper.
+# In practice dbt-core only ever passes a fully lower-case Postgres-flavored
+# type into safe_cast (since Column.string_type/numeric_type produce lower-case
+# strings), so the BaseUnitTestingVarcharFixtureNoTruncation regression above
+# only exercises the lower-case path. This test pins down the *case-insensitive*
+# contract of the translator so a future "simplification" of the macro can't
+# silently let mixed-case Postgres types leak through to the `!:>` cast (which
+# would fail at runtime with a SingleStore parse error).
+class TestSingleStoreTranslateSafeCastType:
+    @pytest.fixture(scope="class")
+    def models(self):
+        # A trivial model is required for the project fixture to bootstrap;
+        # we don't materialise it.
+        return {"placeholder.sql": "select 1 as one"}
+
+    @pytest.mark.parametrize(
+        "input_type,expected",
+        [
+            # Lower-case Postgres-flavored inputs (what dbt-core actually emits).
+            ("character varying(30)", "varchar(30)"),
+            ("character varying", "longtext"),
+            ("character(10)", "char(10)"),
+            ("character", "longtext"),
+            # Mixed / upper case inputs: branch selection is case-insensitive,
+            # so the translation MUST also be case-insensitive end-to-end.
+            ("Character Varying(30)", "varchar(30)"),
+            ("CHARACTER VARYING(30)", "varchar(30)"),
+            ("Character(10)", "char(10)"),
+            ("CHARACTER(10)", "char(10)"),
+            # SingleStore-native and unrelated types must pass through untouched.
+            ("varchar(30)", "varchar(30)"),
+            ("bigint(20)", "bigint(20)"),
+            ("JSON", "JSON"),
+            ("timestamp", "timestamp"),
+        ],
+    )
+    def test_translates_postgres_string_types_case_insensitively(
+        self, project, input_type, expected
+    ):
+        with project.adapter.connection_named("_test"):
+            actual = project.adapter.execute_macro(
+                "singlestore__translate_safe_cast_type",
+                kwargs={"type": input_type},
+            )
+        assert actual.strip() == expected, (
+            f"singlestore__translate_safe_cast_type({input_type!r}) "
+            f"returned {actual.strip()!r}; expected {expected!r}"
+        )

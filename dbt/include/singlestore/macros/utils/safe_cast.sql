@@ -34,12 +34,19 @@
     -#}
     {%- set raw = (type or '') | string | trim -%}
     {%- set lowered = raw | lower -%}
+    {#- Replacements operate on `lowered`, not `raw`: the branch selection is
+        case-insensitive (via `startswith`/`==` on `lowered`), so any mixed-case
+        input (e.g. `Character Varying(10)`) reaches the right branch. Replacing
+        on `raw` with hard-coded all-lower / all-upper literals would miss those
+        mixed-case forms and let the Postgres-flavored type leak through to the
+        `!:>` cast unchanged. SingleStore type names are case-insensitive, so
+        normalising to lower-case in the output is harmless. -#}
     {%- if lowered == 'character varying' or lowered == 'character' -%}
         longtext
     {%- elif lowered.startswith('character varying(') -%}
-        {{- raw | replace('character varying', 'varchar') | replace('CHARACTER VARYING', 'varchar') -}}
+        {{- lowered | replace('character varying', 'varchar') -}}
     {%- elif lowered.startswith('character(') -%}
-        {{- raw | replace('character', 'char') | replace('CHARACTER', 'char') -}}
+        {{- lowered | replace('character', 'char') -}}
     {%- else -%}
         {{- raw -}}
     {%- endif -%}
