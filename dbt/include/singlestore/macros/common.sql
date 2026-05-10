@@ -290,12 +290,14 @@
     {# Recursively remove occurrences of:
         "... ) _dbt_limit_subq_<name> as <final_alias>"
         which produce invalid "double alias" SQL in SingleStore.
+
+        The double-alias is always emitted on a single physical SQL line by
+        dbt-core, so the search for the trailing ` as ` MUST be bounded to that
+        same line. A previous implementation searched forward globally, which
+        in multi-CTE models matched the next CTE's `as (` and corrupted the
+        rendered SQL by splicing across CTE boundaries.
     #}
     {%- set token = '_dbt_limit_subq_' -%}
-
-    {%- if token not in sql -%}
-    {{ return(sql) }}
-    {%- endif -%}
 
     {%- set pos = sql.find(token) -%}
     {%- if pos == -1 -%}
@@ -308,10 +310,21 @@
     {{ return(sql) }}
     {%- endif -%}
 
-    {# find " as " following the intermediate alias #}
-    {%- set as_pos = sql.find(' as ', pos) -%}
+    {# bound the ` as ` lookup to the current physical SQL line #}
+    {%- set line_end = sql.find('\n', pos) -%}
+    {%- if line_end == -1 -%}
+        {%- set line_end = sql|length -%}
+    {%- endif -%}
+
+    {%- set as_pos = sql.find(' as ', pos, line_end) -%}
     {%- if as_pos == -1 -%}
-    {{ return(sql) }}
+        {# No double-alias on this line: leave the intermediate alias intact
+           (it is valid SingleStore SQL on its own) and recurse on the
+           remainder past the line break, so each recursion shrinks the input
+           by at least one line. #}
+        {%- set head = sql[:line_end] -%}
+        {%- set rest = singlestore__strip_db_limit_aliases(sql[line_end:]) -%}
+        {{ return(head ~ rest) }}
     {%- endif -%}
 
     {# keep everything after " as " (including potential trailing SQL) #}

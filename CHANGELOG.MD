@@ -1,5 +1,10 @@
 ## Changelog
 
+### Unreleased
+- Fix `singlestore__strip_db_limit_aliases` corrupting multi-CTE models under `dbt run --empty`: bound the trailing ` as ` lookup to the same physical SQL line so the `_dbt_limit_subq_<n>` cleanup can no longer splice across CTE boundaries
+- Fix `singlestore__safe_cast` rejecting Postgres-flavored type names that arrive from dbt-core's unit-test fixture rendering (`character varying(N)` / bare `character varying`); translate them to SingleStore-native targets (`varchar(N)` / `longtext`) so unit tests with string columns no longer fail to compile or silently truncate (regression of dbt-labs/dbt-core#11974)
+- Subscribe to `BaseUnitTestingVarcharFixtureNoTruncation` and add a multi-CTE `--empty` regression test
+
 ### 1.9.1
 - Added extensive new adapter tests for hooks, catalogs, aliases, column types, query comments, simple seeds, and other core dbt behaviors
 
