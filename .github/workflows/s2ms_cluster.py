@@ -39,9 +39,9 @@ def run_command(workspace, command, create_db: Optional[str] = None):
                 cur.execute(f"DROP DATABASE IF EXISTS {create_db}")
                 cur.execute(f"CREATE DATABASE {create_db}")
         elif command == Command.CREATE_ROLES:
-            cur.execute(f"CREATE USER user_1")
-            cur.execute(f"CREATE USER user_2")
-            cur.execute(f"CREATE USER user_3")
+            cur.execute(f"CREATE USER user_1 IDENTIFIED BY '{SQL_USER_PASSWORD}'")
+            cur.execute(f"CREATE USER user_2 IDENTIFIED BY '{SQL_USER_PASSWORD}'")
+            cur.execute(f"CREATE USER user_3 IDENTIFIED BY '{SQL_USER_PASSWORD}'")
     finally:
         cur.close()
         conn.close()
