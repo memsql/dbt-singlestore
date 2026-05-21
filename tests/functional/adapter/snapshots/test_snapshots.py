@@ -171,6 +171,8 @@ _source_alter_sql = """
 alter table {database}.src_customers add column dummy_column VARCHAR(50) default 'dummy_value';
 """
 
+
+# we don't support custom schema in models in a way dbt expects, so we override this test
 class TestSnapshotEphemeralHardDeletes(SqlGlobalOverrideMixin, BaseSnapshotEphemeralHardDeletes):
     BASE_TEST_CLASS = BaseSnapshotEphemeralHardDeletes
     SQL_GLOBAL_OVERRIDES = {
@@ -178,6 +180,40 @@ class TestSnapshotEphemeralHardDeletes(SqlGlobalOverrideMixin, BaseSnapshotEphem
         "_source_insert_sql": _source_insert_sql,
         "_source_alter_sql": _source_alter_sql,
     }
+
+    def test_ephemeral_snapshot_hard_deletes(self, project, source_create_sql, source_insert_sql, source_alter_sql):
+        project.run_sql(
+            source_create_sql.format(
+                database=project.database,
+                schema=project.test_schema,
+            )
+        )
+        project.run_sql(
+            source_insert_sql.format(
+                database=project.database,
+                schema=project.test_schema,
+            )
+        )
+
+        results = run_dbt(["snapshot"])
+        assert results is not None
+        assert len(results) == 1  # type: ignore
+
+        snapshot_result = project.run_sql(
+            "select count(*) as row_count from snapshot_customers",
+            fetch="one",
+        )
+        assert snapshot_result[0] == 3  # Should have 3 rows from initial data
+
+        project.run_sql(
+            source_alter_sql.format(
+                database=project.database,
+                schema=project.test_schema,
+            )
+        )
+
+        results = run_dbt(["snapshot"])
+        assert len(results) == 1  # type: ignore
     pass
 
 
