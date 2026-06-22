@@ -145,6 +145,10 @@ SingleStore | dbt-core | pytest-dbt-adapter
 
 To use this adapter, SingleStore must be upgraded to the version 8.5 or newer.
 
+## Release process
+
+The `dbt-singlestore` release process is automated through GitHub Actions. See [Release Instructions](RELEASE.md) for instructions on publishing a new release.
+
 ## Contributors
 
 We thank [Doug Beatty](https://github.com/dbeatty10) who build an adapter for mysql which has been used to build an initial version of this adapter.
