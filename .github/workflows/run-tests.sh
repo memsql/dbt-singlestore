@@ -66,11 +66,15 @@ TESTS=(
 
   "pytest ./tests/functional/adapter/test_simple_copy.py"
 
+  "pytest ./tests/functional/adapter/test_basic.py"
+  "pytest ./tests/functional/adapter/test_concurrency.py"
+
   # Run everything else except what’s already run separately
   "pytest -k 'not TestSingleStoreMicrobatch and not ConstraintsRollback and not TestSnapshot
               and not test_caching and not test_relation_type and not test_docs and not test_ephemeral
               and not test_list_relations_without_caching and not test_snapshots and not test_hooks
-              and not test_simple_seed and not test_simple_copy'"
+              and not test_simple_seed and not test_simple_copy
+              and not test_basic and not test_concurrency'"
 )
 
 result_code=0
