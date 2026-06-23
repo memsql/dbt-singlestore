@@ -28,18 +28,18 @@ class SqlGlobalOverrideMixin:
     SQL_GLOBAL_OVERRIDES = {}
 
     @pytest.fixture(autouse=True, scope="class")
-    def patch_sql_globals(self, request):
-        if self.BASE_TEST_CLASS is None:
+    @classmethod
+    def patch_sql_globals(cls, request):
+        if cls.BASE_TEST_CLASS is None:
             raise RuntimeError(
                 "SqlGlobalOverrideMixin requires `BASE_TEST_CLASS` to be defined."
             )
 
-        base_module = importlib.import_module(self.BASE_TEST_CLASS.__module__)
+        base_module = importlib.import_module(cls.BASE_TEST_CLASS.__module__)
         mp = pytest.MonkeyPatch()
 
-        try:
-            for global_name, sql_value in self.SQL_GLOBAL_OVERRIDES.items():
-                mp.setattr(base_module, global_name, sql_value, raising=False)
-        finally:
-            # Ensure patches are always reverted after the class completes
-            request.addfinalizer(mp.undo)
+        # Register cleanup before applying patches, so partial patching is also reverted.
+        request.addfinalizer(mp.undo)
+
+        for global_name, sql_value in cls.SQL_GLOBAL_OVERRIDES.items():
+            mp.setattr(base_module, global_name, sql_value, raising=False)
